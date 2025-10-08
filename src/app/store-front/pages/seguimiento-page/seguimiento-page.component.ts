@@ -48,8 +48,8 @@ divElement = viewChild<ElementRef>('map');
     const element = this.divElement()!.nativeElement;
 
     const map = new mapboxgl.Map({
-      container: element, // container ID
-      style: 'mapbox://styles/mapbox/streets-v12', // style URL
+      container: element,
+      style: 'mapbox://styles/mapbox/streets-v12',
       center: [-70.677771, -33.466227],       
       zoom: 10,
     });

@@ -28,6 +28,7 @@
           <a
             routerLink="/"
             routerLinkActive="text-secondary font-semibold"
+            [routerLinkActiveOptions]="{ exact: true }"
             class="btn btn-ghost justify-start"
           >
             Obras
@@ -52,12 +53,14 @@
           </a>
         </li>
       </ul>
+
     </div>
 
     <!-- Logo / nombre app -->
     <a routerLink="/" class="btn btn-ghost text-xl font-montserrat">
       <span class="font-bold text-green-600">ObraTrack</span>
-      <span class="text-gray-400 ml-1">| Gestión</span>
+      <!-- Este texto solo se muestra en pantallas medianas o mayores -->
+      <span class="text-gray-400 ml-1 hidden md:inline">| Gestión</span>
     </a>
   </div>
 

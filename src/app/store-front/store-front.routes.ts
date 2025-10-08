@@ -13,24 +13,18 @@ export const storeFrontRoutes: Routes = [
     children: [
       { path: '', component: HomePageComponent },
 
-      // 🔹 Página de obras (lista o gestión general)
       { path: 'obras', component: ObraPageComponent },
 
-      // 🔹 Página de seguimiento o mapa
       { path: 'seguimiento', component: SeguimientoPageComponent },
 
-      // 🔹 Página de programación de obras o actividades
       { path: 'programacion', component: ProgramacionPageComponent },
 
-      // 🔹 Detalle individual de una obra
       { path: 'obra/:idSlug', component: ObraPageComponent },
 
-      // 🔹 Página no encontrada
       { path: '**', component: NotFoundPageComponent },
     ],
   },
 
-  // 🔹 Si alguna ruta no coincide, redirige al home
   { path: '**', redirectTo: '' },
 ];
 
