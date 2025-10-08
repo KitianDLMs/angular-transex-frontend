@@ -1,0 +1,42 @@
+.not-found-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+  background: #f8f9fa;
+  color: #333;
+}
+
+.not-found-container h1 {
+  font-size: 8rem;
+  font-weight: bold;
+  margin: 0;
+  color: #e63946;
+}
+
+.not-found-container h2 {
+  font-size: 2rem;
+  margin: 0.5rem 0;
+}
+
+.not-found-container p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.btn-home {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  background-color: #457b9d;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.btn-home:hover {
+  background-color: #1d3557;
+}

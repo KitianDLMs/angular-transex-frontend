@@ -1,18 +1,21 @@
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ProductCardComponent } from '@products/components/product-card/product-card.component';
 import { ProductsService } from '@products/services/products.service';
-
-import { PaginationComponent } from '@shared/components/pagination/pagination.component';
+import { CommonModule } from '@angular/common';
 import { PaginationService } from '@shared/components/pagination/pagination.service';
+import { catchError, tap } from 'rxjs';
+import { ObrasService } from 'src/app/obras/services/obras.service';
 
 @Component({
   selector: 'app-home-page',
-  imports: [ProductCardComponent, PaginationComponent],
+  imports: [CurrencyPipe, DatePipe, CommonModule],
   templateUrl: './home-page.component.html',
 })
 export class HomePageComponent {
   productsService = inject(ProductsService);
+  obrasService = inject(ObrasService);
   paginationService = inject(PaginationService);
 
   // activatedRoute = inject(ActivatedRoute);
@@ -35,4 +38,28 @@ export class HomePageComponent {
       });
     },
   });
+
+  obrasResource = rxResource({
+    request: () => ({ page: this.paginationService.currentPage() - 1 }),
+    loader: ({ request }) => {
+      return this.obrasService.getObras({
+        limit: 9,
+        offset: request.page * 9,
+      }).pipe(
+        tap((resp) => console.log('✅ Obras cargadas:', resp)),
+        catchError((error) => {
+          console.error('❌ Error al cargar obras:', error);
+          throw error;
+        })
+      );
+    },
+  });
+
+  onEdit(obra: any) {
+
+  }
+
+  onDelete(obra: any) {
+
+  }
 }

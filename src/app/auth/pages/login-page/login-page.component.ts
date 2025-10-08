@@ -6,7 +6,7 @@ import { AuthService } from '@auth/services/auth.service';
 
 @Component({
   selector: 'app-login-page',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './login-page.component.html',
 })
 export class LoginPageComponent {
