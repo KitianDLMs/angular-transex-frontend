@@ -12,6 +12,74 @@ import { CommonModule } from '@angular/common';
 })
 export class ProgramacionPageComponent {
 
+  horas = ['8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
+
+  obras = [
+    {
+      dia: 'LUNES 23/09',
+      inicio: '10:00',
+      m3: 295.5,
+      bloques: [
+        {
+          nombre: 'SH300901020 AVO',
+          inicio: 5, // porcentaje del contenedor
+          duracion: 35,
+          color: '#007EA7',
+          m3: 67.5,
+        },
+        {
+          nombre: 'FLUIDO G 25902018 AVO',
+          inicio: 45,
+          duracion: 45,
+          color: '#00B4D8',
+          m3: 228,
+        },
+      ],
+    },
+    {
+      dia: 'LUNES 23/09',
+      inicio: '12:20',
+      m3: 12.5,
+      bloques: [
+        {
+          nombre: 'SH300901020 AVO',
+          inicio: 1, // porcentaje del contenedor
+          duracion: 12,
+          color: '#007EA7',
+          m3: 23.5,
+        },
+        {
+          nombre: 'FLUIDO Z 1202100 AVO',
+          inicio: 45,
+          duracion: 45,
+          color: '#00B4D8',
+          m3: 212,
+        },
+      ],
+    },
+    {
+      dia: 'VIERNES 10/19',
+      inicio: '15:00',
+      m3: 200.5,
+      bloques: [
+        {
+          nombre: 'SH300901020 AVO',
+          inicio: 1,
+          duracion: 12,
+          color: '#007EA7',
+          m3: 23.5,
+        },
+        {
+          nombre: 'FLUIDO Z 1202100 AVO',
+          inicio: 45,
+          duracion: 45,
+          color: '#00B4D8',
+          m3: 212,
+        },
+      ],
+    },
+  ];
+
   programacion = [
     {
       obra: 'Centro Cultural San Pedro',
