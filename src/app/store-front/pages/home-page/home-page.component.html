@@ -1,4 +1,8 @@
 <div class="overflow-x-auto bg-white shadow-md rounded-lg mt-6 border border-gray-200">
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-2xl font-bold text-gray-800">Obras en Ejecución</h1>
+    <span class="text-sm text-gray-500">Actualizado al {{ today | date:'dd/MM/yyyy' }}</span>
+  </div>
   <table class="min-w-full border-collapse text-sm">
     <thead class="bg-gray-800 text-white">
       <tr>
@@ -47,9 +51,9 @@
             <span
               class="px-2 py-1 rounded-md text-xs font-medium"
               [ngClass]="{
-                'bg-green-100 text-green-700': obra.estado === 'completada',
-                'bg-yellow-100 text-yellow-700': obra.estado === 'en progreso',
-                'bg-red-100 text-red-700': obra.estado === 'pendiente' || !obra.estado
+                'bg-green-100 text-green-700': obra.estado?.toLowerCase() === 'finalizada',
+                'bg-yellow-100 text-yellow-700': obra.estado?.toLowerCase() === 'en curso',
+                'bg-red-100 text-red-700': obra.estado?.toLowerCase() === 'pendiente'
               }"
             >
               {{ obra.estado || 'Pendiente' }}

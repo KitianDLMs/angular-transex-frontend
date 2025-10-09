@@ -17,6 +17,7 @@ export class HomePageComponent {
   productsService = inject(ProductsService);
   obrasService = inject(ObrasService);
   paginationService = inject(PaginationService);
+  today = new Date();
 
   // activatedRoute = inject(ActivatedRoute);
 
