@@ -3,11 +3,8 @@
   <span class="text-sm opacity-90">Actualizado al {{ today | date:'dd/MM/yyyy' }}</span>
 </header>
 <div class="p-4 space-y-6">
-  <!-- <h1 class="text-2xl font-bold text-gray-800 mb-4">Programación de Obras</h1> -->
 
-  <!-- 🏗️ Cada obra -->
   <div *ngFor="let obra of obras" class="space-y-3">
-    <!-- Nombre de la obra -->
     <div class="flex justify-between items-center">
       <h2 class="text-lg font-semibold text-cyan-800">{{ obra.name }}</h2>
       <div class="text-sm text-gray-500 italic">
@@ -15,19 +12,16 @@
       </div>
     </div>
 
-    <!-- Estado y responsable -->
     <div class="flex items-center text-sm text-gray-600 space-x-4 mb-1">
       <span>🏗️ {{ obra.estado }}</span>
       <span>👷 {{ obra.responsable }}</span>
       <span>📊 {{ obra.progreso }}%</span>
     </div>
 
-    <!-- Programación diaria -->
     <div
       *ngFor="let prog of obra.programacion"
       class="bg-white rounded-2xl shadow-md overflow-hidden"
     >
-      <!-- Header día -->
       <div
         class="flex justify-between items-center bg-cyan-700 text-white px-5 py-3 cursor-pointer"
         (click)="prog.abierto = !prog.abierto"
@@ -41,16 +35,13 @@
         </div>
       </div>
 
-      <!-- Contenido colapsable -->
       <div *ngIf="prog.abierto" class="p-4">
-        <!-- Horas -->
         <div class="flex text-xs text-gray-500 justify-between mb-2">
           <span *ngFor="let h of horas">{{ h }}</span>
           <span class="font-bold text-gray-700">M³</span>
         </div>
 
         <div class="flex">
-          <!-- Bloques (gráfico) -->
           <div class="relative flex-1 h-20 bg-gray-100 rounded-lg overflow-hidden mr-3">
             <ng-container *ngFor="let bloque of prog.bloques">
               <div
@@ -64,7 +55,6 @@
             </ng-container>
           </div>
 
-          <!-- Columna M³ vertical -->
           <div
             class="w-12 flex flex-col justify-between text-sm font-semibold text-cyan-700 text-right"
           >
@@ -72,7 +62,6 @@
           </div>
         </div>
 
-        <!-- Leyenda -->
         <div
           class="flex flex-wrap justify-start text-xs text-gray-600 mt-4 space-x-4"
         >
