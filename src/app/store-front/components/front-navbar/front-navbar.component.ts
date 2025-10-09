@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '@auth/services/auth.service';
 
 @Component({
@@ -9,4 +9,11 @@ import { AuthService } from '@auth/services/auth.service';
 })
 export class FrontNavbarComponent {
   authService = inject(AuthService);  
+  router = inject(Router);
+
+  logout() {
+    var rest = this.authService.logout()
+    console.log(rest);    
+    this.router.navigateByUrl('/auth/login');
+  }
 }
