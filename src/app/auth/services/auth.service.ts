@@ -6,6 +6,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
 
 import { AuthResponse } from '@auth/interfaces/auth-response.interface';
 import { User } from '@auth/interfaces/user.interface';
+import { Router } from '@angular/router';
 
 type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated';
 const baseUrl = environment.baseUrl;
@@ -15,6 +16,7 @@ export class AuthService {
   private _authStatus = signal<AuthStatus>('checking');
   private _user = signal<User | null>(null);
   private _token = signal<string | null>(localStorage.getItem('token'));
+  router = inject(Router);
 
   private http = inject(HttpClient);
 
@@ -71,7 +73,7 @@ export class AuthService {
     this._user.set(null);
     this._token.set(null);
     this._authStatus.set('not-authenticated');
-
+    // this.router.navigateByUrl('/auth/login');
     localStorage.removeItem('token');
   }
 

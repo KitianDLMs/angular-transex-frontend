@@ -37,7 +37,6 @@ divElement = viewChild<ElementRef>('map');
     if (!this.map()) return;
 
     this.map()?.setZoom(this.zoom());
-    // this.map()?.zoomTo(this.zoom());
   });
 
   async ngAfterViewInit() {
@@ -71,28 +70,23 @@ divElement = viewChild<ElementRef>('map');
   
 
   mapListeners(map: mapboxgl.Map) {
-  // Guarda la instancia antes de usarla
   this.map.set(map);
 
   map.on('load', () => {
     console.log('Map loaded ✅');
 
-    // 👉 Click para crear marcador
     map.on('click', (event) => this.mapClick(event));
 
-    // 👉 Evento: cuando termina de hacer zoom
     map.on('zoomend', (event) => {
       const newZoom = event.target.getZoom();
       this.zoom.set(newZoom);
     });
 
-    // 👉 Evento: cuando el mapa deja de moverse
     map.on('moveend', () => {
       const center = map.getCenter();
       this.coordinates.set(center);
     });
 
-    // 👉 Controles de interfaz
     map.addControl(new mapboxgl.FullscreenControl());
     map.addControl(new mapboxgl.NavigationControl());
     map.addControl(new mapboxgl.ScaleControl());
@@ -134,6 +128,5 @@ mapClick(event: mapboxgl.MapMouseEvent) {
     marker.mapboxMarker.remove();
 
     this.markers.set(this.markers().filter((m) => m.id !== marker.id));
-    // this.markers.update(this.markers().filter((m) => m.id !== marker.id));
   }
 }

@@ -12,74 +12,56 @@ import { CommonModule } from '@angular/common';
 })
 export class ProgramacionPageComponent {
 
-  horas = ['8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
+   horas = ['8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
 
   obras = [
     {
-      dia: 'LUNES 23/09',
-      inicio: '10:00',
-      m3: 295.5,
-      bloques: [
+      name: 'Edificio Central Plaza',
+      location: 'Santiago, Chile',
+      estado: 'En curso',
+      responsable: 'Carlos Méndez',
+      progreso: 65,
+      programacion: [
         {
-          nombre: 'SH300901020 AVO',
-          inicio: 5, // porcentaje del contenedor
-          duracion: 35,
-          color: '#007EA7',
-          m3: 67.5,
+          dia: 'MARTES 01/10',
+          inicio: '01:00',
+          m3: 394,
+          bloques: [
+            { nombre: 'SH300901020', inicio: 10, duracion: 15, color: '#F97316', m3: 52.5 },
+            { nombre: 'FLUIDO G 25902018', inicio: 35, duracion: 10, color: '#7C2D12', m3: 166 },
+            { nombre: 'GB300902010', inicio: 70, duracion: 10, color: '#0284C7', m3: 31 },
+          ],
         },
         {
-          nombre: 'FLUIDO G 25902018 AVO',
-          inicio: 45,
-          duracion: 45,
-          color: '#00B4D8',
-          m3: 228,
+          dia: 'MIÉRCOLES 02/10',
+          inicio: '10:00',
+          m3: 251.5,
+          bloques: [
+            { nombre: 'SH300901020', inicio: 20, duracion: 10, color: '#F97316', m3: 52.5 },
+            { nombre: 'FLUIDO G 25902018', inicio: 45, duracion: 10, color: '#7C2D12', m3: 166 },
+          ],
         },
-      ],
+      ].map((prog) => ({ ...prog, abierto: false })),
     },
     {
-      dia: 'LUNES 23/09',
-      inicio: '12:20',
-      m3: 12.5,
-      bloques: [
+      name: 'Puente Río Claro',
+      location: 'Talca, Chile',
+      estado: 'Finalizada',
+      responsable: 'Rodrigo Salinas',
+      progreso: 100,
+      programacion: [
         {
-          nombre: 'SH300901020 AVO',
-          inicio: 1, // porcentaje del contenedor
-          duracion: 12,
-          color: '#007EA7',
-          m3: 23.5,
+          dia: 'JUEVES 03/10',
+          inicio: '07:00',
+          m3: 831.5,
+          bloques: [
+            { nombre: 'GR050902008', inicio: 25, duracion: 15, color: '#0EA5E9', m3: 200 },
+            { nombre: 'FLUIDO G 25902018', inicio: 55, duracion: 10, color: '#7C2D12', m3: 631.5 },
+          ],
         },
-        {
-          nombre: 'FLUIDO Z 1202100 AVO',
-          inicio: 45,
-          duracion: 45,
-          color: '#00B4D8',
-          m3: 212,
-        },
-      ],
-    },
-    {
-      dia: 'VIERNES 10/19',
-      inicio: '15:00',
-      m3: 200.5,
-      bloques: [
-        {
-          nombre: 'SH300901020 AVO',
-          inicio: 1,
-          duracion: 12,
-          color: '#007EA7',
-          m3: 23.5,
-        },
-        {
-          nombre: 'FLUIDO Z 1202100 AVO',
-          inicio: 45,
-          duracion: 45,
-          color: '#00B4D8',
-          m3: 212,
-        },
-      ],
+      ].map((prog) => ({ ...prog, abierto: false })),
     },
   ];
-
   programacion = [
     {
       obra: 'Centro Cultural San Pedro',
