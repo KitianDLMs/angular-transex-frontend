@@ -61,6 +61,60 @@ export class ProgramacionPageComponent {
         },
       ].map((prog) => ({ ...prog, abierto: false })),
     },
+    {
+      name: 'Centro Cultural San Pedro',
+      location: 'San Pedro, Chile',
+      estado: 'En curso',
+      responsable: 'Juan Pérez',
+      progreso: 70,
+      programacion: [
+        {
+          dia: 'VIERNES 04/10',
+          inicio: '08:00',
+          m3: 410,
+          bloques: [
+            { nombre: 'CC300904010', inicio: 15, duracion: 20, color: '#2563EB', m3: 150 },
+            { nombre: 'FLUIDO H 27002010', inicio: 50, duracion: 15, color: '#059669', m3: 260 },
+          ],
+        },
+      ].map((prog) => ({ ...prog, abierto: false })),
+    },
+    {
+      name: 'Plaza Los Álamos',
+      location: 'Curicó, Chile',
+      estado: 'Retrasada',
+      responsable: 'María Soto',
+      progreso: 50,
+      programacion: [
+        {
+          dia: 'SÁBADO 05/10',
+          inicio: '09:00',
+          m3: 300,
+          bloques: [
+            { nombre: 'AL050905001', inicio: 20, duracion: 25, color: '#EAB308', m3: 120 },
+            { nombre: 'FLUIDO G 25902018', inicio: 60, duracion: 10, color: '#7C2D12', m3: 180 },
+          ],
+        },
+      ].map((prog) => ({ ...prog, abierto: false })),
+    },
+    {
+      name: 'Puente Huertos',
+      location: 'San Bernardo, Chile',
+      estado: 'Completada',
+      responsable: 'Luis Díaz',
+      progreso: 100,
+      programacion: [
+        {
+          dia: 'LUNES 07/10',
+          inicio: '07:00',
+          m3: 510,
+          bloques: [
+            { nombre: 'PH070907002', inicio: 30, duracion: 20, color: '#4F46E5', m3: 200 },
+            { nombre: 'FLUIDO G 25902018', inicio: 60, duracion: 15, color: '#7C2D12', m3: 310 },
+          ],
+        },
+      ].map((prog) => ({ ...prog, abierto: false })),
+    },
   ];
   programacion = [
     {
