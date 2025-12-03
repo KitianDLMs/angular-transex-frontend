@@ -1,0 +1,48 @@
+<div class="overflow-x-auto">
+
+
+  <!-- Tabla -->
+
+    <table class="table w-full">
+
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Código</th>
+          <th>Cliente</th>
+          <th>Descripción</th>
+          <th>Descripción</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        @for (ordr of orders; track ordr.order_code) {
+
+        <tr>
+          <td>{{ ordr.order_date | date:'short' }}</td>
+          <td class="font-bold">{{ ordr.order_code }}</td>
+          <td>{{ ordr.cust_code }}</td>
+          <td>{{ ordr.order_code || 'Sin descripción' }}</td>
+          <td>{{ ordr.order_date || 'Sin descripción' }}</td>
+
+          <td class="flex gap-2">
+          <button
+            class="btn btn-primary btn-sm"
+            type="button"
+            (click)="editar(ordr.order_date, ordr.order_code)"
+          >
+            Editar
+        </button>
+
+        </td>
+
+        </tr>
+
+        }
+
+      </tbody>
+
+    </table>
+</div>

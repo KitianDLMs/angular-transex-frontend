@@ -1,0 +1,81 @@
+<h1 class="text-2xl font-bold mb-4">Crear Usuario</h1>
+
+<form
+  [formGroup]="form"
+  (ngSubmit)="create()"
+  class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+>
+
+  <!-- Nombre Completo -->
+  <input
+    formControlName="fullName"
+    class="input text-black input-bordered w-full"
+    placeholder="Nombre completo"
+    required
+  />
+
+  <!-- Email -->
+  <input
+    formControlName="email"
+    type="email"
+    class="input text-black input-bordered w-full"
+    placeholder="Email"
+    required
+  />
+
+  <!-- Password -->
+  <input
+    formControlName="password"
+    type="password"
+    class="input text-black input-bordered w-full"
+    placeholder="Contraseña (mínimo 6)"
+    required
+  />
+
+  <!-- Roles -->
+  <select
+    class="select select-bordered text-black w-full"
+    formControlName="roles"
+  >
+    <option value="user">Usuario</option>
+    <option value="admin">Administrador</option>
+    <option value="super-user">Super Usuario</option>
+  </select>
+  
+  <select
+    formControlName="cust_code"
+    class="select select-bordered text-black w-full"
+    required
+  >
+    <option value="" disabled selected>Seleccione un cliente</option>
+    <option *ngFor="let c of customers" [value]="c.cust_code">
+      {{ c.name }}
+    </option>
+  </select>
+
+
+  <!-- ERROR -->
+  <div *ngIf="error" class="text-red-600 col-span-2">
+    {{ error }}
+  </div>
+
+  <!-- BOTONES ABAJO DEL FORMULARIO -->
+  <div class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-4 mt-6">
+
+    <!-- CREAR -->
+    <button type="submit" class="btn btn-primary flex-1">
+      Crear Usuario
+      <span class="loading loading-spinner loading-sm" *ngIf="loading"></span>
+    </button>
+
+    <!-- CANCELAR -->
+    <a 
+      routerLink="/admin/users" 
+      class="btn btn-secondary flex-1"
+    >
+      Cancelar
+    </a>
+
+  </div>
+
+</form>

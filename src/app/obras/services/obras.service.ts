@@ -1,6 +1,5 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { User } from '@auth/interfaces/user.interface';
 import {
   Gender,
   Product,
@@ -9,6 +8,7 @@ import {
 import { delay, forkJoin, map, Observable, of, pipe, switchMap, tap } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { Obra, ObrasResponse } from '../interfaces/obra.interface';
+import { User } from '@shared/interfaces/user.interface';
 
 const baseUrl = environment.baseUrl;
 
@@ -23,7 +23,9 @@ const emptyUser: User = {
   email: '',
   fullName: '',
   isActive: false,
-  roles: []
+  roles: [],
+  cust: {cust_code: '', name: ''},
+  projs: []
 };
 
 export const emptyObra: Obra = {
@@ -43,15 +45,15 @@ export const emptyObra: Obra = {
 export class ObrasService {
   private http = inject(HttpClient);
 
-  private productsCache = new Map<string, ObrasResponse>();
-  private productCache = new Map<string, Obra>();
+  private obrasCache = new Map<string, ObrasResponse>();
+  private obraCache = new Map<string, Obra>();
 
   getObras(options: Options): Observable<ObrasResponse> {
     const { limit = 9, offset = 0, gender = '' } = options;
 
     const key = `${limit}-${offset}-${gender}`;
-    if (this.productsCache.has(key)) {
-      return of(this.productsCache.get(key)!);
+    if (this.obrasCache.has(key)) {
+      return of(this.obrasCache.get(key)!);
     }
 
     return this.http
@@ -64,18 +66,18 @@ export class ObrasService {
       })
       .pipe(
         tap((resp) => console.log(resp)),
-        tap((resp) => this.productsCache.set(key, resp))
+        tap((resp) => this.obrasCache.set(key, resp))
       );
   }
 
   getObraByIdSlug(idSlug: string): Observable<Obra> {
-    if (this.productCache.has(idSlug)) {
-      return of(this.productCache.get(idSlug)!);
+    if (this.obraCache.has(idSlug)) {
+      return of(this.obraCache.get(idSlug)!);
     }
 
     return this.http
       .get<Obra>(`${baseUrl}/obras/${idSlug}`)
-      .pipe(tap((product) => this.productCache.set(idSlug, product)));
+      .pipe(tap((obra) => this.obraCache.set(idSlug, obra)));
   }
 
   getObraById(id: string): Observable<Obra> {
@@ -83,56 +85,54 @@ export class ObrasService {
       return of(emptyObra);
     }
 
-    if (this.productCache.has(id)) {
-      return of(this.productCache.get(id)!);
+    if (this.obraCache.has(id)) {
+      return of(this.obraCache.get(id)!);
     }
 
     return this.http
-      .get<Obra>(`${baseUrl}/products/${id}`)
-      .pipe(tap((product) => this.productCache.set(id, product)));
+      .get<Obra>(`${baseUrl}/obras/${id}`)
+      .pipe(tap((obra) => this.obraCache.set(id, obra)));
   }
 
-  updateProduct(
-    id: string,
-    productLike: Partial<Obra>,
-    imageFileList?: FileList
-  ): Observable<Obra> {
-    const currentImages = productLike.images ?? [];
-    return this.uploadImages(imageFileList)
-      .pipe(
-        map(imageNames => ({
-          ...productLike,
-          images: [...currentImages, ...imageNames]
-        })
+//  Crear nueva obra
+  createObra(obraLike: Partial<Obra>, imageFileList?: FileList): Observable<Obra> {
+    return this.uploadImages(imageFileList).pipe(
+      switchMap((imageNames) => {
+        const nuevaObra = { ...obraLike, images: imageNames };
+        return this.http.post<Obra>(`${baseUrl}/obras`, nuevaObra);
+      }),
+      tap((obra) => this.updateObraCache(obra))
+    );
+  }
+
+  // 🔹 Actualizar obra existente
+  updateObra(id: string, obraLike: Partial<Obra>, imageFileList?: FileList): Observable<Obra> {
+    const currentImages = obraLike.images ?? [];
+
+    return this.uploadImages(imageFileList).pipe(
+      map((imageNames) => ({
+        ...obraLike,
+        images: [...currentImages, ...imageNames],
+      })),
+      switchMap((obraActualizada) =>
+        this.http.patch<Obra>(`${baseUrl}/obras/${id}`, obraActualizada)
       ),
-      switchMap((updatedProduct) => 
-        this.http.patch<Obra>(`${baseUrl}/products/${id}`, productLike)
-      ),
-      tap((product) => this.updateProductCache(product)));
-    // return this.http
-    //   .patch<Product>(`${baseUrl}/products/${id}`, productLike)
-    //   .pipe(tap((product) => this.updateProductCache(product)));
+      tap((obra) => this.updateObraCache(obra))
+    );
   }
 
-  createProduct(productLike: Partial<Product>, imageFileList?: FileList): Observable<Obra> {
-    return this.http
-      .post<Obra>(`${baseUrl}/products`, productLike)
-      .pipe(tap((product) => this.updateProductCache(product)));
-  }
+  // 🔹 Actualizar caché
+  private updateObraCache(obra: Obra) {
+    const obraId = obra.id;
+    this.obraCache.set(obraId, obra);
 
-  updateProductCache(product: Obra) {
-    const productId = product.id;
-
-    this.productCache.set(productId, product);
-
-    this.productsCache.forEach((productResponse) => {
-      productResponse.obras = productResponse.obras.map(
-        (currentProduct) =>
-          currentProduct.id === productId ? product : currentProduct
+    this.obrasCache.forEach((obraResponse) => {
+      obraResponse.obras = obraResponse.obras.map((o) =>
+        o.id === obraId ? obra : o
       );
     });
 
-    console.log('Caché actualizado');
+    console.log('✅ Caché de obras actualizada');
   }
 
   uploadImages(images?: FileList): Observable<string[]> {

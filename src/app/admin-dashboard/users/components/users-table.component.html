@@ -1,0 +1,49 @@
+<div class="overflow-x-auto">
+  <table class="table w-full">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Nombre</th>
+        <th>Roles</th>
+        <th></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let u of users; trackBy: trackByUserId">
+        <td class="font-bold">{{ u.id }}</td>
+
+        <td>{{ u.email }}</td>
+        <td>{{ u.fullName }}</td>
+
+        <td>
+          <span
+            class="badge"
+            [ngClass]="{
+              'badge-success': u.roles.length,
+              'badge-error': !u.roles.length
+            }"
+          >
+            {{ u.roles.join(', ') || 'N/A' }}
+          </span>
+        </td>
+
+        <td class="flex gap-2">
+          <a
+            [routerLink]="['/admin/users', u.id]"
+            class="btn btn-ghost btn-xs text-accent"
+          >
+            Editar
+          </a>
+        </td>
+      </tr>
+
+      <tr *ngIf="users?.length === 0">
+        <td colspan="5" class="text-center text-gray-500">
+          No hay usuarios registrados.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

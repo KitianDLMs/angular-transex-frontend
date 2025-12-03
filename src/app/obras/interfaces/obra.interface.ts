@@ -1,4 +1,4 @@
-import { User } from '@auth/interfaces/user.interface';
+import { User } from "@shared/interfaces/user.interface";
 
 export interface ObrasResponse {
   count: number;

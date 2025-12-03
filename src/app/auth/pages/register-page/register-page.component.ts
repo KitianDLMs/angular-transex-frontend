@@ -7,4 +7,7 @@ import { RouterModule } from '@angular/router';
   imports: [CommonModule, RouterModule],
   templateUrl: './register-page.component.html',
 })
-export class RegisterPageComponent { }
+export class RegisterPageComponent { 
+  currentYear = new Date().getFullYear();
+
+}

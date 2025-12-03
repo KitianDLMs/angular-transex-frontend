@@ -24,14 +24,16 @@ interface Marker {
   templateUrl: './seguimiento-page.component.html',
 })
 export class SeguimientoPageComponent implements AfterViewInit {
-divElement = viewChild<ElementRef>('map');
-  map = signal<mapboxgl.Map | null>(null);
-  markers = signal<Marker[]>([]);
-  zoom = signal(10);
-  coordinates = signal({
-    lng: -74.5,
-    lat: 40,
-  });
+  currentYear = new Date().getFullYear();
+
+  divElement = viewChild<ElementRef>('map');
+    map = signal<mapboxgl.Map | null>(null);
+    markers = signal<Marker[]>([]);
+    zoom = signal(10);
+    coordinates = signal({
+      lng: -74.5,
+      lat: 40,
+    });
 
   zoomEffect = effect(() => {
     if (!this.map()) return;

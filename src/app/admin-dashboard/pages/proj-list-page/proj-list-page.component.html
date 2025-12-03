@@ -1,0 +1,18 @@
+<h1 class="text-2xl font-bold">Proyectos del Sistema</h1>
+
+<h3 class="text-lg">
+  Total de proyectos:
+  <span class="text-accent">{{ projs.length }}</span>
+</h3>
+
+<div class="divider"></div>
+
+<div class="flex gap-2 items-center h-20">
+  <div class="flex flex-1"></div>
+
+  <button class="btn btn-primary" routerLink="/admin/proj/create">
+    Nuevo proyecto
+  </button>
+</div>
+
+<proj-table [projs]="projs" />

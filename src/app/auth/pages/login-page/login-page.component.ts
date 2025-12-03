@@ -10,6 +10,8 @@ import { AuthService } from '@auth/services/auth.service';
   templateUrl: './login-page.component.html',
 })
 export class LoginPageComponent {
+  currentYear = new Date().getFullYear();
+
   fb = inject(FormBuilder);
   hasError = signal(false);
   isPosting = signal(false);
@@ -35,7 +37,7 @@ export class LoginPageComponent {
 
     this.authService.login(email!, password!).subscribe((isAuthenticated) => {
       if (isAuthenticated) {
-        this.router.navigateByUrl('/');
+        this.router.navigateByUrl('/store-front');        
         return;
       }
 

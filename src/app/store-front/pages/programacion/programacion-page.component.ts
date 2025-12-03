@@ -11,6 +11,8 @@ import { CommonModule } from '@angular/common';
   templateUrl: './programacion-page.component.html',
 })
 export class ProgramacionPageComponent {
+  currentYear = new Date().getFullYear();
+
   today = new Date();
   horas = ['8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
 

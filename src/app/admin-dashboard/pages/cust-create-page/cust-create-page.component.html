@@ -1,0 +1,40 @@
+<h1 class="text-2xl font-bold mb-4">Crear Cliente</h1>
+
+<form [formGroup]="form" (ngSubmit)="create()" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+  <input formControlName="cust_code" class="input text-black input-bordered w-full" placeholder="Código" required />
+
+  <input formControlName="name" class="input text-black input-bordered w-full" placeholder="Nombre" />
+  <input formControlName="sort_name" class="input text-black input-bordered w-full" placeholder="Nombre corto" />
+
+  <input formControlName="contct_name" class="input text-black input-bordered w-full" placeholder="Contacto" />
+  <input formControlName="phone_num_1" class="input text-black input-bordered w-full" placeholder="Teléfono 1" />
+  <input formControlName="phone_num_2" class="input text-black input-bordered w-full" placeholder="Teléfono 2" />
+  <input formControlName="phone_num_3" class="input text-black input-bordered w-full" placeholder="Teléfono 3" />
+  <input formControlName="phone_num_4" class="input text-black input-bordered w-full" placeholder="Teléfono 4" />
+
+  <input formControlName="addr_line_1" class="input text-black input-bordered w-full" placeholder="Dirección 1" />
+  <input formControlName="addr_line_2" class="input text-black input-bordered w-full" placeholder="Dirección 2" />
+  <input formControlName="addr_city" class="input text-black input-bordered w-full" placeholder="Ciudad" />
+  <input formControlName="addr_state" class="input text-black input-bordered w-full" placeholder="Estado" />
+  <input formControlName="addr_cntry" class="input text-black input-bordered w-full" placeholder="País" />
+  <input formControlName="addr_postcd" class="input text-black input-bordered w-full" placeholder="Código Postal" />
+
+  <!-- BOTONES ABAJO DEL FORMULARIO -->
+  <div class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-4 mt-6">
+
+    <!-- CREAR -->
+    <button type="submit" class="btn btn-primary flex-1">
+      Crear Cliente
+    </button>
+
+    <!-- VOLVER / CANCELAR -->
+    <a
+      routerLink="/admin/customer"
+      class="btn btn-secondary flex-1"
+    >
+      Cancelar
+    </a>
+  </div>
+
+</form>

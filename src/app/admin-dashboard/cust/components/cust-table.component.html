@@ -1,0 +1,58 @@
+<div class="overflow-x-auto">
+  <table class="table w-full">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Nombre</th>
+        <th>Contacto</th>
+        <th>Teléfono</th>
+        <th></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let cust of custs; trackBy: trackByCustCode">
+        <td class="font-bold">{{ cust.cust_code }}</td>
+
+        <td>{{ cust.name }}</td>
+        <td>{{ cust.contct_name || '-' }}</td>
+
+        <td>
+          <span class="badge" 
+            [ngClass]="{
+              'badge-success': cust.phone_num_1,
+              'badge-error': !cust.phone_num_1
+            }">
+            {{ cust.phone_num_1 || 'N/A' }}
+          </span>
+        </td>
+
+        <td class="flex gap-2">          
+          <a
+            [routerLink]="['/admin/customer', cust.cust_code.trim()]"
+            class="btn btn-ghost btn-xs text-accent"
+          >
+            Editar
+          </a>
+
+          <!-- ELIMINAR -->
+          <!-- <button
+            class="btn btn-ghost btn-xs text-error"
+            (click)="deleteCust?.(cust.cust_code)"
+          >
+            Eliminar
+          </button> -->
+
+        </td>
+      </tr>
+
+      <!-- Si NO hay clientes -->
+      <tr *ngIf="custs!.length === 0">
+        <td colspan="5" class="text-center text-gray-500">
+          No hay clientes registrados.
+        </td>
+      </tr>
+    </tbody>
+
+  </table>
+</div>

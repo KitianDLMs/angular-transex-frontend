@@ -1,0 +1,75 @@
+<h1 class="text-2xl font-bold mb-4">Crear Orden (ORDR)</h1>
+
+<form
+  [formGroup]="form"
+  (ngSubmit)="create()"
+  class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+>
+
+  <!-- Fecha -->
+  <input
+    type="date"
+    formControlName="order_date"
+    class="input input-bordered text-black w-full"
+    required
+  />
+
+  <!-- Código -->
+  <input
+    formControlName="order_code"
+    class="input input-bordered text-black w-full"
+    placeholder="Código de orden"
+    required
+  />
+
+  <!-- Cliente -->
+  <select
+    formControlName="cust_code"
+    class="select select-bordered text-black w-full"
+    required
+  >
+    <option value="" disabled selected>Seleccione un cliente</option>
+    <option *ngFor="let c of customers" [value]="c.cust_code">
+      {{ c.name }}
+    </option>
+  </select>
+
+  <!-- Tipo de orden (opcional) -->
+  <input
+    formControlName="order_type"
+    class="input input-bordered text-black w-full"
+    placeholder="Tipo de orden (opcional)"
+  />
+
+  <!-- Proyecto opcional -->
+  <input
+    formControlName="proj_code"
+    class="input input-bordered text-black w-full"
+    placeholder="Código de proyecto"
+  />
+
+  <!-- Notas / instrucciones -->
+  <textarea
+    formControlName="instr"
+    class="textarea textarea-bordered text-black w-full sm:col-span-2"
+    rows="3"
+    placeholder="Instrucciones o comentarios"
+  ></textarea>
+
+  <!-- Error -->
+  <div *ngIf="error" class="text-red-600 col-span-2">
+    {{ error }}
+  </div>
+
+  <!-- Botones -->
+  <div class="col-span-2 flex flex-col sm:flex-row gap-4 mt-6">
+    <button type="submit" class="btn btn-primary flex-1">
+      Crear Orden
+      <span class="loading loading-spinner loading-sm" *ngIf="loading"></span>
+    </button>
+
+    <a routerLink="/admin/ordr" class="btn btn-secondary flex-1">
+      Cancelar
+    </a>
+  </div>
+</form>

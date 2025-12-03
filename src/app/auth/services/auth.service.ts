@@ -5,8 +5,8 @@ import { catchError, map, Observable, of, tap } from 'rxjs';
 import { rxResource } from '@angular/core/rxjs-interop';
 
 import { AuthResponse } from '@auth/interfaces/auth-response.interface';
-import { User } from '@auth/interfaces/user.interface';
 import { Router } from '@angular/router';
+import { User } from '@shared/interfaces/user.interface';
 
 type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated';
 const baseUrl = environment.baseUrl;
@@ -53,7 +53,7 @@ export class AuthService {
   checkStatus(): Observable<boolean> {
     const token = localStorage.getItem('token');
     if (!token) {
-      this.logout();
+      this._authStatus.set('not-authenticated');
       return of(false);
     }
 
@@ -88,7 +88,12 @@ export class AuthService {
   }
 
   private handleAuthError(error: any) {
-    this.logout();
+    this._user.set(null);
+    this._authStatus.set('not-authenticated');
+    this._token.set(null);
+    localStorage.removeItem('token');
+
     return of(false);
   }
+
 }

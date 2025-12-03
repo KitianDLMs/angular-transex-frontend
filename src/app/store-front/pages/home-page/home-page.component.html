@@ -1,8 +1,8 @@
-<!-- 🔹 Encabezado igual al de "Programación de Obras" -->
+<!-- 🔹 Encabezado -->
 <header
   class="bg-cyan-700 text-white p-4 rounded-t-lg flex justify-between items-center shadow-sm"
 >
-  <h1 class="text-xl font-semibold">Obras en Ejecución</h1>
+  <h1 class="text-xl font-semibold">Proyectos</h1>
   <span class="text-sm opacity-90">
     Actualizado al {{ today | date: 'dd/MM/yyyy' }}
   </span>
@@ -10,13 +10,11 @@
 
 <!-- 🔹 Contenedor principal -->
 <div class="p-4 bg-gray-50">
-  <div
-    class="overflow-x-auto bg-white shadow-lg rounded-2xl mt-4 border border-gray-200"
-  >
-    <table
-      class="min-w-full border-collapse text-sm text-gray-700 rounded-2xl overflow-hidden"
-    >
-      <!-- Encabezado de tabla -->
+  <div class="overflow-x-auto bg-white shadow-lg rounded-2xl mt-4 border border-gray-200">
+
+    <table class="min-w-full border-collapse text-sm text-gray-700 rounded-2xl overflow-hidden">
+
+      <!-- Encabezado -->
       <thead class="bg-cyan-700 text-white uppercase text-xs tracking-wide">
         <tr>
           <th class="py-3 px-4 text-left font-semibold">Nombre</th>
@@ -31,79 +29,77 @@
         </tr>
       </thead>
 
-      <!-- Cuerpo de tabla -->
+      <!-- Cuerpo -->
       <tbody>
-        @for (obra of obrasResource.value()?.obras; track obra.id) {
-          <tr
-            class="border-t hover:bg-cyan-50 transition duration-150 ease-in-out"
-          >
+        @for (proj of projResource.value(); track proj.proj_code) {
+
+          <tr class="border-t hover:bg-cyan-50 transition duration-150 ease-in-out">
+
             <td class="py-3 px-4 font-semibold text-gray-800">
-              {{ obra.name }}
-            </td>
-            <td class="py-3 px-4 text-gray-600">{{ obra.location }}</td>
-            <td class="py-3 px-4 text-right text-gray-700 font-semibold">
-              {{ obra.budget | currency:'CLP':'symbol':'1.0-0' }}
-            </td>
-            <td class="py-3 px-4 text-center text-gray-600">
-              {{ obra.startDate | date:'dd/MM/yyyy' }}
-            </td>
-            <td class="py-3 px-4 text-center text-gray-600">
-              {{ obra.endDate | date:'dd/MM/yyyy' }}
-            </td>
-            <td class="py-3 px-4 text-gray-700">
-              {{ obra.user?.fullName || obra.responsable || '—' }}
-            </td>
-            <td
-              class="py-3 px-4 text-gray-600 max-w-xs truncate"
-              title="{{ obra.description }}"
-            >
-              {{ obra.description || '—' }}
+              {{ proj.proj_name }}
             </td>
 
-            <!-- 🔹 Barra de progreso -->
+            <td class="py-3 px-4 text-gray-600">
+              {{ proj.invc_city || proj.ship_city || '—' }}
+            </td>
+
+            <td class="py-3 px-4 text-right font-semibold">
+              {{ 0 | currency:'CLP':'symbol':'1.0-0' }}
+            </td>
+
+            <td class="py-3 px-4 text-center text-gray-600">
+              {{ proj.setup_date | date:'dd/MM/yyyy' }}
+            </td>
+
+            <td class="py-3 px-4 text-center text-gray-600">
+              {{ proj.expir_date | date:'dd/MM/yyyy' }}
+            </td>
+
+            <td class="py-3 px-4 text-gray-700">
+              {{ proj.contct_name || '—' }}
+            </td>
+
+            <td class="py-3 px-4 text-gray-600 max-w-xs truncate" title="{{ proj.instr }}">
+              {{ proj.instr || '—' }}
+            </td>
+
+            <!-- Progreso (no existe en Proj → 0 siempre) -->
             <td class="py-3 px-4 text-center">
               <div class="w-28 mx-auto bg-gray-200 rounded-full h-2.5">
-                <div
-                  class="h-2.5 rounded-full bg-cyan-600 transition-all duration-300"
-                  [style.width.%]="obra.progreso || 0"
-                ></div>
+                <div class="h-2.5 rounded-full bg-cyan-600" [style.width.%]="0"></div>
               </div>
-              <span class="text-xs text-gray-500 font-medium">
-                {{ obra.progreso || 0 }}%
-              </span>
+              <span class="text-xs text-gray-500 font-medium">0%</span>
             </td>
 
-            <!-- 🔹 Estado -->
             <td class="py-3 px-4 text-center">
               <span
                 class="px-2 py-1 rounded-full text-xs font-semibold"
                 [ngClass]="{
-                  'bg-green-100 text-green-700 border border-green-300':
-                    obra.estado?.toLowerCase() === 'finalizada',
-                  'bg-yellow-100 text-yellow-700 border border-yellow-300':
-                    obra.estado?.toLowerCase() === 'en curso',
-                  'bg-red-100 text-red-700 border border-red-300':
-                    obra.estado?.toLowerCase() === 'pendiente'
+                  'bg-green-100 text-green-700 border border-green-300': proj.project_status === 'finalizada',
+                  'bg-yellow-100 text-yellow-700 border border-yellow-300': proj.project_status === 'en curso',
+                  'bg-red-100 text-red-700 border border-red-300': proj.project_status === 'pendiente'
                 }"
               >
-                {{ obra.estado || 'Pendiente' }}
+                {{ proj.project_status || 'Pendiente' }}
               </span>
             </td>
+
           </tr>
+
         }
       </tbody>
     </table>
 
-    <!-- 🔹 Estado de carga -->
-    @if (obrasResource.isLoading()) {
+    <!-- Estado de carga -->
+    @if (projResource.isLoading()) {
       <div class="text-center p-6 text-gray-500 animate-pulse">
-        Cargando obras...
+        Cargando proyectos...
       </div>
     }
   </div>
 
-  <!-- 🔹 Footer -->
+  <!-- Footer -->
   <footer class="mt-10 text-xs text-gray-400 text-center">
-    © 2025 TRANSEX CLIENT UI — Todos los derechos reservados.
+    © {{ currentYear }} TRANSEX CLIENT UI — Todos los derechos reservados.
   </footer>
 </div>

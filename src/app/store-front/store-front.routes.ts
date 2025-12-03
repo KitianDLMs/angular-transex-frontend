@@ -5,6 +5,7 @@ import { NotFoundPageComponent } from './pages/not-found-page/not-found-page.com
 import { ObraPageComponent } from './pages/obras-page/obras-page.component';
 import { SeguimientoPageComponent } from './pages/seguimiento-page/seguimiento-page.component';
 import { ProgramacionPageComponent } from './pages/programacion/programacion-page.component';
+import { OrdrPageComponent } from './pages/ordr-page/ordr-page.component';
 
 export const storeFrontRoutes: Routes = [
   {
@@ -20,6 +21,8 @@ export const storeFrontRoutes: Routes = [
       { path: 'programacion', component: ProgramacionPageComponent },
 
       { path: 'obra/:idSlug', component: ObraPageComponent },
+
+      { path: 'ordr', component: OrdrPageComponent },
 
       { path: '**', component: NotFoundPageComponent },
     ],

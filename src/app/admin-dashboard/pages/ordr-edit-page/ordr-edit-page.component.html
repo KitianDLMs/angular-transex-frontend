@@ -1,0 +1,97 @@
+<h1 class="text-2xl font-bold mb-4">Editar Pedido ordr</h1>
+
+<div *ngIf="loading">Cargando proyecto...</div>
+<div *ngIf="error" class="text-red-600">{{ error }}</div>
+
+<form 
+  [formGroup]="form" 
+  (ngSubmit)="save()" 
+  *ngIf="!loading"
+  class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+>
+
+  <div class="col-span-1 sm:col-span-2">
+    <h2 class="text-xl font-semibold mb-2">Datos principales</h2>
+  </div>
+
+  <div>
+    <label class="block mb-2 font-semibold">Código Cliente</label>
+    <input 
+      formControlName="cust_code"
+      class="input input-bordered text-black w-full bg-gray-200"
+    />
+  </div>
+
+  <div>
+    <label class="block mb-2 font-semibold">Código Proyecto</label>
+    <input 
+      formControlName="order_code"
+      class="input input-bordered text-black w-full bg-gray-200"
+    />
+  </div> 
+
+  <div class="col-span-1 sm:col-span-2 mt-6">
+    <h2 class="text-xl font-semibold mb-2">Cliente</h2>
+  </div>
+
+  <div>
+    <label class="block mb-2 font-semibold">Cliente Envío</label>
+    <input 
+      formControlName="ship_cust_code"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <div>
+    <label class="block mb-2 font-semibold">Referencia Cliente</label>
+    <input 
+      formControlName="ref_cust_code"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <div>
+    <label class="block mb-2 font-semibold">PO / Orden de Compra</label>
+    <input 
+      formControlName="po"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <div>
+    <label class="block mb-2 font-semibold">Trabajo Cliente</label>
+    <input 
+      formControlName="cust_job_num"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <div>
+    <label class="block mb-2 font-semibold">Fecha de Setup</label>
+    <input 
+      type="date"
+      formControlName="setup_date"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <!-- BOTONES -->
+  <div class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-4 mt-6">
+    <button 
+      type="submit" 
+      class="btn btn-primary flex-1"
+      [disabled]="form.invalid"
+    >
+      Guardar cambios
+      <span class="loading loading-spinner loading-sm" *ngIf="loading"></span>
+    </button>
+
+    <a
+      routerLink="/admin/projects"
+      class="btn btn-secondary flex-1"
+    >
+      Cancelar
+    </a>
+  </div>
+
+</form>

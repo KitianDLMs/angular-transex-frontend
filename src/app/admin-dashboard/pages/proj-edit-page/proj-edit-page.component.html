@@ -1,0 +1,102 @@
+<h1 class="text-2xl font-bold mb-4">Editar Proyecto</h1>
+
+<div *ngIf="loading">Cargando proyecto...</div>
+<div *ngIf="error" class="text-red-600">{{ error }}</div>
+
+<form [formGroup]="form" (ngSubmit)="save()" *ngIf="!loading" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+  <!-- Código Cliente -->
+  <div>
+    <label class="block mb-2 font-semibold">Código Cliente</label>
+    <input
+      formControlName="cust_code"
+      class="input input-bordered text-black w-full bg-gray-200"
+    />
+  </div>
+
+  <!-- Código Proyecto -->
+  <div>
+    <label class="block mb-2 font-semibold">Código Proyecto</label>
+    <input
+      formControlName="proj_code"
+      class="input input-bordered text-black w-full bg-gray-200"
+    />
+  </div>
+
+  <!-- Nombre Proyecto -->
+  <div>
+    <label class="block mb-2 font-semibold">Nombre Proyecto</label>
+    <input
+      formControlName="proj_name"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <!-- Nombre Corto -->
+  <div>
+    <label class="block mb-2 font-semibold">Nombre Corto</label>
+    <input
+      formControlName="sort_name"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <!-- Cliente Envío -->
+  <div>
+    <label class="block mb-2 font-semibold">Cliente Envío</label>
+    <input
+      formControlName="ship_cust_code"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <!-- Cliente Referencia -->
+  <div>
+    <label class="block mb-2 font-semibold">Cliente Referencia</label>
+    <input
+      formControlName="ref_cust_code"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <!-- PO / Orden de Compra -->
+  <div>
+    <label class="block mb-2 font-semibold">PO / Orden de Compra</label>
+    <input
+      formControlName="po"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <!-- Job Number -->
+  <div>
+    <label class="block mb-2 font-semibold">Job Number</label>
+    <input
+      formControlName="cust_job_num"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <!-- Fecha de Setup -->
+  <div>
+    <label class="block mb-2 font-semibold">Fecha de Setup</label>
+    <input
+      type="date"
+      formControlName="setup_date"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <!-- BOTONES -->
+  <div class="col-span-1 sm:col-span-2 flex flex-row gap-4 mt-6">
+    <button type="submit" class="btn btn-primary flex-1" [disabled]="form.invalid">
+      Guardar cambios
+      <span class="loading loading-spinner loading-sm" *ngIf="loading"></span>
+    </button>
+
+    <a routerLink="/admin/proj" class="btn btn-secondary flex-1">
+      Cancelar
+    </a>
+  </div>
+
+</form>

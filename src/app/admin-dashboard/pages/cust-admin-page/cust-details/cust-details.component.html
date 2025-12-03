@@ -1,0 +1,26 @@
+<h1 class="text-2xl font-bold" *ngIf="customer">{{ customer.name }}</h1>
+
+<form *ngIf="customer" [formGroup]="form" (ngSubmit)="save()" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+  <input formControlName="name" class="input input-bordered w-full text-black" placeholder="Nombre" />
+  <input formControlName="contct_name" class="input input-bordered w-full text-black" placeholder="Contacto" />
+  <input formControlName="phone_num_1" class="input input-bordered w-full text-black" placeholder="Teléfono" />
+  <input formControlName="addr_line_1" class="input input-bordered w-full text-black" placeholder="Dirección 1" />
+  <input formControlName="addr_line_2" class="input input-bordered w-full text-black" placeholder="Dirección 2" />
+  <input formControlName="addr_city" class="input input-bordered w-full text-black" placeholder="Ciudad" />
+  <input formControlName="addr_state" class="input input-bordered w-full text-black" placeholder="Estado" />
+  <input formControlName="addr_cntry" class="input input-bordered w-full text-black" placeholder="País" />
+  <input formControlName="addr_postcd" class="input input-bordered w-full text-black" placeholder="Código Postal" />
+
+  <button type="submit" class="btn btn-secondary w-full mt-4">
+    Guardar
+  </button>
+
+  <button type="button" class="btn btn-ghost w-full mt-2" routerLink="/admin/customer">
+    Cancelar
+  </button>
+</form>
+
+<div *ngIf="wasSaved" class="alert alert-success fixed bottom-4 right-4 w-80 animate-fadeIn">
+  <span>Cliente actualizado correctamente</span>
+</div>

@@ -1,0 +1,69 @@
+<h1 class="text-2xl font-bold mb-4">Editar Usuario</h1>
+
+<div *ngIf="loading">Cargando usuario...</div>
+<div *ngIf="error" class="text-red-600">{{ error }}</div>
+
+<form [formGroup]="form" (ngSubmit)="save()" *ngIf="!loading" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+  <!-- Nombre -->
+  <div class="col-span-1 sm:col-span-2">
+    <label class="block mb-2 font-semibold">Nombre completo</label>
+    <input
+      formControlName="fullName"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <!-- Email -->
+  <div class="col-span-1 sm:col-span-2">
+    <label class="block mb-2 font-semibold">Email</label>
+    <input
+      formControlName="email"
+      type="email"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <!-- Roles (SELECT) -->
+  <div class="col-span-1 sm:col-span-2">
+    <label class="block mb-2 font-semibold">Rol</label>
+
+    <select
+      class="select select-bordered text-black w-full"
+      formControlName="roles"
+    >
+      <option value="user">Usuario</option>
+      <option value="admin">Administrador</option>
+      <option value="super-user">Super Usuario</option>
+    </select>
+  </div>
+
+  <!-- Customer (DESHABILITADO) -->
+  <div class="col-span-1 sm:col-span-2">
+    <label class="block mb-2 font-semibold">Cliente asignado</label>
+    <input
+      formControlName="cust_code"
+      class="input input-bordered text-black w-full bg-gray-200"
+    />
+  </div>
+
+
+  <!-- BOTONES -->
+  <div class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-4 mt-6">
+
+    <!-- GUARDAR -->
+    <button type="submit" class="btn btn-primary flex-1" [disabled]="form.invalid">
+      Guardar cambios
+      <span class="loading loading-spinner loading-sm" *ngIf="loading"></span>
+    </button>
+
+    <!-- CANCELAR -->
+    <a
+      routerLink="/admin/users"
+      class="btn btn-secondary flex-1"
+    >
+      Cancelar
+    </a>
+  </div>
+
+</form>
