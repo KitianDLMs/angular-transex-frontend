@@ -3,8 +3,6 @@ import { AdminDashboardLayoutComponent } from './layouts/admin-dashboard-layout/
 import { ProductAdminPageComponent } from './pages/product-admin-page/product-admin-page.component';
 import { ProductsAdminPageComponent } from './pages/products-admin-page/products-admin-page.component';
 import { IsAdminGuard } from '@auth/guards/is-admin.guard';
-// import { ObrasAdminPageComponent } from './pages/obras-admin-page/obras-admin-page.component';
-// import { ObraAdminPageComponent } from './pages/obra-admin-page/obra-admin-page.component';
 import { CustsAdminPageComponent } from './pages/custs-admin-page/custs-admin-page.component';
 import { CustomerDetailsComponent } from './pages/cust-admin-page/cust-details/cust-details.component';
 import { CustCreatePageComponent } from './pages/cust-create-page/cust-create-page.component';
@@ -32,14 +30,6 @@ export const adminDashboardRoutes: Routes = [
         path: 'products/:id',
         component: ProductAdminPageComponent,
       },
-      // {
-      //   path: 'obras',
-      //   component: ObrasAdminPageComponent,
-      // },
-      // {
-      //   path: 'obras/:id',
-      //   component: ObraAdminPageComponent,
-      // },
       {
         path: 'customer',
         component: CustsAdminPageComponent,

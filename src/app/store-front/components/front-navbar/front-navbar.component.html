@@ -78,17 +78,17 @@
     <ul class="menu menu-horizontal px-1">
       <li>
         <a
-          routerLink="/"
+          routerLink="/store-front"
           routerLinkActive="text-secondary font-semibold border-b-2 border-secondary"
           [routerLinkActiveOptions]="{ exact: true }"
           class="btn btn-ghost"
         >
-          Obras
+          Proyectos
         </a>
       </li>
       <li>
         <a
-          routerLink="/seguimiento"
+          routerLink="/store-front/seguimiento"
           routerLinkActive="text-secondary font-semibold border-b-2 border-secondary"
           [routerLinkActiveOptions]="{ exact: true }"
           class="btn btn-ghost"
@@ -98,7 +98,7 @@
       </li>
       <li>
         <a
-          routerLink="/programacion"
+          routerLink="/store-front/programacion"
           routerLinkActive="text-secondary font-semibold border-b-2 border-secondary"
           [routerLinkActiveOptions]="{ exact: true }"
           class="btn btn-ghost"
@@ -106,6 +106,16 @@
           Programación
         </a>
       </li>
+      <li>
+        <a
+          routerLink="/store-front/ordr"
+          routerLinkActive="text-secondary font-semibold border-b-2 border-secondary"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="btn btn-ghost"
+        >
+          Orders
+        </a>
+      </li>      
     </ul>
   </div>
 
