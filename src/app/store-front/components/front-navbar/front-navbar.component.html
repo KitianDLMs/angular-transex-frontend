@@ -134,7 +134,7 @@
               group-hover:opacity-100 group-hover:visible
               transition-all duration-200"
       >
-        <p><strong>Usuario:</strong> {{ authService.user()?.fullName || 'Sin nombre' }}</p>
+        <p>{{ authService.user()?.fullName || 'Sin nombre' }}</p>
       </div>
     </div>
     <button
