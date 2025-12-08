@@ -1,5 +1,4 @@
 <div class="navbar bg-base-100 shadow-sm px-4">
-  <!-- Lado izquierdo -->
   <div class="navbar-start">
     <div class="dropdown">
       <div tabindex="0" role="button" class="btn btn-ghost btn-circle lg:hidden">
@@ -18,8 +17,6 @@
           />
         </svg>
       </div>
-
-      <!-- Menú desplegable (mobile) -->
       <ul
         tabindex="0"
         class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
@@ -64,21 +61,15 @@
       </ul>
 
     </div>
-
-    <!-- Logo / nombre app -->
     <a routerLink="/store-front" class="btn btn-ghost text-xl font-montserrat">
-      <!-- <span class="font-bold text-green-600">ObraTrack</span> -->
       <img
           src="assets/images/logoHORMIGONES2.png"
           alt="Logo"
           class="h-10 w-auto"
         />
-      <!-- Este texto solo se muestra en pantallas medianas o mayores -->
       <span class="text-gray ml-1 hidden md:inline">| Portal cliente</span>
     </a>
   </div>
-
-  <!-- Centro (menú desktop) -->
   <div class="navbar-center hidden lg:flex">
     <ul class="menu menu-horizontal px-1">
       <li>
@@ -123,46 +114,29 @@
       </li>         
     </ul>
   </div>
-
-  <!-- Lado derecho -->
   <div class="navbar-end gap-3">
     @if (authService.isAdmin()) {
       <a routerLink="/admin" class="btn btn-outline btn-success btn-sm">
         Panel Admin
       </a>
     }
-
     @if (authService.authStatus() === 'authenticated') {
-
-    <!-- Nombre para desktops -->
     <span class="text-sm text-gray-700 hidden md:inline">
       Bienvenido {{ authService.user()?.fullName }}
     </span>
-
-    <!-- Icono para móviles -->
-    <!-- Icono de usuario con tooltip -->
-    <div
-      class="tooltip tooltip-left"
-      [attr.data-tip]="'Usuario: ' + authService.user()?.fullName + '\nCliente: ' + userCustCode!"
-    >
-      <span class="md:hidden">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="w-6 h-6 text-gray-700 cursor-pointer"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M15.75 9A3.75 3.75 0 1112 5.25 3.75 3.75 0 0115.75 9zM4.5 20.25a8.25 8.25 0 1115 0v.75h-15v-.75z"
-          />
-        </svg>
-      </span>
+    <div class="relative group">
+      <button class="btn btn-circle btn-ghost">
+        <i class="fa-solid fa-user"></i>
+      </button>
+      <div
+        class="absolute right-0 mt-2 w-48 bg-gray-800 text-white text-sm
+              px-3 py-2 rounded-xl shadow-xl opacity-0 invisible
+              group-hover:opacity-100 group-hover:visible
+              transition-all duration-200"
+      >
+        <p><strong>Usuario:</strong> {{ authService.user()?.fullName || 'Sin nombre' }}</p>
+      </div>
     </div>
-
     <button
       class="btn btn-sm flex items-center gap-2
             bg-transparent text-gray-700 border border-gray-300
@@ -170,7 +144,6 @@
             transition-colors duration-200"
       (click)="logout()"
         >
-          <!-- Icono de flecha -->
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -189,7 +162,6 @@
           Salir
         </button>
       }
-
     @else if (authService.authStatus() === 'not-authenticated') {
       <a routerLink="/auth/login" class="btn btn-secondary btn-sm">
         Iniciar Sesión

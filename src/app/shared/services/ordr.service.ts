@@ -30,7 +30,7 @@ export class OrdrService {
     return this.http.get<Ordr[]>(this.baseUrl, { params });
   }
 
-  getOrders(cust_code?: string, proj_code?: string) {
+   getOrders(cust_code?: string, proj_code?: string) {
     let params: any = {};
 
     if (cust_code) params.cust_code = cust_code.trim();

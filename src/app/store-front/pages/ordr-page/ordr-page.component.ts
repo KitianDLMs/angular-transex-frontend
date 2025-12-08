@@ -19,14 +19,17 @@ export class OrdrPageComponent {
 
   today = new Date();
   currentYear = new Date().getFullYear();
+
   authService = inject(AuthService);
   projService = inject(ProjService);
   prodService = inject(ProdService);
-  
-  // selectedProject = signal('');
+    
   filteredCustCode = signal('');
 
   projectOptions: any[] = [];
+
+  // 👉 NUEVO: datos del usuario para el tooltip
+  userName: string | null = null;
   userCustCode: string | null = null;
 
   constructor(
@@ -35,24 +38,28 @@ export class OrdrPageComponent {
 
   ngOnInit() {
     const user = this.authService.user();
+
+    this.userName = user?.fullName || 'Usuario';
     this.userCustCode = user?.cust_code || null;
+
     this.filteredCustCode.set(this.userCustCode?.trim() || '');
-    this.projService.getByCustomer(this.userCustCode!.trim()).subscribe({
-      next: res => this.projectOptions = res,
-      error: err => console.error(err)
-    });
+
+    if (this.userCustCode) {
+      this.projService.getByCustomer(this.userCustCode.trim()).subscribe({
+        next: res => this.projectOptions = res,
+        error: err => console.error(err)
+      });
+    }
+
     this.loadOrders();
   }
 
   searchOrders() {
     const code = this.custCode.trim();
-
     if (!code) return;
 
     this.ordrService.getOrdersByCustCode(code)
-      .subscribe(data => {
-        this.orders = data;
-      });
+      .subscribe(data => this.orders = data);
   }
 
   loadOrders() {
@@ -77,8 +84,9 @@ export class OrdrPageComponent {
     this.loadOrders();
   }
 
-   loadProductsByCustomer() {
+  loadProductsByCustomer() {
     if (!this.userCustCode) return;
+
     this.prodService.getByCustomer(this.userCustCode).subscribe(res => {
       // this.imstResource.set(res);
     });

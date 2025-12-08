@@ -14,8 +14,7 @@ export class ProjService {
 
   constructor(private http: HttpClient) {}
 
-  getByCustomer(cust_code: string) {
-    console.log('this getByCustomer');    
+  getByCustomer(cust_code: string) {    
     return this.http.get<Proj[]>(`${this.baseUrl}/proj/by-customer/${cust_code}`);
   }
 
