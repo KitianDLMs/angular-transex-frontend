@@ -1,6 +1,6 @@
 <!-- 🔹 Encabezado -->
 <header class="bg-cyan-700 text-white p-4 rounded-t-lg flex justify-between items-center shadow-sm">
-  <h1 class="text-xl font-semibold">Mis Productos IMST</h1>
+  <h1 class="text-xl font-semibold">Documentos</h1>
   <span class="text-sm opacity-90">
     Actualizado al {{ today | date: 'dd/MM/yyyy' }}
   </span>
@@ -8,7 +8,9 @@
 
 <div class="p-4 bg-gray-50">
 
+ <!-- 🔹 Filtro de proyecto -->
  <div class="bg-white shadow-md rounded-xl p-4 border border-gray-200 flex items-center gap-4">
+  <!-- Aquí aparece el cust_code -->
   <span class="mr-auto text-gray-600 text-sm font-semibold">
     Cliente: {{ userCustCode }}
   </span>
@@ -31,7 +33,10 @@
   </button>  
 </div>
 
+  <!-- Tabla IMST -->
   <div class="overflow-x-auto bg-white shadow-lg rounded-2xl mt-10 border border-gray-200">
+
+    <h2 class="text-lg font-semibold p-4 bg-gray-100 border-b">Documentos</h2>
 
     <table class="min-w-full border-collapse text-sm text-gray-700">
 
@@ -66,6 +71,8 @@
     }
   </div>
 
+
+  <!-- Footer -->
   <footer class="mt-10 text-xs text-gray-400 text-center">
     © {{ currentYear }} TRANSEX CLIENT UI — Todos los derechos reservados.
   </footer>

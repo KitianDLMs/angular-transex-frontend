@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { Proj } from 'src/app/proj/interfaces/proj.interface';
+import { Ordr } from '@dashboard/ordr/interfaces/ordr.interface';
 
 @Injectable({ providedIn: 'root' })
 export class ProjService {
@@ -13,9 +14,29 @@ export class ProjService {
 
   constructor(private http: HttpClient) {}
 
+  getByCustomer(cust_code: string) {
+    console.log('this getByCustomer');    
+    return this.http.get<Proj[]>(`${this.baseUrl}/proj/by-customer/${cust_code}`);
+  }
+
+  getProjectOptions() {
+    return this.http.get<{ proj_code: string, proj_name: string }[]>(
+      `${this.baseUrl}/proj/options`
+    );
+  }
+
   getAll(): Observable<Proj[]> {
     return this.http.get<Proj[]>(`${this.baseUrl}/proj`);
   }
+
+  getByCode(code: string) {
+    return this.http.get<Proj>(`${this.baseUrl}/proj/${code}`);
+  }
+
+  getOrdersByCustomer(cust_code: string): Observable<Ordr[]> {
+    return this.http.get<Ordr[]>(`${this.baseUrl}/ordr?cust_code=${cust_code}`);
+  }
+
 
   getByCust(cust_code: string): Observable<Proj[]> {
     const key = cust_code.trim();
@@ -43,7 +64,10 @@ export class ProjService {
   }
 
   create(dto: Partial<Proj>): Observable<Proj> {
-    return this.http.post<Proj>(`${this.baseUrl}/proj`, dto);
+    console.log('DTO que se enviará:', dto);
+    return this.http.post<Proj>(`${this.baseUrl}/proj`, dto, {
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   update(proj_code: string, dto: Partial<Proj>): Observable<Proj> {

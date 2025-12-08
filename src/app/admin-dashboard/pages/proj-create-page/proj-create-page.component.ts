@@ -18,6 +18,7 @@ export class ProjCreatePageComponent implements OnInit {
   loading = false;
   error: string | null = null;
   customers: any[] = [];
+  projects: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -56,11 +57,12 @@ export class ProjCreatePageComponent implements OnInit {
     }
 
     this.loading = true;
-
+    console.log(this.form.value);
+    
     this.projService.create(this.form.value).subscribe({
       next: (proj: Proj) => {
         this.loading = false;
-        this.router.navigate(['/admin/projects']); // ruta de lista de proyectos
+        this.router.navigate(['/admin/proj']);
       },
       error: (err: any) => {
         console.error('Error al crear proyecto', err);

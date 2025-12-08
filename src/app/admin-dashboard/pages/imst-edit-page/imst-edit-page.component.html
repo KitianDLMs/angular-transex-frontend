@@ -1,0 +1,116 @@
+<h1 class="text-2xl font-bold mb-4">Editar Producto</h1>
+
+<div *ngIf="loading">Cargando producto...</div>
+<div *ngIf="error" class="text-red-600">{{ error }}</div>
+
+<form 
+  [formGroup]="form"
+  (ngSubmit)="save()"
+  *ngIf="!loading"
+  class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+>
+  <div>
+    <label class="font-semibold">Código Producto</label>
+    <input 
+      formControlName="item_code"
+      class="input input-bordered bg-gray-200 text-black w-full"      
+    />
+  </div>
+
+  <div>
+    <label class="font-semibold">Descripción</label>
+    <input 
+      formControlName="descr"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <div>
+    <label class="font-semibold">Descripción Corta</label>
+    <input 
+      formControlName="short_descr"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <div>
+    <label class="font-semibold">Inventariable</label>
+    <input
+      type="checkbox"
+      formControlName="invy_flag"
+      class="checkbox checkbox-primary"
+    />
+  </div>
+
+  <div>
+    <label class="font-semibold">Unidad de Precio</label>
+    <input 
+      formControlName="price_uom"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <div>
+    <label class="font-semibold">Unidad de Orden</label>
+    <input 
+      formControlName="order_uom"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <div>
+    <label class="font-semibold">Slump</label>
+    <input 
+      type="text"
+      formControlName="slump"
+      class="input input-bordered text-black w-full"
+      step="0.01"
+    />
+  </div>
+
+  <div>
+    <label class="font-semibold">Unidad Slump</label>
+    <input 
+      formControlName="slump_uom"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <div>
+    <label class="font-semibold">Resistencia (Strength)</label>
+    <input 
+      type="text"
+      formControlName="strgth"
+      class="input input-bordered text-black w-full"
+      step="0.01"
+    />
+  </div>
+
+  <div>
+    <label class="font-semibold">Unidad Resistencia</label>
+    <input 
+      formControlName="strgth_uom"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <div>
+    <label class="font-semibold">Fecha Actualización</label>
+    <input 
+      type="date"
+      formControlName="update_date"
+      class="input input-bordered text-black w-full"
+    />
+  </div>
+
+  <div class="col-span-1 sm:col-span-2 flex gap-4 mt-6">
+    <button type="submit" class="btn btn-primary flex-1" [disabled]="form.invalid">
+      Guardar
+    </button>
+
+    <a routerLink="/admin/prod" class="btn btn-secondary flex-1">
+      Cancelar
+    </a>
+  </div>
+
+</form>

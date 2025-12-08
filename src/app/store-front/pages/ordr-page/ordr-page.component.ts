@@ -1,22 +1,86 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { rxResource } from '@angular/core/rxjs-interop';
+import { Component, signal, computed, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { OrdrService } from '@shared/services/ordr.service';
+import { AuthService } from '@auth/services/auth.service';
+import { ProjService } from '@shared/services/proj.service';
+import { ProdService } from '@shared/services/prod.service';
 
 @Component({
   selector: 'app-ordr-page',
   standalone: true,
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule, DatePipe, FormsModule],
   templateUrl: './ordr-page.component.html',
 })
 export class OrdrPageComponent {
-  private ordrService = inject(OrdrService);
+  orders: any[] = [];
+  custCode: string = '';
+  selectedProject: string = '';
 
   today = new Date();
   currentYear = new Date().getFullYear();
+  authService = inject(AuthService);
+  projService = inject(ProjService);
+  prodService = inject(ProdService);
+  
+  // selectedProject = signal('');
+  filteredCustCode = signal('');
 
-  ordrResource = rxResource({
-    request: () => null,
-    loader: () => this.ordrService.getAllOrdrs(),
-  });
+  projectOptions: any[] = [];
+  userCustCode: string | null = null;
+
+  constructor(
+    private ordrService: OrdrService,    
+  ) {}
+
+  ngOnInit() {
+    const user = this.authService.user();
+    this.userCustCode = user?.cust_code || null;
+    this.filteredCustCode.set(this.userCustCode?.trim() || '');
+    this.projService.getByCustomer(this.userCustCode!.trim()).subscribe({
+      next: res => this.projectOptions = res,
+      error: err => console.error(err)
+    });
+    this.loadOrders();
+  }
+
+  searchOrders() {
+    const code = this.custCode.trim();
+
+    if (!code) return;
+
+    this.ordrService.getOrdersByCustCode(code)
+      .subscribe(data => {
+        this.orders = data;
+      });
+  }
+
+  loadOrders() {
+    this.ordrService.getOrders(this.userCustCode!, this.selectedProject)
+      .subscribe((data: any) => {
+        console.log(data);        
+        this.orders = data;
+      });
+  }
+
+  onFilterCustCode(value: string) {
+    this.filteredCustCode.set(value.trim());
+    this.loadOrders();
+  }
+
+  onSelectProject() {
+    this.loadOrders();
+  }
+
+  clearFilter() {
+    this.selectedProject = '';
+    this.loadOrders();
+  }
+
+   loadProductsByCustomer() {
+    if (!this.userCustCode) return;
+    this.prodService.getByCustomer(this.userCustCode).subscribe(res => {
+      // this.imstResource.set(res);
+    });
+  }
 }

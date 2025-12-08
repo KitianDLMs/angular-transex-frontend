@@ -19,13 +19,10 @@ throw new Error('Method not implemented.');
 
   private ordrService = inject(OrdrService);
 
-  // orders = signal<Ordr[]>([]);
   loading = signal(false);
   error = signal<string | null>(null);
 
   ngOnInit(): void {
-    console.log(this.orders);
-    
     this.loadOrders();
   }
 

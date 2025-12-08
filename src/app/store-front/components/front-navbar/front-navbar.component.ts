@@ -13,8 +13,6 @@ export class FrontNavbarComponent {
   router = inject(Router);
 
   logout() {
-    var rest = this.authService.logout()
-    console.log(rest);    
-    this.router.navigateByUrl('/auth/login');
+    this.authService.logout()
   }
 }

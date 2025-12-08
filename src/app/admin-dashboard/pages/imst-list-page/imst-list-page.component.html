@@ -1,0 +1,17 @@
+<div class="p-4">
+  <h2 class="text-xl font-bold mb-4">Productos</h2>
+
+  <div *ngIf="loading" class="text-center">Cargando...</div>
+
+  <div *ngIf="error" class="text-red-500">{{ error }}</div>
+
+  <div class="flex justify-end mb-4">
+    <a routerLink="/admin/prod/create" class="btn btn-primary btn-sm">
+      Crear Producto
+    </a>
+  </div>
+
+  <app-imst-table *ngIf="!loading && !error"
+                  [products]="products">
+  </app-imst-table>
+</div>

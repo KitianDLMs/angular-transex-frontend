@@ -6,6 +6,19 @@
   class="grid grid-cols-1 sm:grid-cols-2 gap-4"
 >
 
+  <!-- Cliente -->
+  <select formControlName="cust_code" class="select select-bordered text-black w-full" required>
+    <option value="" disabled selected>Seleccione un cliente</option>
+    <option *ngFor="let c of customers" [value]="c.cust_code">{{ c.name }}</option>
+  </select>
+
+  <!-- Proyecto -->
+  <select formControlName="proj_code" class="select select-bordered text-black w-full">
+    <option value="" disabled selected>Seleccione un proyecto</option>
+    <option *ngFor="let p of projects" [value]="p.proj_code">{{ p.proj_name }}</option>
+  </select>
+
+
   <!-- Fecha -->
   <input
     type="date"
@@ -20,19 +33,7 @@
     class="input input-bordered text-black w-full"
     placeholder="Código de orden"
     required
-  />
-
-  <!-- Cliente -->
-  <select
-    formControlName="cust_code"
-    class="select select-bordered text-black w-full"
-    required
-  >
-    <option value="" disabled selected>Seleccione un cliente</option>
-    <option *ngFor="let c of customers" [value]="c.cust_code">
-      {{ c.name }}
-    </option>
-  </select>
+  /> 
 
   <!-- Tipo de orden (opcional) -->
   <input

@@ -1,0 +1,106 @@
+<h1 class="text-2xl font-bold mb-4">Crear Producto</h1>
+
+<form
+  [formGroup]="form"
+  (ngSubmit)="create()"
+  class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+>
+
+  <!-- Cliente -->
+  <select
+    formControlName="cust_code"
+    class="select select-bordered text-black w-full"
+    required
+  >
+    <option value="" disabled selected>Seleccione un cliente</option>
+    <option *ngFor="let c of customers" [value]="c.cust_code">
+      {{ c.name }}
+    </option>
+  </select>
+
+  <!-- Proyecto -->
+  <select
+    formControlName="proj_code"
+    class="select select-bordered text-black w-full"
+    required
+  >
+    <option value="" disabled selected>Seleccione un proyecto</option>
+    <option *ngFor="let p of projects" [value]="p.proj_code">
+      {{ p.proj_name }}
+    </option>
+  </select>
+
+  <!-- Código -->
+  <input
+    formControlName="item_code"
+    class="input input-bordered text-black w-full"
+    placeholder="Código del producto"
+    required
+  />
+
+  <!-- Descripción -->
+  <input
+    formControlName="descr"
+    class="input input-bordered text-black w-full"
+    placeholder="Descripción"
+    required
+  />
+
+  <!-- Nombre corto -->
+  <input
+    formControlName="short_descr"
+    class="input input-bordered text-black w-full"
+    placeholder="Descripción corta"
+  />
+
+  <!-- Categoría -->
+  <input
+    formControlName="item_cat"
+    class="input input-bordered text-black w-full"
+    placeholder="Categoría"
+  />
+
+  <!-- UOM Precio -->
+  <input
+    formControlName="price_uom"
+    class="input input-bordered text-black w-full"
+    placeholder="UOM Precio (ej: M3)"
+    required
+  />
+
+  <!-- UOM Orden -->
+  <input
+    formControlName="order_uom"
+    class="input input-bordered text-black w-full"
+    placeholder="UOM Orden (ej: TON)"
+    required
+  />
+
+  <!-- Fecha setup -->
+  <input
+    type="date"
+    formControlName="setup_date"
+    class="input input-bordered text-black w-full"
+    required
+  />
+
+  <!-- Error -->
+  <div *ngIf="error" class="text-red-600 col-span-2">
+    {{ error }}
+  </div>
+
+  <!-- Botones -->
+  <div class="col-span-2 flex flex-col sm:flex-row gap-4 mt-6">
+    <button type="submit" class="btn btn-primary flex-1">
+      Crear Producto
+      <span
+        class="loading loading-spinner loading-sm"
+        *ngIf="loading"
+      ></span>
+    </button>
+
+    <a routerLink="/admin/prod" class="btn btn-secondary flex-1">
+      Cancelar
+    </a>
+  </div>
+</form>

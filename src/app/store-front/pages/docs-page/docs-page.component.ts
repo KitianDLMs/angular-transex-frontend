@@ -9,12 +9,12 @@ import { catchError, of, tap } from 'rxjs';
 import { ProdService } from '@shared/services/prod.service';
 
 @Component({
-  selector: 'app-home-page',
+  selector: 'app-docs-page',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './home-page.component.html',
+  templateUrl: './docs-page.component.html',
 })
-export class HomePageComponent implements OnInit {
+export class DocsPageComponent implements OnInit {
 
   projService = inject(ProjService);
   prodService = inject(ProdService); 
@@ -33,6 +33,8 @@ export class HomePageComponent implements OnInit {
   ngOnInit() {
     const user = this.authService.user();
     this.userCustCode = user?.cust_code || null;
+
+    // Load customer projects for the filter
     if (this.userCustCode) {
       this.projService.getByCustomer(this.userCustCode).subscribe(opts => {
         this.projectOptions = opts.map(p => ({
@@ -41,14 +43,9 @@ export class HomePageComponent implements OnInit {
         }));
       });
     }
-    this.loadProductsByCustomer();
-  }
 
-  loadProductsByCustomer() {
-    if (!this.userCustCode) return;
-    this.prodService.getByCustomer(this.userCustCode).subscribe(res => {
-      this.imstResource.set(res);
-    });
+    // Load IMST table
+    this.imstResource.reload();
   }
 
   loadProjectsForUser() {
@@ -59,11 +56,13 @@ export class HomePageComponent implements OnInit {
     });
   }
 
-  imstResource = rxResource<any, any>({
-    request: () => ({ cust: this.userCustCode }),
-    loader: (params: any) =>
-      this.prodService.getByCustomer(params.cust).pipe(
-        tap(r => console.log("📦 Productos por cliente:", r)),
+
+  // 👇 NUEVO: recurso para cargar IMST desde la base de datos
+  imstResource = rxResource({
+    request: () => ({}),
+    loader: () =>
+      this.prodService.getAll().pipe(
+        tap(r => console.log("📦 IMST cargados:", r)),
         catchError(err => {
           console.error("❌ Error IMST:", err);
           return of([]);
@@ -72,10 +71,11 @@ export class HomePageComponent implements OnInit {
   });
 
   onSelectProject() {
-    if (!this.selectedProject) {      
-      this.loadProductsByCustomer();
+    if (!this.selectedProject) {
+      this.imstResource.reload();
       return;
-    }    
+    }
+
     this.prodService.getByProject(this.selectedProject).subscribe(res => {
       this.imstResource.set(res);
     });
@@ -83,6 +83,6 @@ export class HomePageComponent implements OnInit {
 
   clearFilter() {
     this.selectedProject = '';
-    this.loadProductsByCustomer();
+    this.imstResource.reload();
   }
 }

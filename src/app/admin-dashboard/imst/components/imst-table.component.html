@@ -1,0 +1,66 @@
+<div class="overflow-x-auto">
+
+  <!-- Loading -->
+  @if (loading()) {
+    <p class="text-gray-500 p-4">Cargando productos...</p>
+  }
+
+  <!-- Error -->
+  @if (error()) {
+    <p class="text-red-600 p-4">{{ error() }}</p>
+  }
+
+  <!-- Tabla -->
+  @if (!loading() && !error()) {
+
+    <table class="table w-full">
+
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Descripción</th>
+          <th>Categoría</th>
+          <th>UOM</th>
+          <th>Actualizado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        @for (p of products; track p.item_code) {
+
+          <tr>
+            <td class="font-bold">{{ p.item_code }}</td>
+            <td>{{ p.descr }}</td>
+            <td>{{ p.item_cat }}</td>
+            <td>{{ p.order_uom }}</td>
+            <td>{{ p.update_date | date:'short' }}</td>
+
+            <td class="flex gap-2">
+              <a
+                [routerLink]="['/admin/prod', p.item_code.trim()]"
+                class="btn btn-ghost btn-xs text-accent"
+              >
+                Ver
+              </a>
+            </td>
+          </tr>
+
+        }
+
+        <!-- Cuando no hay productos -->
+        @if (products.length === 0) {
+          <tr>
+            <td colspan="6" class="text-center text-gray-500">
+              No hay productos registrados.
+            </td>
+          </tr>
+        }
+
+      </tbody>
+
+    </table>
+
+  }
+</div>

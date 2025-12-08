@@ -2,10 +2,10 @@
   <!-- Lado izquierdo -->
   <div class="navbar-start">
     <div class="dropdown">
-      <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+      <div tabindex="0" role="button" class="btn btn-ghost btn-circle lg:hidden">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-6 w-6"
+          class="h-8 w-8"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -14,7 +14,7 @@
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
-            d="M4 6h16M4 12h8m-8 6h16"
+            d="M4 6h16M4 12h16M4 18h16"
           />
         </svg>
       </div>
@@ -31,45 +31,50 @@
             [routerLinkActiveOptions]="{ exact: true }"
             class="btn btn-ghost justify-start"
           >
-            Proyectos
+            Mis Productos
           </a>
         </li>
-        <li>
-          <a
-            routerLink="/store-front/seguimiento"
-            routerLinkActive="text-secondary font-semibold"
-            class="btn btn-ghost justify-start"
-          >
-            Seguimiento / Mapa
-          </a>
-        </li>
-        <li>
-          <a
-            routerLink="/store-front/programacion"
-            routerLinkActive="text-secondary font-semibold"
-            class="btn btn-ghost justify-start"
-          >
-            Programación
-          </a>
-        </li>
-          <li>
+           <li>
           <a
             routerLink="/store-front/ordr"
             routerLinkActive="text-secondary font-semibold"
             class="btn btn-ghost justify-start"
           >
-            Pedidos(ORDRS)
+            Mis Pedidos
           </a>
-        </li>        
+        </li>  
+        <li>
+          <a
+            routerLink="/store-front/docs"
+            routerLinkActive="text-secondary font-semibold"
+            class="btn btn-ghost justify-start"
+          >
+            Mis Documentos
+          </a>
+        </li>
+        <li>
+          <a
+            routerLink="/store-front/laboratorio"
+            routerLinkActive="text-secondary font-semibold"
+            class="btn btn-ghost justify-start"
+          >
+            Laboratorio
+          </a>
+        </li>             
       </ul>
 
     </div>
 
     <!-- Logo / nombre app -->
     <a routerLink="/store-front" class="btn btn-ghost text-xl font-montserrat">
-      <span class="font-bold text-green-600">ObraTrack</span>
+      <!-- <span class="font-bold text-green-600">ObraTrack</span> -->
+      <img
+          src="assets/images/logoHORMIGONES2.png"
+          alt="Logo"
+          class="h-10 w-auto"
+        />
       <!-- Este texto solo se muestra en pantallas medianas o mayores -->
-      <span class="text-gray-400 ml-1 hidden md:inline">| Gestión</span>
+      <span class="text-gray ml-1 hidden md:inline">| Portal cliente</span>
     </a>
   </div>
 
@@ -83,27 +88,7 @@
           [routerLinkActiveOptions]="{ exact: true }"
           class="btn btn-ghost"
         >
-          Proyectos
-        </a>
-      </li>
-      <li>
-        <a
-          routerLink="/store-front/seguimiento"
-          routerLinkActive="text-secondary font-semibold border-b-2 border-secondary"
-          [routerLinkActiveOptions]="{ exact: true }"
-          class="btn btn-ghost"
-        >
-          Seguimiento / Mapa
-        </a>
-      </li>
-      <li>
-        <a
-          routerLink="/store-front/programacion"
-          routerLinkActive="text-secondary font-semibold border-b-2 border-secondary"
-          [routerLinkActiveOptions]="{ exact: true }"
-          class="btn btn-ghost"
-        >
-          Programación
+          Mis Productos
         </a>
       </li>
       <li>
@@ -113,9 +98,29 @@
           [routerLinkActiveOptions]="{ exact: true }"
           class="btn btn-ghost"
         >
-          Orders
+          Mis Pedidos
         </a>
-      </li>      
+      </li>   
+      <li>
+        <a
+          routerLink="/store-front/docs"
+          routerLinkActive="text-secondary font-semibold border-b-2 border-secondary"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="btn btn-ghost"
+        >
+          Mis Documentos
+        </a>
+      </li>
+      <li>
+        <a
+          routerLink="/store-front/laboratorio"
+          routerLinkActive="text-secondary font-semibold border-b-2 border-secondary"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="btn btn-ghost"
+        >
+          Laboratorio
+        </a>
+      </li>         
     </ul>
   </div>
 
@@ -129,9 +134,23 @@
 
     @if (authService.authStatus() === 'authenticated') {
       <span class="text-sm text-gray-700">
-        👋 {{ authService.user()?.fullName }}
+        Bienvenido {{ authService.user()?.fullName }}
       </span>
-      <button class="btn btn-sm btn-error" (click)="logout()">
+      <button class="btn btn-sm btn-error flex items-center gap-2" (click)="logout()">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-4 h-4"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H12"
+          />
+        </svg>
         Salir
       </button>
     }

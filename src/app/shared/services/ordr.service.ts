@@ -3,9 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Ordr } from 'src/app/ordr/interfaces/ordr.interface';
-import { environment } from 'src/environments/environment';
-
-const API_BASE = '/api'; // ajústalo a tu base real (ej: http://localhost:3000)
+import { environment } from 'src/environments/environment.development';
 
 @Injectable({ providedIn: 'root' })
 export class OrdrService {
@@ -26,20 +24,36 @@ export class OrdrService {
     );
   }
 
-  getOrdrByCustCode(cust_code: string): Observable<Ordr[]> {
-    return this.http.get<Ordr[]>(`${this.baseUrl}/ordr/by-cust/${cust_code}`);
+  getOrdersByCustCode(cust_code: string): Observable<Ordr[]> {
+    const params = new HttpParams().set('cust_code', cust_code.trim());
+
+    return this.http.get<Ordr[]>(this.baseUrl, { params });
   }
 
-  getOrdrsByCust(cust_code: string): Observable<Ordr[]> {
-    const key = cust_code?.trim();
-    if (!key) return of([])
-    if (this.ordrCache.has(key)) return of(this.ordrCache.get(key)!);
-    const params = new HttpParams().set('cust_code', key);
-    return this.http.get<Ordr[]>(`${API_BASE}/ordr`, { params }).pipe(
-      tap(list => this.ordrCache.set(key, list || [])),
-      catchError(err => {
-        return of([]);
-      })
+  getOrders(cust_code?: string, proj_code?: string) {
+    let params: any = {};
+
+    if (cust_code) params.cust_code = cust_code.trim();
+    if (proj_code) params.proj_code = proj_code.trim();
+
+    return this.http.get(`${this.baseUrl}/ordr`, { params });
+  }
+
+
+
+  getFilteredOrders(cust_code: string, proj_code: string) {
+    return this.http.get<Ordr[]>(`${this.baseUrl}/ordr/filter`, {
+      params: {
+        cust_code: cust_code.trim(),
+        proj_code: proj_code.trim()
+      }
+    });
+  }
+
+  getOrdrByCustCode(cust_code: string): Observable<Ordr> {
+    console.log(cust_code);    
+    return this.http.get<Ordr>(
+      `${this.baseUrl}/ordr/${cust_code}`
     );
   }
 
@@ -57,8 +71,8 @@ export class OrdrService {
   }
 
 
-  refreshOrdrs(cust_code: string) {
-    this.ordrCache.delete(cust_code?.trim());
-    return this.getOrdrsByCust(cust_code);
-  }
+  // refreshOrdrs(cust_code: string) {
+  //   this.ordrCache.delete(cust_code?.trim());
+  //   return this.getOrdrsByCust(cust_code);
+  // }
 }

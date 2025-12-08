@@ -6,6 +6,8 @@ import { ObraPageComponent } from './pages/obras-page/obras-page.component';
 import { SeguimientoPageComponent } from './pages/seguimiento-page/seguimiento-page.component';
 import { ProgramacionPageComponent } from './pages/programacion/programacion-page.component';
 import { OrdrPageComponent } from './pages/ordr-page/ordr-page.component';
+import { DocsPageComponent } from './pages/docs-page/docs-page.component';
+import { LaboratorioPageComponent } from './pages/laboratorio-page/laboratorio-page.component';
 
 export const storeFrontRoutes: Routes = [
   {
@@ -17,6 +19,10 @@ export const storeFrontRoutes: Routes = [
       { path: 'obras', component: ObraPageComponent },
 
       { path: 'seguimiento', component: SeguimientoPageComponent },
+
+      { path: 'docs', component: DocsPageComponent },      
+
+      { path: 'laboratorio', component: LaboratorioPageComponent },            
 
       { path: 'programacion', component: ProgramacionPageComponent },
 

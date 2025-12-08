@@ -1,81 +1,89 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
-
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { CustService } from '@dashboard/cust/services/cust.service';
 import { OrdrService } from '@shared/services/ordr.service';
+import { ProjService } from '@shared/services/proj.service';
+
 
 @Component({
-  selector: 'app-ordr-create-page',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  selector: 'app-create-ordr',
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './ordr-create-page.component.html',
 })
-export class OrdrCreatePageComponent implements OnInit {
-
+export class CreateOrdrComponent implements OnInit {
   form!: FormGroup;
+  customers: any[] = [];
+  projects: any[] = [];
   loading = false;
   error: string | null = null;
-  customers: any[] = [];
 
   constructor(
     private fb: FormBuilder,
-    private custService: CustService,
-    private ordrService: OrdrService,
-    private router: Router
+    private router: Router,
+    private customerService: CustService,
+    private projectService: ProjService,
+    private ordrService: OrdrService 
   ) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
+  // TS: inicialización
+  this.form = this.fb.group({
+    cust_code: ['', Validators.required],
+    proj_code: [{ value: '', disabled: true }], // inicia deshabilitado
+    order_date: ['', Validators.required],
+    order_code: ['', Validators.required],
+    order_type: [''],
+    instr: ['']
+  });
 
-    this.form = this.fb.group({
-      order_date: [new Date(), Validators.required],
-      order_code: ['', Validators.required],
-      cust_code: ['', Validators.required],
-      order_type: [''],
-      proj_code: [''],
-      memo_rsn_code: [''],
-      instr: ['']
+
+    // cargar clientes
+    this.customerService.getCusts().subscribe((data) => {
+      this.customers = data;
     });
 
-    this.loadCustomers();
-  }
+    // detectar cambios en cliente
+    this.form.get('cust_code')?.valueChanges.subscribe(custCode => {
+    const projControl = this.form.get('proj_code');
+    if (custCode) {
+      projControl?.enable(); // habilita el select
+      this.projectService.getByCust(custCode).subscribe(data => {
+        this.projects = data;
+      });
+    } else {
+      projControl?.reset();   // limpia selección
+      projControl?.disable(); // deshabilita el select
+      this.projects = [];
+    }
+  });
 
-  loadCustomers() {
-    this.custService.getCusts().subscribe({
-      next: (list) => this.customers = list,
-      error: () => console.error('Error cargando clientes')
-    });
   }
 
   create() {
     if (this.form.invalid) {
-      this.form.markAllAsTouched();
+      this.error = 'Por favor complete los campos obligatorios.';
       return;
     }
 
     this.loading = true;
+    this.error = null;
 
-    const selectedCustomer = this.customers.find(
-      c => c.cust_code === this.form.value.cust_code
-    );
+    const dto = this.form.getRawValue();
 
-    const payload = {
-      ...this.form.value,              
-      order_date: new Date(this.form.value.order_date),
-      cust_name: selectedCustomer?.name ?? ''
-    };
-
-    this.ordrService.createOrdr(payload).subscribe({
+    this.ordrService.createOrdr(dto).subscribe({
       next: () => {
-        this.loading = false;
-        this.router.navigate(['/admin/ordr']);
+        this.loading = false;        
+        this.router.navigate(['/admin/ordr']);        
+        alert('Orden creada correctamente');
+        this.form.reset();
       },
       error: (err) => {
-        console.error(err);
-        this.error = 'Error al crear la orden';
         this.loading = false;
-      },
+        this.error = err?.error?.message || 'Error al crear la orden.';
+      }
     });
   }
+
 }

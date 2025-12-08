@@ -13,8 +13,11 @@ import { ProjListPageComponent } from './pages/proj-list-page/proj-list-page.com
 import { ProjCreatePageComponent } from './pages/proj-create-page/proj-create-page.component';
 import { ProjEditPageComponent } from './pages/proj-edit-page/proj-edit-page.component';
 import { OrdrListPageComponent } from './pages/ordr-list-page/ordr-list-page.component';
-import { OrdrCreatePageComponent } from './pages/ordr-create-page/ordr-create-page.component';
 import { OrdrEditPageComponent } from './pages/ordr-edit-page/ordr-edit-page.component';
+import { CreateOrdrComponent } from './pages/ordr-create-page/ordr-create-page.component';
+import { ImstListPageComponent } from './pages/imst-list-page/imst-list-page.component';
+import { ImstEditPageComponent } from './pages/imst-edit-page/imst-edit-page.component';
+import { ImstCreatePageComponent } from './pages/imst-create-page/imst-create-page.component';
 
 export const adminDashboardRoutes: Routes = [
   {
@@ -60,12 +63,24 @@ export const adminDashboardRoutes: Routes = [
       },
       {
         path: 'ordr/create',
-        component: OrdrCreatePageComponent,
+        component: CreateOrdrComponent,
       },              
       {
         path: 'ordr/edit/:order_code',
         component: OrdrEditPageComponent,
       }, 
+      {
+        path: 'prod',
+        component: ImstListPageComponent,
+      },
+      {
+        path: 'prod/create',
+        component: ImstCreatePageComponent,
+      },              
+      {
+        path: 'prod/:item_code',
+        component: ImstEditPageComponent,
+      },
       {
         path: 'users',
         component: UserListPageComponent,
