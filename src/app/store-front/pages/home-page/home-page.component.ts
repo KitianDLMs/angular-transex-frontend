@@ -7,6 +7,7 @@ import { PaginationService } from '@shared/components/pagination/pagination.serv
 import { rxResource } from '@angular/core/rxjs-interop';
 import { catchError, of, tap } from 'rxjs';
 import { ProdService } from '@shared/services/prod.service';
+import { CustService } from '@dashboard/cust/services/cust.service';
 
 @Component({
   selector: 'app-home-page',
@@ -19,10 +20,14 @@ export class HomePageComponent implements OnInit {
   projService = inject(ProjService);
   prodService = inject(ProdService); 
   authService = inject(AuthService);
+  custService = inject(CustService);
   paginationService = inject(PaginationService);
 
+  customerName: string | null = null;
+  customerAddress: string | null = null;
+  
   projectOptions: { proj_code: string; proj_name: string }[] = [];
-  selectedProject: string | null = null;
+  selectedProject = "";
 
   today = new Date();
   currentYear = new Date().getFullYear();
@@ -34,6 +39,10 @@ export class HomePageComponent implements OnInit {
     const user = this.authService.user();
     this.userCustCode = user?.cust_code || null;
     if (this.userCustCode) {
+      this.custService.getCustByCode(this.userCustCode).subscribe(cust => {
+        this.customerName = cust.name || 'Sin nombre';
+        this.customerAddress = cust.addr_line_1 || 'Sin dirección';
+      });
       this.projService.getByCustomer(this.userCustCode).subscribe(opts => {
         this.projectOptions = opts.map(p => ({
           proj_code: p.proj_code,

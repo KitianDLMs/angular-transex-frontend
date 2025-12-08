@@ -7,29 +7,43 @@
 </header>
 
 <div class="p-4 bg-gray-50">
+  
+  <div
+    class="bg-white shadow-md rounded-xl p-4 border border-gray-200 
+          flex flex-col sm:flex-row sm:items-center gap-4">
 
- <div class="bg-white shadow-md rounded-xl p-4 border border-gray-200 flex items-center gap-4">
-  <span class="mr-auto text-gray-600 text-sm font-semibold">
-    Cliente: {{ userCustCode }}
-  </span>
+    <div class="mr-auto text-gray-600 text-center sm:text-left">
+      <div class="font-semibold text-lg sm:text-sm">
+        Cliente: {{ customerName }}
+      </div>
+      <div class="text-sm text-gray-500">
+        Dirección: {{ customerAddress }}
+      </div>
+    </div>
 
-  <label class="font-semibold text-gray-700">Obra:</label>
 
-  <select
-    class="select select-bordered w-64 bg-gray-50"
-    [(ngModel)]="selectedProject"
-    (change)="onSelectProject()">
-    <option value="">Todos</option>
-    <option *ngFor="let p of projectOptions" [value]="p.proj_code">
-      {{ p.proj_code }} - {{ p.proj_name }}
-    </option>
-  </select>
+    <select
+      class="select select-bordered bg-gray-50 w-full sm:w-64"
+      [(ngModel)]="selectedProject"
+      (change)="onSelectProject()">
 
-  <button class="btn bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg shadow-sm"
-          (click)="clearFilter()">
-    Limpiar
-  </button>  
-</div>
+      <option value="" disabled selected>Selecciona la obra</option>
+
+      <option value="">Todas</option>
+
+      <option *ngFor="let p of projectOptions" [value]="p.proj_code">
+        {{ p.proj_code }} - {{ p.proj_name }}
+      </option>
+    </select>
+
+    <button
+      class="btn bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg shadow-sm 
+            w-full sm:w-auto mt-2 sm:mt-0"
+      (click)="clearFilter()">
+      Limpiar
+    </button>  
+  </div>
+
 
   <div class="overflow-x-auto bg-white shadow-lg rounded-2xl mt-10 border border-gray-200">
 

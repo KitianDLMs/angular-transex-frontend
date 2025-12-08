@@ -5,6 +5,7 @@ import { OrdrService } from '@shared/services/ordr.service';
 import { AuthService } from '@auth/services/auth.service';
 import { ProjService } from '@shared/services/proj.service';
 import { ProdService } from '@shared/services/prod.service';
+import { CustService } from '@dashboard/cust/services/cust.service';
 
 @Component({
   selector: 'app-ordr-page',
@@ -20,15 +21,18 @@ export class OrdrPageComponent {
   today = new Date();
   currentYear = new Date().getFullYear();
 
+  customerName: string | null = null;
+  customerAddress: string | null = null;
+
   authService = inject(AuthService);
   projService = inject(ProjService);
   prodService = inject(ProdService);
+  custService = inject(CustService);
     
   filteredCustCode = signal('');
 
   projectOptions: any[] = [];
 
-  // 👉 NUEVO: datos del usuario para el tooltip
   userName: string | null = null;
   userCustCode: string | null = null;
 
@@ -45,6 +49,10 @@ export class OrdrPageComponent {
     this.filteredCustCode.set(this.userCustCode?.trim() || '');
 
     if (this.userCustCode) {
+      this.custService.getCustByCode(this.userCustCode).subscribe(cust => {
+        this.customerName = cust.name || 'Sin nombre';
+        this.customerAddress = cust.addr_line_1 || 'Sin dirección';
+      });
       this.projService.getByCustomer(this.userCustCode.trim()).subscribe({
         next: res => this.projectOptions = res,
         error: err => console.error(err)
