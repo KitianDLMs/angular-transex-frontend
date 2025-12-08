@@ -133,27 +133,63 @@
     }
 
     @if (authService.authStatus() === 'authenticated') {
-      <span class="text-sm text-gray-700">
-        Bienvenido {{ authService.user()?.fullName }}
-      </span>
-      <button class="btn btn-sm btn-error flex items-center gap-2" (click)="logout()">
+
+    <!-- Nombre para desktops -->
+    <span class="text-sm text-gray-700 hidden md:inline">
+      Bienvenido {{ authService.user()?.fullName }}
+    </span>
+
+    <!-- Icono para móviles -->
+    <!-- Icono de usuario con tooltip -->
+    <div
+      class="tooltip tooltip-left"
+      [attr.data-tip]="'Usuario: ' + authService.user()?.fullName + '\nCliente: ' + userCustCode!"
+    >
+      <span class="md:hidden">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
           stroke-width="1.5"
           stroke="currentColor"
-          class="w-4 h-4"
+          class="w-6 h-6 text-gray-700 cursor-pointer"
         >
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
-            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H12"
+            d="M15.75 9A3.75 3.75 0 1112 5.25 3.75 3.75 0 0115.75 9zM4.5 20.25a8.25 8.25 0 1115 0v.75h-15v-.75z"
           />
         </svg>
-        Salir
-      </button>
-    }
+      </span>
+    </div>
+
+    <button
+      class="btn btn-sm flex items-center gap-2
+            bg-transparent text-gray-700 border border-gray-300
+            hover:bg-red-600 hover:text-white hover:border-red-600
+            transition-colors duration-200"
+      (click)="logout()"
+        >
+          <!-- Icono de flecha -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.8"
+            stroke="currentColor"
+            class="w-5 h-5"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
+            />
+          </svg>
+
+          Salir
+        </button>
+      }
+
     @else if (authService.authStatus() === 'not-authenticated') {
       <a routerLink="/auth/login" class="btn btn-secondary btn-sm">
         Iniciar Sesión

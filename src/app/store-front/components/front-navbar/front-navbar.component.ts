@@ -11,6 +11,7 @@ import { AuthService } from '@auth/services/auth.service';
 export class FrontNavbarComponent {
   authService = inject(AuthService);  
   router = inject(Router);
+  userCustCode?: any;
 
   logout() {
     this.authService.logout()
