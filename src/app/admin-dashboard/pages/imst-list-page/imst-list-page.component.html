@@ -1,17 +1,19 @@
-<div class="p-4">
-  <h2 class="text-xl font-bold mb-4">Productos</h2>
+<h1 class="text-2xl font-bold">Listado de Productos</h1>
+<h3 class="text-lg">
+  Total de productos:
+  <span class="text-accent">{{ products.length }}</span>
+</h3>
 
-  <div *ngIf="loading" class="text-center">Cargando...</div>
+<div class="divider"></div>
 
-  <div *ngIf="error" class="text-red-500">{{ error }}</div>
+<div class="flex gap-2 items-center h-20">
+  <div class="flex flex-1"></div>
 
-  <div class="flex justify-end mb-4">
-    <a routerLink="/admin/prod/create" class="btn btn-primary btn-sm">
-      Crear Producto
-    </a>
-  </div>
-
-  <app-imst-table *ngIf="!loading && !error"
-                  [products]="products">
-  </app-imst-table>
+  <button class="btn btn-primary" routerLink="/admin/prod/create">
+    Nuevo producto
+  </button>
 </div>
+
+<app-imst-table *ngIf="!loading && !error"
+                [products]="products">
+</app-imst-table> 
