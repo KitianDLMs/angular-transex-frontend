@@ -3,6 +3,7 @@ import {
   Component,
   effect,
   ElementRef,
+  OnInit,
   signal,
   viewChild,
 } from '@angular/core';
@@ -10,6 +11,7 @@ import mapboxgl, { LngLatLike } from 'mapbox-gl'; // or "const mapboxgl = requir
 import { DecimalPipe, JsonPipe } from '@angular/common';
 import { environment } from '../../../../environments/environment';
 import { v4 as UUIDv4 } from 'uuid';
+import { ActivatedRoute } from '@angular/router';
 
 mapboxgl.accessToken = environment.mapboxKey;
 
@@ -23,7 +25,9 @@ interface Marker {
   imports: [DecimalPipe, JsonPipe],
   templateUrl: './seguimiento-page.component.html',
 })
-export class SeguimientoPageComponent implements AfterViewInit {
+export class SeguimientoPageComponent implements AfterViewInit, OnInit {
+
+  constructor(private route: ActivatedRoute) {}
   currentYear = new Date().getFullYear();
 
   divElement = viewChild<ElementRef>('map');
@@ -69,7 +73,16 @@ export class SeguimientoPageComponent implements AfterViewInit {
     this.mapListeners(map);
   }
 
-  
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      const code = params['code'];
+      console.log("➡ Código recibido:", code);
+
+      if (code) {
+        // this.loadSeguimiento(code);
+      }
+    });
+  }
 
   mapListeners(map: mapboxgl.Map) {
   this.map.set(map);

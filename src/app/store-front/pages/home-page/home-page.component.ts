@@ -8,6 +8,9 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { catchError, of, tap } from 'rxjs';
 import { ProdService } from '@shared/services/prod.service';
 import { CustService } from '@dashboard/cust/services/cust.service';
+import { OrdrService } from '@shared/services/ordr.service';
+import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environments/environment.development';
 
 @Component({
   selector: 'app-home-page',
@@ -21,7 +24,15 @@ export class HomePageComponent implements OnInit {
   prodService = inject(ProdService); 
   authService = inject(AuthService);
   custService = inject(CustService);
+  imstService = inject(OrdrService);
   paginationService = inject(PaginationService);
+  baseUrl = environment.baseUrl;
+
+  expandedOrder: string | null = null;
+  orderLines: any[] = [];
+  expandedCode: string | null = null;
+  productLines: any[] = [];
+
 
   customerName: string | null = null;
   customerAddress: string | null = null;
@@ -34,6 +45,10 @@ export class HomePageComponent implements OnInit {
   userCustCode: string | null = null;
 
   projects: any[] = [];
+
+  constructor(
+    private httpClient: HttpClient,    
+  ) {}
 
   ngOnInit() {
     const user = this.authService.user();
@@ -51,6 +66,20 @@ export class HomePageComponent implements OnInit {
       });
     }
     this.loadProductsByCustomer();
+  }
+   
+  toggle(prod: any) {
+    if (this.expandedCode === prod.item_code) {
+      this.expandedCode = null;
+      return;
+    }
+
+    this.expandedCode = prod.item_code;
+
+    this.prodService.getLinesByItem(prod.item_code).subscribe(res => {
+      console.log(res);      
+      this.productLines = res;
+    });
   }
 
   loadProductsByCustomer() {

@@ -23,23 +23,24 @@
       >
         <li>
           <a
-            routerLink="/store-front"
+            routerLink="/store-front/"
+            routerLinkActive="text-secondary font-semibold"
+            class="btn btn-ghost justify-start"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            Mis Pedidos
+          </a>
+        </li> 
+        <li>
+          <a
+            routerLink="/store-front/ordr"
             routerLinkActive="text-secondary font-semibold"
             [routerLinkActiveOptions]="{ exact: true }"
             class="btn btn-ghost justify-start"
           >
             Mis Productos
           </a>
-        </li>
-           <li>
-          <a
-            routerLink="/store-front/ordr"
-            routerLinkActive="text-secondary font-semibold"
-            class="btn btn-ghost justify-start"
-          >
-            Mis Pedidos
-          </a>
-        </li>  
+        </li>         
         <li>
           <a
             routerLink="/store-front/docs"
@@ -74,14 +75,14 @@
     <ul class="menu menu-horizontal px-1">
       <li>
         <a
-          routerLink="/store-front"
+          routerLink="/store-front/"
           routerLinkActive="text-secondary font-semibold border-b-2 border-secondary"
           [routerLinkActiveOptions]="{ exact: true }"
           class="btn btn-ghost"
         >
-          Mis Productos
+          Mis Pedidos
         </a>
-      </li>
+      </li> 
       <li>
         <a
           routerLink="/store-front/ordr"
@@ -89,9 +90,9 @@
           [routerLinkActiveOptions]="{ exact: true }"
           class="btn btn-ghost"
         >
-          Mis Pedidos
+          Mis Productos
         </a>
-      </li>   
+      </li>    
       <li>
         <a
           routerLink="/store-front/docs"

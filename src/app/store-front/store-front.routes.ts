@@ -14,7 +14,7 @@ export const storeFrontRoutes: Routes = [
     path: '',
     component: StoreFrontLayoutComponent,
     children: [
-      { path: '', component: HomePageComponent },
+      { path: '', component: OrdrPageComponent },
 
       { path: 'obras', component: ObraPageComponent },
 
@@ -28,7 +28,7 @@ export const storeFrontRoutes: Routes = [
 
       { path: 'obra/:idSlug', component: ObraPageComponent },
 
-      { path: 'ordr', component: OrdrPageComponent },
+      { path: 'ordr', component: HomePageComponent },
 
       { path: '**', component: NotFoundPageComponent },
     ],

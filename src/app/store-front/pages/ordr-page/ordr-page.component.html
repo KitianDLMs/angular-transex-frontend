@@ -29,7 +29,7 @@
       <option value="" disabled selected>Selecciona la obra</option>
 
       <option value="">Todas</option>
-
+      
       <option *ngFor="let p of projectOptions" [value]="p.proj_code">
         {{ p.proj_code }} - {{ p.proj_name }}
       </option>
@@ -57,7 +57,11 @@
       </thead>
 
       <tbody>
-        <tr *ngFor="let ord of orders" class="border-t hover:bg-cyan-50 transition duration-150 ease-in-out">
+        <tr 
+          *ngFor="let ord of orders"
+          class="border-t hover:bg-cyan-50 transition duration-150 ease-in-out cursor-pointer"
+          (click)="goToSeguimiento(ord)"
+        >
           <td class="py-3 px-4">{{ ord.order_date | date:'yyyy-MM-dd' }}</td>
           <td class="py-3 px-4 font-semibold">{{ ord.order_code }}</td>
           <td class="py-3 px-4">{{ ord.order_type }}</td>
@@ -68,7 +72,11 @@
     </table>
   </div>
 
-
+   @if (loading()) {
+      <div class="text-center p-6 text-gray-500 animate-pulse">
+        Cargando pedidos...
+      </div>
+    }
 
   <footer class="mt-10 text-xs text-gray-400 text-center">
     © {{ currentYear }} TRANSEX CLIENT UI — Todos los derechos reservados.

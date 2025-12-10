@@ -6,6 +6,7 @@ import { AuthService } from '@auth/services/auth.service';
 import { ProjService } from '@shared/services/proj.service';
 import { ProdService } from '@shared/services/prod.service';
 import { CustService } from '@dashboard/cust/services/cust.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-ordr-page',
@@ -17,6 +18,10 @@ export class OrdrPageComponent {
   orders: any[] = [];
   custCode: string = '';
   selectedProject: string = '';
+  loading = signal(true);
+
+  expandedOrder: string | null = null;
+  orderLines: any[] = [];
 
   today = new Date();
   currentYear = new Date().getFullYear();
@@ -27,7 +32,7 @@ export class OrdrPageComponent {
   authService = inject(AuthService);
   projService = inject(ProjService);
   prodService = inject(ProdService);
-  custService = inject(CustService);
+  custService = inject(CustService);  
     
   filteredCustCode = signal('');
 
@@ -38,6 +43,7 @@ export class OrdrPageComponent {
 
   constructor(
     private ordrService: OrdrService,    
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -62,6 +68,24 @@ export class OrdrPageComponent {
     this.loadOrders();
   }
 
+  toggleOrder(  ord: any) {
+    const order_date = ord.order_date.slice(0, 10);
+    const order_code = ord.order_code;
+
+    if (this.expandedOrder === order_code) {
+      this.expandedOrder = null;
+      this.orderLines = [];
+      return;
+    }
+
+    this.ordrService.getLines(order_date, order_code)
+      .subscribe((res: any) => {
+        this.expandedOrder = order_code;
+        this.orderLines = res;
+      });
+  }
+
+
   searchOrders() {
     const code = this.custCode.trim();
     if (!code) return;
@@ -71,11 +95,16 @@ export class OrdrPageComponent {
   }
 
   loadOrders() {
-    this.ordrService.getOrders(this.userCustCode!, this.selectedProject)
-      .subscribe((data: any) => {
-        console.log(data);        
-        this.orders = data;
-      });
+    const proj = this.selectedProject?.trim() || '';
+
+    this.ordrService.getOrders(this.userCustCode!, proj)
+      .subscribe(
+        (data: any) => {
+          this.orders = data;
+          this.loading.set(false);
+        },
+        () => this.loading.set(false)
+      );
   }
 
   onFilterCustCode(value: string) {
@@ -84,6 +113,7 @@ export class OrdrPageComponent {
   }
 
   onSelectProject() {
+    console.log("Proyecto seleccionado:", this.selectedProject);
     this.loadOrders();
   }
 
@@ -99,4 +129,11 @@ export class OrdrPageComponent {
       // this.imstResource.set(res);
     });
   }
+
+  goToSeguimiento(ord: any) {
+    this.router.navigate(['/store-front/seguimiento'], {
+      queryParams: { code: ord.order_code }
+    });
+  }
+
 }

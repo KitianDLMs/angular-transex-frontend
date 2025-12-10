@@ -16,6 +16,11 @@ export class ProdService {
     return this.http.get<Imst[]>(this.baseUrl);
   }
 
+  // 🔹 Obtener líneas PRJP para un producto IMST
+  getLinesByItem(item_code: string): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.baseUrl}/prjp/item/${item_code}`);
+  }
+
   // 🔹 Obtener un producto por código
   getOne(item_code: string): Observable<Imst> {
     return this.http.get<Imst>(`${this.baseUrl}/item/${item_code}`);

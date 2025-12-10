@@ -4,11 +4,12 @@ import { Observable, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Ordr } from 'src/app/ordr/interfaces/ordr.interface';
 import { environment } from 'src/environments/environment.development';
+import { Imst } from '@dashboard/imst/interfaces/imst.interface';
 
 @Injectable({ providedIn: 'root' })
-export class OrdrService {
+export class ImstService {
   baseUrl = environment.baseUrl;
-  private ordrCache = new Map<string, Ordr[]>();
+  private ordrCache = new Map<string, Imst[]>();
 
   constructor(private http: HttpClient) {}
 
@@ -30,17 +31,14 @@ export class OrdrService {
     return this.http.get<Ordr[]>(this.baseUrl, { params });
   }
 
-  getOrders(cust_code?: string, proj_code: string = '') {
+   getOrders(cust_code?: string, proj_code?: string) {
+    let params: any = {};
 
-    const params: any = {
-      cust_code: cust_code?.trim() || '',
-      proj_code: proj_code?.trim() || ''  // <--- SIEMPRE
-    };
+    if (cust_code) params.cust_code = cust_code.trim();
+    if (proj_code) params.proj_code = proj_code.trim();
 
     return this.http.get(`${this.baseUrl}/ordr`, { params });
   }
-
-
 
   getLines(order_date: string, order_code: string) {
     return this.http.get(`${this.baseUrl}/ordl/byOrder/${order_date}/${order_code}`);
