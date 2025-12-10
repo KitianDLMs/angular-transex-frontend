@@ -46,7 +46,17 @@
     />
   </label>
 
-  <button type="submit" class="btn btn-secondary">Login</button>
+  <!-- <button type="submit" class="btn btn-secondary">Login</button> -->
+ <button
+    class="btn btn-secondary w-full mt-2"
+    (click)="onSubmit()"
+    [disabled]="loginForm.invalid || loading()"
+  >
+    <span *ngIf="!loading()">Ingresar</span>
+    <span *ngIf="loading()">Procesando...</span>
+  </button>
+
+
 
   <!-- <p class="text-slate-700">
     ¿No tienes cuenta?
