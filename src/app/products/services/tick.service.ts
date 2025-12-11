@@ -19,6 +19,20 @@ export class TickService {
     return this.http.get<any>(`${this.baseUrl}/${order_date}/${order_code}/${tkt_code}`);
   }
 
+  getOrdersByCustomer(cust_code: any)  {
+    return this.http.get<any>(`${this.baseUrl}/${cust_code}`);
+  }
+
+  getProjectsByOrder(order_code: any) {
+    return this.http.get<any>(`${this.baseUrl}/${order_code}`);
+  }
+
+  downloadFile(fileName: string) {
+    return this.http.get(`${this.baseUrl}/file/${fileName}`, {
+      responseType: 'blob'
+    });
+  }
+
   downloadGuide(guideId: string) {
     return this.http.get(
       `${this.baseUrl}/guide/${guideId}`,

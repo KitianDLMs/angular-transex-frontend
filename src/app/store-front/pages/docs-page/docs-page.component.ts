@@ -40,14 +40,13 @@ export class DocsPageComponent implements OnInit {
   filterDateFrom: string = '';
   filterDateTo: string = '';
 
-  // Proyecto (filtro anterior)
   selectedProject: string = '';
 
   // -------------------------
   // 🔹 Datos
   // -------------------------
-  loading = signal(true);      // Usado como isLoading
-  results: any[] = [];         // Reemplaza "ticks"
+  loading = signal(true);
+  results: any[] = [];   
 
   // -------------------------
   // 🔹 Resource inicial
@@ -145,6 +144,25 @@ export class DocsPageComponent implements OnInit {
       },
       error: () => {
         this.loading.set(false);
+      }
+    });
+  }
+
+  download(fileName: string) {    
+    // const fullName = `${fileName}.xlsx`;
+    const cleanName = `${fileName.trim()}.xlsx`;    
+    console.log(cleanName);    
+    this.tickService.downloadFile(cleanName).subscribe({
+      next: (file: Blob) => {
+        const url = window.URL.createObjectURL(file);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: err => {
+        console.error('Error descargando archivo', err);
       }
     });
   }

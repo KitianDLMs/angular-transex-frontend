@@ -1,28 +1,46 @@
-<h1 class="text-2xl font-bold mb-4">Crear Proyecto</h1>
+<h1 class="text-2xl font-bold mb-4">Crear Tick</h1>
 
-<form [formGroup]="form" (ngSubmit)="create()" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<form [formGroup]="tickForm" (ngSubmit)="createTick()" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-  <select formControlName="cust_code" class="select select-bordered text-black w-full" required>
+  <!-- Cliente -->
+  <select formControlName="cust_code" class="select select-bordered w-full" required>
     <option value="" disabled selected>Seleccione un cliente</option>
     <option *ngFor="let c of customers" [value]="c.cust_code">{{ c.name }}</option>
   </select>
 
-  <input formControlName="proj_code" class="input text-black input-bordered w-full" placeholder="Código del proyecto" required />
-  <input formControlName="proj_name" class="input text-black input-bordered w-full" placeholder="Nombre del proyecto" required />
-  <input formControlName="sort_name" class="input text-black input-bordered w-full" placeholder="Nombre corto" />
-  <input formControlName="ship_cust_code" class="input text-black input-bordered w-full" placeholder="Cliente de envío" />
-  <input formControlName="ref_cust_code" class="input text-black input-bordered w-full" placeholder="Cliente referenciado" />
-  <input formControlName="po" class="input text-black input-bordered w-full" placeholder="PO" />
-  <input formControlName="cust_job_num" class="input text-black input-bordered w-full" placeholder="Job number" />
-  <input formControlName="setup_date" type="date" class="input text-black input-bordered w-full" placeholder="Setup date" />
+  <!-- Proyecto -->
+  <select formControlName="project_code" class="select select-bordered w-full">
+    <option value="" disabled selected>Seleccione un proyecto</option>
+    <option *ngFor="let p of projects" [value]="p.proj_code">{{ p.proj_name }}</option>
+  </select>
 
+  <!-- Orden -->
+  <select formControlName="order_code" class="select select-bordered w-full" required>
+    <option value="" disabled selected>Seleccione una orden</option>
+    <option *ngFor="let o of orders" [value]="o.order_code">{{ o.order_code }}</option>
+  </select>
+
+  <!-- Código de tick -->
+  <input formControlName="tkt_code" class="input input-bordered w-full" placeholder="Código de tick" required />
+
+  <!-- Descripción -->
+  <input formControlName="description" class="input input-bordered w-full" placeholder="Descripción" />
+
+  <!-- Fecha de orden -->
+  <input type="date" formControlName="order_date" class="input input-bordered w-full" required />
+
+  <!-- Archivo opcional -->
+  <input type="file" (change)="onFileSelected($event)" class="input w-full" />
+
+  <!-- Mensaje de error -->
   <div *ngIf="error" class="text-red-600 col-span-2">{{ error }}</div>
 
-  <div class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-4 mt-6">
+  <!-- Botones -->
+  <div class="col-span-1 sm:col-span-2 flex gap-4 mt-6">
     <button type="submit" class="btn btn-primary flex-1">
-      Crear Proyecto
+      Crear Tick
       <span class="loading loading-spinner loading-sm" *ngIf="loading"></span>
     </button>
-    <a routerLink="/admin/proj" class="btn btn-secondary flex-1">Cancelar</a>
+    <a routerLink="/admin/ticks" class="btn btn-secondary flex-1">Cancelar</a>
   </div>
 </form>

@@ -20,6 +20,7 @@ import { ImstEditPageComponent } from './pages/imst-edit-page/imst-edit-page.com
 import { ImstCreatePageComponent } from './pages/imst-create-page/imst-create-page.component';
 import { ProductsAdminPageComponent } from './pages/products-admin-page/products-admin-page.component';
 import { ProductAdminPageComponent } from './pages/product-admin-page/product-admin-page.component';
+import { TickCreatePageComponent } from './pages/tick-create-page/tick-create-page.component';
 
 export const adminDashboardRoutes: Routes = [
   {
@@ -30,11 +31,15 @@ export const adminDashboardRoutes: Routes = [
       {
         path: 'ticks',
         component: TicksAdminPageComponent,
-      },   
+      },
+      {
+        path: 'ticks/create',
+        component: TickCreatePageComponent,
+      },         
       {
         path: 'admin/ticks/:order_date/:order_code/:tkt_code',
         component: TickAdminPageComponent,
-      },
+      },      
       {
         path: 'customer',
         component: CustsAdminPageComponent,

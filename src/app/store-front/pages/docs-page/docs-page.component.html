@@ -109,7 +109,7 @@
             </td>
 
             <td class="py-3 px-4">
-              {{ tick.tkt_date | date:'dd/MM/yyyy HH:mm' }}
+              {{ tick.proj_code || '—' }}
             </td>
 
             <td class="py-3 px-4">
@@ -123,13 +123,13 @@
             <td>
               {{ tick.amt || '00.00' }}
             </td>
-           <td class="py-3 px-4 text-center">
+          <td class="py-3 px-4 text-center">
             <div
               class="flex justify-center gap-4 sm:gap-3 flex-wrap"
             >
               <button
                 class="p-2 bg-green-100 hover:bg-green-200 rounded-xl transition flex items-center justify-center w-10 h-10"
-                (click)="downloadGuide(tick)"
+                (click)="download(tick.tkt_code)"
               >
                 <img
                   src="assets/images/sobresalir.png"

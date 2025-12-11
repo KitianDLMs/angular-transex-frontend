@@ -26,6 +26,6 @@ export class TicksAdminPageComponent {
       console.log("📌 Datos recibidos desde backend:", data);
       console.log("📌 Lista de ticks:", data.ticks);
     });
-  }
+  }  
 }
 

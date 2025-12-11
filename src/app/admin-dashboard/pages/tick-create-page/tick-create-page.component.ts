@@ -1,47 +1,86 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { TickService } from '@products/services/tick.service';
 import { CustService } from '@dashboard/cust/services/cust.service';
 import { ProjService } from '@shared/services/proj.service';
-import { Proj } from 'src/app/proj/interfaces/proj.interface';
 
 @Component({
-  selector: 'app-proj-create-page',
+  selector: 'app-tick-create-page',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './tick-create-page.component.html',
-  // SOENCO0019
 })
-export class ProjCreatePageComponent implements OnInit {
+export class TickCreatePageComponent implements OnInit {
 
-  form!: FormGroup;
+  tickForm!: FormGroup;
   loading = false;
   error: string | null = null;
+
   customers: any[] = [];
+  orders: any[] = [];
   projects: any[] = [];
+
+  file?: File;
 
   constructor(
     private fb: FormBuilder,
+    private tickService: TickService,
     private custService: CustService,
     private projService: ProjService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.form = this.fb.group({
+    this.tickForm = this.fb.group({
       cust_code: ['', Validators.required],
-      proj_code: ['', Validators.required],
-      proj_name: ['', Validators.required],
-      sort_name: [''],
-      ship_cust_code: [''],
-      ref_cust_code: [''],
-      po: [''],
-      cust_job_num: [''],
-      setup_date: [new Date(), Validators.required],
+      project_code: ['', Validators.required],
+      order_code: ['', Validators.required],
+      tkt_code: ['', Validators.required],
+      description: [''],
+      order_date: [new Date().toISOString().slice(0, 10), Validators.required],
     });
 
     this.loadCustomers();
+
+    // Cuando cambia el cliente → cargar proyectos (desde /ordr?cust_code=)
+    this.tickForm.get('cust_code')?.valueChanges.subscribe(cust_code => {
+      this.projects = [];
+      this.orders = [];
+      this.tickForm.get('project_code')?.setValue('');
+      this.tickForm.get('order_code')?.setValue('');
+
+      if (cust_code) {
+        this.projService.getProjectsByCustomer(cust_code).subscribe({
+          next: projects => {
+            this.projects = projects;
+          },
+          error: err => console.error('Error cargando proyectos', err)
+        });
+      }
+    });
+    
+    // Cuando cambia el proyecto → cargar órdenes reales
+    this.tickForm.get('project_code')?.valueChanges.subscribe(project_code => {
+
+      this.orders = [];
+      this.tickForm.get('order_code')?.setValue('');
+
+      if (project_code) {
+
+        this.custService.getOrdersByProject(project_code).subscribe({
+          next: orders => {
+            this.orders = orders;
+            console.log('Ordenes filtradas por proyecto:', this.orders);
+          },
+          error: err => console.error('Error cargando órdenes', err)
+        });
+
+      }
+
+    });
+
   }
 
   loadCustomers() {
@@ -51,23 +90,27 @@ export class ProjCreatePageComponent implements OnInit {
     });
   }
 
-  create() {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) this.file = file;
+  }
+
+  createTick() {
+    if (this.tickForm.invalid) {
+      this.tickForm.markAllAsTouched();
       return;
     }
 
     this.loading = true;
-    console.log(this.form.value);
-    
-    this.projService.create(this.form.value).subscribe({
-      next: (proj: Proj) => {
+
+    this.tickService.createTick(this.tickForm.value, this.file).subscribe({
+      next: res => {
         this.loading = false;
-        this.router.navigate(['/admin/proj']);
+        this.router.navigate(['/admin/ticks']);
       },
-      error: (err: any) => {
-        console.error('Error al crear proyecto', err);
-        this.error = 'Error al crear proyecto';
+      error: err => {
+        console.error('Error al crear tick', err);
+        this.error = 'Error al crear tick';
         this.loading = false;
       }
     });

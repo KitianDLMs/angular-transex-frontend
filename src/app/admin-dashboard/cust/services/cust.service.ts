@@ -50,7 +50,16 @@ export class CustService {
     );
   }
 
-  
+  getOrdersByCustomer(cust_code: string): Observable<any[]> {
+    if (!cust_code) return of([]);
+    return this.http.get<any[]>(`${baseUrl}/cust/${cust_code}/orders`);
+  }
+
+  getOrdersByProject(proj_code: string): Observable<any[]> {
+    if (!proj_code) return of([]);
+    return this.http.get<any[]>(`${baseUrl}/cust/proj/${proj_code}/orders`);
+  }
+    
   updateCust(cust_code: string, custLike: Partial<Cust>): Observable<Cust> {
     return this.http.patch<Cust>(`${baseUrl}/cust/${cust_code}`, custLike).pipe(
       tap((cust) => {

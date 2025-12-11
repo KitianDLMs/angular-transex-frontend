@@ -32,10 +32,13 @@ export class ProjService {
     return this.http.get<Proj>(`${this.baseUrl}/proj/${code}`);
   }
 
-  getOrdersByCustomer(cust_code: string): Observable<Ordr[]> {
-    return this.http.get<Ordr[]>(`${this.baseUrl}/ordr?cust_code=${cust_code}`);
+  getProjectsByCustomer(proj_code: string): Observable<Proj[]> {
+    return this.http.get<Proj[]>(`${this.baseUrl}/proj/by-cust/${proj_code}`);
   }
 
+  getProjectsByOrder(order_code: any): Observable<Proj[]> {
+    return this.http.get<Proj[]>(`${this.baseUrl}/proj`);
+  }  
 
   getByCust(cust_code: string): Observable<Proj[]> {
     const key = cust_code.trim();
