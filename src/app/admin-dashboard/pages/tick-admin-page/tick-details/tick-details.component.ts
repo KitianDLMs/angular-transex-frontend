@@ -1,4 +1,4 @@
-import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProductCarouselComponent } from '@products/components/product-carousel/product-carousel.component';
 import { firstValueFrom } from 'rxjs';
@@ -9,24 +9,34 @@ import { ProductsService } from '@products/services/products.service';
 
 import { FormErrorLabelComponent } from '../../../../shared/components/form-error-label/form-error-label.component';
 import { Router } from '@angular/router';
+import { TickService } from '@products/services/tick.service';
 
 @Component({
-  selector: 'product-details',
+  selector: 'tick-details',
   imports: [
-    ProductCarouselComponent,
     ReactiveFormsModule,
-    FormErrorLabelComponent,
   ],
-  templateUrl: './product-details.component.html',
+  templateUrl: './tick-details.component.html',
 })
-export class ProductDetailsComponent implements OnInit {
-  product = input.required<Product>();
-
+export class TickDetailsComponent implements OnInit {  
   router = inject(Router);
   fb = inject(FormBuilder);
 
+  tick = input.required<any>(); 
+
   productsService = inject(ProductsService);
+  ticksService = inject(TickService);
+  
   wasSaved = signal(false);
+
+  imageFileList: FileList | undefined = undefined;
+  tempImages = signal<string[]>([]);
+
+  imagesToCarousel = computed(() => {
+    const currentProductImages = [...this.tick().images, ...this.tempImages()];    
+
+    return currentProductImages;
+  });
 
   productForm = this.fb.group({
     title: ['', Validators.required],
@@ -49,11 +59,11 @@ export class ProductDetailsComponent implements OnInit {
   sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
   ngOnInit(): void {
-    this.setFormValue(this.product());
+    this.setFormValue(this.tick());
   }
 
   setFormValue(formLike: Partial<Product>) {
-    this.productForm.reset(this.product() as any);
+    this.productForm.reset(this.tick() as any);
     this.productForm.patchValue({ tags: formLike.tags?.join(',') });
     // this.productForm.patchValue(formLike as any);
   }
@@ -86,16 +96,16 @@ export class ProductDetailsComponent implements OnInit {
           .map((tag) => tag.trim()) ?? [],
     };
 
-    if (this.product().id === 'new') {
+    if (this.tick().id === 'new') {
       // Crear producto
       const product = await firstValueFrom(
-        this.productsService.createProduct(productLike)
+        this.productsService.createProduct(productLike, this.imageFileList)
       );
 
       this.router.navigate(['/admin/products', product.id]);
     } else {
       await firstValueFrom(
-        this.productsService.updateProduct(this.product().id, productLike)
+        this.productsService.updateProduct(this.tick().id, productLike, this.imageFileList)
       );
     }
 
@@ -104,4 +114,38 @@ export class ProductDetailsComponent implements OnInit {
       this.wasSaved.set(false);
     }, 3000);
   }
+
+  onFilesChanged(event: Event) {
+    const fileList = (event.target as HTMLInputElement).files;
+    this.imageFileList = fileList ?? undefined;
+    this.tempImages.set([]);
+    const imgageUrls = Array.from(fileList ?? []).map((file) => URL.createObjectURL(file));
+
+    this.tempImages.set(imgageUrls);
+  }
+
+  file?: File;
+
+  onFileChange(e: Event) {
+    const target = e.target as HTMLInputElement;
+    if (target.files?.length) {
+      this.file = target.files[0];
+    }
+  }
+
+  save() {
+    this.ticksService.createTick(this.tick(), this.file)
+      .subscribe(() => alert('Documento subido'));
+  }
+
+  download(path: string) {
+    this.ticksService.downloadDocument(path).subscribe(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = path.split('/').pop()!;
+      a.click();
+    });
+  }
+
 }

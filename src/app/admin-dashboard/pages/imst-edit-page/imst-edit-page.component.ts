@@ -34,17 +34,20 @@ export class ImstEditPageComponent implements OnInit {
     this.form = this.fb.group({
       item_code: [{ value: '', disabled: true }],
       descr: [''],
+      mix_type: [''],       
+      rm_slump: [''],       
+      price_uom: [''],
+      price: [''],          
+      matl_price: [''],     
       short_descr: [''],
       invy_flag: [false],
-      price_uom: [''],
       order_uom: [''],
       slump: [''],
       slump_uom: [''],
       strgth: [''],
       strgth_uom: [''],
-      update_date: [''],
+      update_date: [new Date()],
     });
-
     this.loadProduct();
   }
 
@@ -57,16 +60,21 @@ export class ImstEditPageComponent implements OnInit {
         this.form.patchValue({
           item_code: p.item_code?.trim() ?? '',
           descr: p.descr ?? '',
+          mix_type: p.mix_type ?? '',
+          rm_slump: p.rm_slump ?? '',
+          price_uom: p.price_uom ?? '',
+          price: p.price ?? null,
+          matl_price: p.matl_price ?? null,
           short_descr: p.short_descr ?? '',
           invy_flag: p.invy_flag ?? false,
-          price_uom: p.price_uom ?? '',
           order_uom: p.order_uom ?? '',
-          slump: p.slump ?? '',
           slump_uom: p.slump_uom ?? '',
+          slump: p.slump !== undefined && p.slump !== null ? String(p.slump) : '',
+          update_date: p.update_date ? new Date(p.update_date) : new Date(),
           strgth: p.strgth ?? '',
           strgth_uom: p.strgth_uom ?? '',
-          update_date: p.update_date ? p.update_date.substring(0,10) : '',
         });
+
       },
       error: () => {
         this.loading = false;
@@ -79,10 +87,14 @@ export class ImstEditPageComponent implements OnInit {
     if (this.form.invalid) return;
 
     const raw = this.form.getRawValue();
+
     const dto = {
       ...raw,
-      slump: raw.slump !== '' ? Number(raw.slump) : null,
+      slump: raw.slump !== undefined && raw.slump !== null ? String(raw.slump) : null,
       strgth: raw.strgth !== '' ? Number(raw.strgth) : null,
+      price: raw.price !== '' ? Number(raw.price) : null,
+      matl_price: raw.matl_price !== '' ? Number(raw.matl_price) : null,
+      update_date: raw.update_date instanceof Date ? raw.update_date : new Date(raw.update_date),
     };
 
     this.prodService.update(this.item_code, dto).subscribe({

@@ -112,6 +112,11 @@ export class ProductsService {
       .pipe(tap((product) => this.updateProductCache(product)));
   }
 
+  createTick(dto: any, file?: File) {
+    
+  }
+
+
   updateProductCache(product: Product) {
     const productId = product.id;
 

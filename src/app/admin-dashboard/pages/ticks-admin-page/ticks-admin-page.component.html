@@ -1,0 +1,73 @@
+<h1 class="text-2xl font-bold">Listado de Ticks</h1>
+<h3 class="text-lg">
+  Total de documentos:
+  <span class="text-accent">{{ ticksResource.value()?.count }}</span>
+</h3>
+
+<div class="divider"></div>
+
+<div class="flex gap-2 items-center h-20">
+  <!-- <app-pagination
+    [pages]="ticksResource.value()?.pages ?? 0"
+    [currentPage]="paginationService.currentPage()"
+  /> -->
+
+  <select
+    class="select select-bordered w-32"
+    (change)="ticksPerPage.set(+selectPerPage.value)"
+    #selectPerPage
+  >
+    <option value="10">10</option>
+    <option value="20">20</option>
+    <option value="50">50</option>
+    <option value="100">100</option>
+  </select>
+
+  <div class="flex flex-1"></div>
+</div>
+
+<!-- LISTA -->
+<div class="overflow-x-auto">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Orden</th>
+        <th>Código Tick</th>
+        <th>Documento</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+
+      @for (tick of ticksResource.value()?.ticks ?? []; track tick.tkt_code) {
+      <tr>
+        <td>{{ tick.order_date }}</td>
+        <td>{{ tick.order_code }}</td>
+        <td>{{ tick.tkt_code }}</td>
+        <td>
+          @if (tick.document_path) {
+            <a class="text-blue-600 underline" [href]="'http://localhost:3000/' + tick.document_path" target="_blank">
+              Ver documento
+            </a>
+          }
+        </td>
+        <td>
+          <a
+            class="btn btn-ghost text-accent btn-xs"
+            [routerLink]="[
+              '/admin/ticks',
+              tick.order_date,
+              tick.order_code,
+              tick.tkt_code
+            ]"
+          >
+            Detalles
+          </a>
+        </td>
+      </tr>
+      }
+
+    </tbody>
+  </table>
+</div>

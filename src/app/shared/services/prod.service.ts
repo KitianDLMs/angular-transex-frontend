@@ -43,7 +43,7 @@ export class ProdService {
 
   // 🔹 Actualizar producto
   update(item_code: string, dto: Partial<Imst>): Observable<Imst> {
-    return this.http.patch<Imst>(`${this.baseUrl}/item/${item_code}`, dto);
+    return this.http.patch<Imst>(`${this.baseUrl}/${item_code}`, dto);
   }
 
   // 🔹 Eliminar producto

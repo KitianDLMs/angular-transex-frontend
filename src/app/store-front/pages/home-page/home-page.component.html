@@ -12,14 +12,14 @@
     class="bg-white shadow-md rounded-xl p-4 border border-gray-200 
           flex flex-col sm:flex-row sm:items-center gap-4">
 
-    <div class="mr-auto text-gray-600 text-center sm:text-left">
-      <div class="font-semibold text-lg sm:text-sm">
-        Cliente: {{ customerName }}
-      </div>
-      <div class="text-sm text-gray-500">
-        Dirección: {{ customerAddress }}
-      </div>
+  <div class="text-gray-600 text-center sm:text-left sm:mr-auto">
+    <div class="font-semibold text-lg sm:text-sm">
+      Cliente: {{ customerName }}
     </div>
+    <div class="text-sm text-gray-500">
+      Dirección: {{ customerAddress }}
+    </div>
+  </div>
 
 
     <select
@@ -51,17 +51,6 @@
 
       <thead class="bg-cyan-700 text-white uppercase text-xs tracking-wide">
         <tr>
-          <th class="py-3 px-4 text-left font-semibold">Código</th>
-          <th class="py-3 px-4 text-left font-semibold">Descripción</th>
-          <th class="py-3 px-4 text-left font-semibold">Categoría</th>
-          <th class="py-3 px-4 text-left font-semibold">Slump</th>
-          <th class="py-3 px-4 text-left font-semibold">UOM</th>
-          <th class="py-3 px-4 text-left font-semibold">Precio</th>
-        </tr>
-      </thead>
-
-      <!-- <thead class="bg-cyan-700 text-white uppercase text-xs tracking-wide">
-        <tr>
           <th class="py-3 px-4 text-left font-semibold">Producto</th>
           <th class="py-3 px-4 text-left font-semibold">Código</th>
           <th class="py-3 px-4 text-left font-semibold">Orden de Compra</th>
@@ -69,7 +58,7 @@
           <th class="py-3 px-4 text-left font-semibold">Utilizado</th>
           <th class="py-3 px-4 text-left font-semibold">Saldo</th>
         </tr>
-      </thead> -->
+      </thead>
 
       <tbody>
         @for (prod of imstResource.value(); track prod.item_code) {
@@ -85,38 +74,19 @@
             <td class="py-3 px-4">{{ prod.saldo || 0 }}</td>
           </tr>
 
-          <!-- Expandido opcional -->
           @if (expandedCode === prod.item_code) {
             <tr class="bg-cyan-50 border-t">
               <td colspan="6" class="p-0">
-
                 <table class="min-w-full text-sm text-gray-700">
                   <tbody>
-
                     @for (line of productLines; track line.unique_line_num) {
                       <tr class="bg-white">
-
-                        <td class="py-2 px-4 truncate max-w-[100px]" title="{{ line.prod_code }}">
-                          {{ line.prod_code }}
-                        </td>
-                        <td class="py-2 px-4 truncate max-w-[150px]" title="{{ line.descr }}">
-                          {{ line.descr }}
-                        </td>
-                        <td class="py-2 px-4 truncate max-w-[90px]" title="{{ line.mix_type }}">
-                          {{ line.mix_type }}
-                        </td>
-                        <td class="py-2 px-4 truncate max-w-[70px]" title="{{ line.rm_slump }}">
-                          {{ line.rm_slump }}
-                        </td>
-                        <td class="py-2 px-4 truncate max-w-[50px]" title="{{ line.price_uom }}">
-                          {{ line.price_uom }}
-                        </td>
-
-                        <!-- PRECIO -->
-                        <td class="py-2 px-4 truncate max-w-[80px]" title="{{ line.price || line.matl_price }}">
-                          {{ line.price || line.matl_price }}
-                        </td>
-
+                        <td class="py-2 px-4">{{ prod.descr }}</td>
+                        <td class="py-2 px-4">{{ line.prod_code }}</td>
+                        <td class="py-2 px-4">{{ line.mix_type }}</td>
+                        <td class="py-2 px-4">{{ line.respaldado }}</td>
+                        <td class="py-2 px-4">{{ line.utilizado }}</td>
+                        <td class="py-2 px-4">{{ line.saldo }}</td>
                       </tr>
                     }
                   </tbody>
@@ -124,18 +94,16 @@
               </td>
             </tr>
           }
-
         }
       </tbody>
-    </table>
 
+    </table>
     @if (imstResource.isLoading()) {
       <div class="text-center p-6 text-gray-500 animate-pulse">
         Cargando productos...
       </div>
     }
   </div>
-
   <footer class="mt-10 text-xs text-gray-400 text-center">
     © {{ currentYear }} TRANSEX CLIENT UI — Todos los derechos reservados.
   </footer>

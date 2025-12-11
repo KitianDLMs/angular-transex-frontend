@@ -125,19 +125,20 @@
     <span class="text-sm text-gray-700 hidden md:inline">
       Bienvenido {{ authService.user()?.fullName }}
     </span>
-    <div class="relative group">
+   <div class="relative group">
       <button class="btn btn-circle btn-ghost">
         <i class="fa-solid fa-user"></i>
       </button>
+
       <div
         class="absolute right-0 mt-2 w-48 bg-gray-800 text-white text-sm
-              px-3 py-2 rounded-xl shadow-xl opacity-0 invisible
-              group-hover:opacity-100 group-hover:visible
-              transition-all duration-200"
+              px-3 py-2 rounded-xl shadow-xl hidden
+              group-hover:block transition-all duration-200"
       >
         <p>{{ authService.user()?.fullName || 'Sin nombre' }}</p>
       </div>
     </div>
+
     <button
       class="btn btn-sm flex items-center gap-2
             bg-transparent text-gray-700 border border-gray-300

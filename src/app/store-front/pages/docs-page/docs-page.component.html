@@ -1,78 +1,166 @@
-<!-- 🔹 Encabezado -->
 <header class="bg-cyan-700 text-white p-4 rounded-t-lg flex justify-between items-center shadow-sm">
   <h1 class="text-xl font-semibold">Documentos</h1>
-  <span class="text-sm opacity-90">
-    Actualizado al {{ today | date: 'dd/MM/yyyy' }}
-  </span>
+  <span class="text-sm opacity-90">Actualizado al {{ today | date:'dd/MM/yyyy' }}</span>
 </header>
 
-<div class="p-4 bg-gray-50">
+<div class="p-6 bg-gray-50">
+  <div class="mr-auto text-gray-600 text-center sm:text-center">
+    <div class="font-semibold text-lg sm:text-sm">
+      Cliente: {{ customerName }}
+    </div>
+    <div class="text-sm text-gray-500">
+      Dirección: {{ customerAddress }}
+    </div>
+  </div>
+  &nbsp;
+  <div
+    class="bg-white shadow-md rounded-xl p-4 border border-gray-200 
+          grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+    <select
+      class="select select-bordered bg-gray-50 w-full"
+      [(ngModel)]="selectedProject"
+      (change)="onSelectProject()">
+      <option ngValue="" disabled>Selecciona la obra</option>
+      <option ngValue="">Todas</option>
+      <option ngValue="PROY1">PROY1</option>
+      <option ngValue="PROY054">PROY054</option>
+    </select>
 
- <!-- 🔹 Filtro de proyecto -->
- <div class="bg-white shadow-md rounded-xl p-4 border border-gray-200 flex items-center gap-4">
-  <!-- Aquí aparece el cust_code -->
-  <span class="mr-auto text-gray-600 text-sm font-semibold">
-    Cliente: {{ userCustCode }}
-  </span>
+    <select
+      class="select select-bordered bg-gray-50 w-full"
+      [(ngModel)]="filterDocType">
+      <option value="">Tipo Doc</option>
+      <option value="guia-despacho">Guía de Despacho</option>
+      <option value="factura">Factura</option>
+    </select>
 
-  <label class="font-semibold text-gray-700">Obra:</label>
+    <input
+      type="text"
+      class="input input-bordered bg-gray-50 w-full"
+      placeholder="Num. Doc"
+      [(ngModel)]="filterDocNumber"
+    />
 
-  <select
-    class="select select-bordered w-64 bg-gray-50"
-    [(ngModel)]="selectedProject"
-    (change)="onSelectProject()">
-    <option value="">Todos</option>
-    <option *ngFor="let p of projectOptions" [value]="p.proj_code">
-      {{ p.proj_code }} - {{ p.proj_name }}
-    </option>
-  </select>
+    <div class="flex flex-col w-full">
+      <label class="text-gray-600 text-xs mb-1">Desde</label>
+      <input
+        type="date"
+        class="input input-bordered bg-gray-50 w-full"
+        [(ngModel)]="filterDateFrom"
+      />
+    </div>
 
-  <button class="btn bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg shadow-sm"
-          (click)="clearFilter()">
-    Limpiar
-  </button>  
-</div>
+    <div class="flex flex-col w-full">
+      <label class="text-gray-600 text-xs mb-1">Hasta</label>
+      <input
+        type="date"
+        class="input input-bordered bg-gray-50 w-full"
+        [(ngModel)]="filterDateTo"
+      />
+    </div>
 
-  <!-- Tabla IMST -->
-  <div class="overflow-x-auto bg-white shadow-lg rounded-2xl mt-10 border border-gray-200">
+    <div class="flex flex-col sm:flex-row gap-3 w-full lg:justify-end">
+      <button
+        class="btn bg-cyan-700 hover:bg-cyan-800 text-white w-full sm:w-auto px-5 py-2 rounded-lg shadow"
+        (click)="onSearch()">
+        Buscar
+      </button>
 
-    <h2 class="text-lg font-semibold p-4 bg-gray-100 border-b">Documentos</h2>
+      <button
+        class="btn bg-gray-200 hover:bg-gray-300 text-gray-700 w-full sm:w-auto px-4 py-2 rounded-lg shadow-sm"
+        (click)="handleClearFilters()">
+        Limpiar
+      </button>
+    </div>
+
+
+  </div>
+
+<div class="overflow-x-auto bg-white shadow-lg rounded-2xl mt-10 border border-gray-200">
 
     <table class="min-w-full border-collapse text-sm text-gray-700">
-
       <thead class="bg-cyan-700 text-white uppercase text-xs tracking-wide">
         <tr>
-          <th class="py-3 px-4 text-left font-semibold">Código</th>
-          <th class="py-3 px-4 text-left font-semibold">Descripción</th>
-          <th class="py-3 px-4 text-left font-semibold">Categoría</th>
-          <th class="py-3 px-4 text-left font-semibold">Slump</th>
-          <th class="py-3 px-4 text-left font-semibold">UOM</th>
+          <th class="py-3 px-4">Fecha Guía</th>
+          <th class="py-3 px-4">Guía</th>
+          <th class="py-3 px-4">Pedido</th>
+          <th class="py-3 px-4">Proyecto</th>
+          <th class="py-3 px-4">Hormigón</th>
+          <th class="py-3 px-4">Cantidad</th>
+          <th class="py-3 px-4">Precio</th>
+          <th class="py-3 px-4 text-center">Acciones</th>
         </tr>
       </thead>
 
       <tbody>
-        @for (prod of imstResource.value(); track prod.item_code) {
+        @for (tick of results; track $index) {
           <tr class="border-t hover:bg-cyan-50 transition duration-150 ease-in-out">
-            <td class="py-3 px-4 font-semibold">{{ prod.item_code }}</td>
-            <td class="py-3 px-4">{{ prod.descr || '—' }}</td>
-            <td class="py-3 px-4">{{ prod.item_cat || '—' }}</td>
-            <td class="py-3 px-4">{{ prod.slump || '—' }}</td>
-            <td class="py-3 px-4">{{ prod.slump_uom || '—' }}</td>
+
+            <td class="py-3 px-4">
+              {{ tick.order_date | date:'dd/MM/yyyy' }}
+            </td>
+
+            <td class="py-3 px-4 font-semibold">
+              {{ tick.order_code }}
+            </td>
+
+            <td class="py-3 px-4">
+              {{ tick.tkt_code }}
+            </td>
+
+            <td class="py-3 px-4">
+              {{ tick.tkt_date | date:'dd/MM/yyyy HH:mm' }}
+            </td>
+
+            <td class="py-3 px-4">
+              {{ tick.driv_empl_code || '—' }}
+            </td>
+
+            <td class="py-3 px-4">
+              {{ tick.lot_block || '—' }}
+            </td>
+
+            <td>
+              {{ tick.amt || '00.00' }}
+            </td>
+           <td class="py-3 px-4 text-center">
+            <div
+              class="flex justify-center gap-4 sm:gap-3 flex-wrap"
+            >
+              <button
+                class="p-2 bg-green-100 hover:bg-green-200 rounded-xl transition flex items-center justify-center w-10 h-10"
+                (click)="downloadGuide(tick)"
+              >
+                <img
+                  src="assets/images/sobresalir.png"
+                  alt="Excel"
+                  class="h-5 w-5"
+                />
+              </button>
+              <button
+                class="p-2 bg-red-100 hover:bg-red-200 rounded-xl transition flex items-center justify-center w-10 h-10"
+                (click)="downloadPdf(tick)"
+              >
+                <img
+                  src="assets/images/pdf.png"
+                  alt="PDF"
+                  class="h-5 w-5"
+                />
+              </button>
+
+            </div>
+          </td>
           </tr>
         }
       </tbody>
 
     </table>
 
-    @if (imstResource.isLoading()) {
-      <div class="text-center p-6 text-gray-500 animate-pulse">
-        Cargando documentos...
-      </div>
-    }
+    <div *ngIf="loading()" class="text-center p-6 text-gray-500 animate-pulse">
+      Cargando información...
+    </div>
   </div>
 
-
-  <!-- Footer -->
   <footer class="mt-10 text-xs text-gray-400 text-center">
     © {{ currentYear }} TRANSEX CLIENT UI — Todos los derechos reservados.
   </footer>

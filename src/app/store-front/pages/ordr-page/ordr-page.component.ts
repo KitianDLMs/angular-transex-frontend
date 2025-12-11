@@ -107,6 +107,18 @@ export class OrdrPageComponent {
       );
   }
 
+  // loadData() {
+  //   this.service.getAll().subscribe(data => {
+  //     this.items = data;
+  //   });
+  // }
+
+  trackByProj(index: number, item: any) {
+    // this.loadOrders();
+    return item.proj_code;
+  }
+
+
   onFilterCustCode(value: string) {
     this.filteredCustCode.set(value.trim());
     this.loadOrders();

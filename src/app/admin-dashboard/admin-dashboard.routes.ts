@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { AdminDashboardLayoutComponent } from './layouts/admin-dashboard-layout/admin-dashboard-layout.component';
-import { ProductAdminPageComponent } from './pages/product-admin-page/product-admin-page.component';
-import { ProductsAdminPageComponent } from './pages/products-admin-page/products-admin-page.component';
+import { TickAdminPageComponent } from './pages/tick-admin-page/tick-admin-page.component';
+import { TicksAdminPageComponent } from './pages/ticks-admin-page/ticks-admin-page.component';
 import { IsAdminGuard } from '@auth/guards/is-admin.guard';
 import { CustsAdminPageComponent } from './pages/custs-admin-page/custs-admin-page.component';
 import { CustomerDetailsComponent } from './pages/cust-admin-page/cust-details/cust-details.component';
@@ -18,6 +18,8 @@ import { CreateOrdrComponent } from './pages/ordr-create-page/ordr-create-page.c
 import { ImstListPageComponent } from './pages/imst-list-page/imst-list-page.component';
 import { ImstEditPageComponent } from './pages/imst-edit-page/imst-edit-page.component';
 import { ImstCreatePageComponent } from './pages/imst-create-page/imst-create-page.component';
+import { ProductsAdminPageComponent } from './pages/products-admin-page/products-admin-page.component';
+import { ProductAdminPageComponent } from './pages/product-admin-page/product-admin-page.component';
 
 export const adminDashboardRoutes: Routes = [
   {
@@ -26,12 +28,12 @@ export const adminDashboardRoutes: Routes = [
     canMatch: [IsAdminGuard],
     children: [
       {
-        path: 'products',
-        component: ProductsAdminPageComponent,
-      },
+        path: 'ticks',
+        component: TicksAdminPageComponent,
+      },   
       {
-        path: 'products/:id',
-        component: ProductAdminPageComponent,
+        path: 'admin/ticks/:order_date/:order_code/:tkt_code',
+        component: TickAdminPageComponent,
       },
       {
         path: 'customer',
@@ -92,6 +94,14 @@ export const adminDashboardRoutes: Routes = [
       {
         path: 'users/:id',
         component: UserEditPageComponent,
+      },
+            {
+        path: 'products',
+        component: ProductsAdminPageComponent,
+      },
+      {
+        path: 'products/:id',
+        component: ProductAdminPageComponent,
       },
       {
         path: '**',

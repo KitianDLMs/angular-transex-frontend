@@ -1,0 +1,28 @@
+<h2 class="text-xl font-bold mb-4">
+  Ticket {{ tick().tkt_code }} – Documentos
+</h2>
+
+@if(tick().docs?.length > 0) {
+  <ul class="list-disc ml-6">
+    @for (doc of tick().docs; track doc.id) {
+      <li>
+        <button class="btn btn-link"
+          (click)="download(doc.filePath)">
+          {{ doc.fileName }}
+        </button>
+      </li>
+    }
+  </ul>
+}
+@else {
+  <p>No hay documentos adjuntos</p>
+}
+
+<div class="mt-6">
+  <label class="label">Subir nuevo documento</label>
+  <input type="file" (change)="onFileChange($event)" class="file-input" />
+</div>
+
+<button class="btn btn-primary mt-3" (click)="save()">
+  Guardar
+</button>

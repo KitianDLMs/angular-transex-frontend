@@ -6,10 +6,14 @@ export interface Imst {
   matl_type?: string;
   order_uom?: string;
   price_uom?: string;
-  update_date?: string;
-  invy_flag?: string;
-  slump?: number;
+  update_date?: Date;
+  invy_flag?: boolean;
+  slump?: string;
   slump_uom?: string;
   strgth?: number;
   strgth_uom?: string;
+  mix_type?: string;
+  rm_slump?: string;
+  price?: number;
+  matl_price?: number;
 }

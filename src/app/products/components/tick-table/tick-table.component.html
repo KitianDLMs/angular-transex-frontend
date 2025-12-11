@@ -1,0 +1,38 @@
+<div class="overflow-x-auto">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Tkt Code</th>
+        <th>Descripción</th>
+        <th>Documentos</th>
+        <th></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      @for (tick of ticks(); track tick.tkt_code) {
+      <tr>
+        <td>{{ tick.tkt_code }}</td>
+
+        <td>{{ tick.description }}</td>
+
+        <td>
+          @if(tick.docs?.length > 0) {
+            <span class="badge badge-success">
+              {{ tick.docs.length }} documento(s)
+            </span>
+          } @else {
+            <span class="badge badge-warning">Sin documentos</span>
+          }
+        </td>
+
+        <td>
+          <a class="btn btn-xs btn-accent"
+            
+          >Ver</a>
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
