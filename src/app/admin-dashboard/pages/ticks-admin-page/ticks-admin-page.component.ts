@@ -1,6 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, effect, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { PaginationService } from '@shared/components/pagination/pagination.service';
 import { RouterLink } from '@angular/router';
 import { TickService } from '@products/services/tick.service';
 
@@ -12,18 +11,21 @@ import { TickService } from '@products/services/tick.service';
 export class TicksAdminPageComponent {
 
   tickService = inject(TickService);
-  paginationService = inject(PaginationService);
 
   ticksPerPage = signal(10);
 
   ticksResource = rxResource({
-    request: () => ({
-      page: this.paginationService.currentPage() - 1,
-      limit: this.ticksPerPage(),
-    }),
-    loader: () => {
-      return this.tickService.getTicks();
-    },
+    loader: () => this.tickService.getTicks()
   });
 
+  constructor() {
+    effect(() => {
+      const data = this.ticksResource.value();
+      if (!data) return;
+
+      console.log("📌 Datos recibidos desde backend:", data);
+      console.log("📌 Lista de ticks:", data.ticks);
+    });
+  }
 }
+

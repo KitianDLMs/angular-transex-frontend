@@ -1,16 +1,13 @@
 <h1 class="text-2xl font-bold">Listado de Ticks</h1>
+
 <h3 class="text-lg">
   Total de documentos:
-  <span class="text-accent">{{ ticksResource.value()?.count }}</span>
+  <span class="text-accent">{{ ticksResource.value()?.length }}</span>
 </h3>
 
 <div class="divider"></div>
 
 <div class="flex gap-2 items-center h-20">
-  <!-- <app-pagination
-    [pages]="ticksResource.value()?.pages ?? 0"
-    [currentPage]="paginationService.currentPage()"
-  /> -->
 
   <select
     class="select select-bordered w-32"
@@ -24,9 +21,13 @@
   </select>
 
   <div class="flex flex-1"></div>
+
+  <!-- Botón de nuevo ticket -->
+  <button class="btn btn-primary" routerLink="/admin/ticks/create">
+    Nuevo Ticket
+  </button>
 </div>
 
-<!-- LISTA -->
 <div class="overflow-x-auto">
   <table class="table">
     <thead>
@@ -38,36 +39,41 @@
         <th></th>
       </tr>
     </thead>
+
     <tbody>
+      @for (tick of ticksResource.value() ?? []; track tick.tkt_code) {
+        <tr>
+          <td>{{ tick.order_date }}</td>
+          <td>{{ tick.order_code }}</td>
+          <td>{{ tick.tkt_code }}</td>
 
-      @for (tick of ticksResource.value()?.ticks ?? []; track tick.tkt_code) {
-      <tr>
-        <td>{{ tick.order_date }}</td>
-        <td>{{ tick.order_code }}</td>
-        <td>{{ tick.tkt_code }}</td>
-        <td>
-          @if (tick.document_path) {
-            <a class="text-blue-600 underline" [href]="'http://localhost:3000/' + tick.document_path" target="_blank">
-              Ver documento
+          <td>
+            @if (tick.document_path) {
+              <a
+                class="text-blue-600 underline"
+                [href]="'http://localhost:3000/' + tick.document_path"
+                target="_blank"
+              >
+                Ver documento
+              </a>
+            }
+          </td>
+
+          <td>
+            <a
+              class="btn btn-ghost text-accent btn-xs"
+              [routerLink]="[
+                '/admin/ticks',
+                tick.order_date,
+                tick.order_code,
+                tick.tkt_code
+              ]"
+            >
+              Detalles
             </a>
-          }
-        </td>
-        <td>
-          <a
-            class="btn btn-ghost text-accent btn-xs"
-            [routerLink]="[
-              '/admin/ticks',
-              tick.order_date,
-              tick.order_code,
-              tick.tkt_code
-            ]"
-          >
-            Detalles
-          </a>
-        </td>
-      </tr>
+          </td>
+        </tr>
       }
-
     </tbody>
   </table>
 </div>
