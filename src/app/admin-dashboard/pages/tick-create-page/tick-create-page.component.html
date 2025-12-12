@@ -30,7 +30,7 @@
   <input type="date" formControlName="order_date" class="input input-bordered w-full" required />
 
   <!-- Archivo opcional -->
-  <input type="file" (change)="onFileSelected($event)" class="input w-full" />
+  <input type="file" multiple (change)="onFileSelected($event)" class="input w-full" />
 
   <!-- Mensaje de error -->
   <div *ngIf="error" class="text-red-600 col-span-2">{{ error }}</div>

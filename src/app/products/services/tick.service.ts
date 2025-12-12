@@ -28,6 +28,7 @@ export class TickService {
   }
 
   downloadFile(fileName: string) {
+    console.log(fileName);  
     return this.http.get(`${this.baseUrl}/file/${fileName}`, {
       responseType: 'blob'
     });
@@ -35,7 +36,7 @@ export class TickService {
 
   downloadGuide(guideId: string) {
     return this.http.get(
-      `${this.baseUrl}/guide/${guideId}`,
+      `${this.baseUrl}/${guideId}`,
       { responseType: 'blob' }
     );
   }

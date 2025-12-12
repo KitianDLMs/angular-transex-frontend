@@ -17,6 +17,7 @@ export class TickCreatePageComponent implements OnInit {
   tickForm!: FormGroup;
   loading = false;
   error: string | null = null;
+  selectedTickId: string = '';
 
   customers: any[] = [];
   orders: any[] = [];
@@ -105,6 +106,7 @@ export class TickCreatePageComponent implements OnInit {
 
     this.tickService.createTick(this.tickForm.value, this.file).subscribe({
       next: res => {
+        this.selectedTickId = res.order_code;
         this.loading = false;
         this.router.navigate(['/admin/ticks']);
       },

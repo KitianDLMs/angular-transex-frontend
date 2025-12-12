@@ -148,55 +148,87 @@ export class DocsPageComponent implements OnInit {
     });
   }
 
-  download(fileName: string) {    
-    // const fullName = `${fileName}.xlsx`;
-    const cleanName = `${fileName.trim()}.xlsx`;    
-    console.log(cleanName);    
-    this.tickService.downloadFile(cleanName).subscribe({
-      next: (file: Blob) => {
-        const url = window.URL.createObjectURL(file);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        a.click();
-        window.URL.revokeObjectURL(url);
-      },
-      error: err => {
-        console.error('Error descargando archivo', err);
-      }
-    });
-  }
+  // download(filename: string) {
+  //   this.tickService.downloadFile(filename).subscribe({
+  //     next: (file: Blob) => {
+  //       const url = window.URL.createObjectURL(file);
+  //       const a = document.createElement('a');
+  //       a.href = url;
+  //       a.download = filename;
+  //       a.click();
+  //       window.URL.revokeObjectURL(url);
+  //     },
+  //     error: err => console.error('Error descargando archivo', err)
+  //   });
+  // }
+
+  // downloadPdf(filename: string) {
+  //   this.tickService.downloadFile(filename).subscribe({
+  //     next: (file: Blob) => {
+  //       const url = window.URL.createObjectURL(file);
+  //       const a = document.createElement('a');
+  //       a.href = url;
+  //       a.download = filename;
+  //       a.click();
+  //       window.URL.revokeObjectURL(url);
+  //     },
+  //     error: err => console.error('Error descargando PDF', err)
+  //   });
+  // }
+
+
+  // isExcel(filename: string): boolean {
+  //   return filename.toLowerCase().endsWith('.xlsx');
+  // }
+
+  // isPdf(filename: string): boolean {
+  //   return filename.toLowerCase().endsWith('.pdf');
+  // }
 
   downloadGuide(tick: any) {
-    console.log("Descargar guía del tick:", tick);
-    const guideId = tick.order_code || tick.tkt_code;
+    console.log('tick.docs', tick.docs);
 
-    if (!guideId) {
-      alert("No existe código de guía para descargar.");
+    if (!tick.docs || tick.docs.length === 0) {
+      alert("No hay archivos asociados a este tick.");
       return;
     }
 
-    this.tickService.downloadGuide(guideId).subscribe({
+    const file = tick.docs[0];
+    const filename = file.filename || file.fileName; // dependiendo de cómo lo tengas en tu entidad
+
+    // Obtener la extensión
+    const ext = filename.split('.').pop()?.toLowerCase();
+
+    console.log('Archivo a descargar:', filename, 'Extensión:', ext);
+
+    this.tickService.downloadFile(filename).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `guia_${guideId}.xlsx`;
+
+        // Dependiendo de la extensión, puedes renombrar o dejar igual
+        if (ext === 'pdf') {
+          a.download = filename; // ya es PDF
+        } else if (ext === 'xlsx') {
+          a.download = filename; // ya es Excel
+        } else {
+          a.download = filename; // cualquier otro tipo
+        }
+
         a.click();
         window.URL.revokeObjectURL(url);
       },
       error: () => {
-        alert("Error al descargar la guía.");
+        alert("Error al descargar el archivo.");
       }
     });
   }
 
+
+
   downloadExcel(tick: any) {
     console.log("Descargar Excel para:", tick);
-  }
-
-  downloadPdf(tick: any) {
-    console.log("Descargar PDF para:", tick);
   }
 
   handleClearFilters() {
