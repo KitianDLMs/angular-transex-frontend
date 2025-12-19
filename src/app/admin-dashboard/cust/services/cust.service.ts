@@ -24,18 +24,15 @@ export class CustService {
   }
   
   getCustByCode(cust_code: string): Observable<Cust> {
-    console.log('Buscando customer con cust_code:', cust_code);
 
     if (this.custCache.has(cust_code)) {
       const cached = this.custCache.get(cust_code)!;
-      console.log('Customer en cache:', cached);
       return of(cached);
     }
 
     return this.http.get<Cust>(`${baseUrl}/cust/${cust_code}`).pipe(
       tap((cust) => {
         this.custCache.set(cust_code, cust);
-        console.log('Customer recibido del API:', cust);
       })
     );
   }

@@ -1,9 +1,12 @@
 <header class="bg-cyan-700 text-white p-4 rounded-t-lg flex justify-between items-center shadow-sm">
   <h1 class="text-xl font-semibold">Documentos</h1>
-  <span class="text-sm opacity-90">Actualizado al {{ today | date:'dd/MM/yyyy' }}</span>
+  <span class="text-sm opacity-90">
+    Actualizado al {{ today | date:'dd/MM/yyyy' }}
+  </span>
 </header>
 
 <div class="p-6 bg-gray-50">
+  <!-- Cliente -->
   <div class="mr-auto text-gray-600 text-center sm:text-center">
     <div class="font-semibold text-lg sm:text-sm">
       Cliente: {{ customerName }}
@@ -12,10 +15,14 @@
       Dirección: {{ customerAddress }}
     </div>
   </div>
+
   &nbsp;
+
+  <!-- Filtros -->
   <div
-    class="bg-white shadow-md rounded-xl p-4 border border-gray-200 
-          grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+    class="bg-white shadow-md rounded-xl p-4 border border-gray-200
+           grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+
     <select
       class="select select-bordered bg-gray-50 w-full"
       [(ngModel)]="selectedProject"
@@ -72,11 +79,17 @@
         Limpiar
       </button>
     </div>
-
-
   </div>
 
-<div class="overflow-x-auto bg-white shadow-lg rounded-2xl mt-10 border border-gray-200">
+  <!-- LOADING -->
+  <div *ngIf="loading()" class="text-center p-6 text-gray-500 animate-pulse">
+    Cargando documentos...
+  </div>
+
+  <!-- TABLA (solo si hay resultados) -->
+  <div
+    *ngIf="!loading() && results.length > 0"
+    class="overflow-x-auto bg-white shadow-lg rounded-2xl mt-10 border border-gray-200">
 
     <table class="min-w-full border-collapse text-sm text-gray-700">
       <thead class="bg-cyan-700 text-white uppercase text-xs tracking-wide">
@@ -120,32 +133,60 @@
               {{ tick.lot_block || '—' }}
             </td>
 
-            <td>
+            <td class="py-3 px-4">
               {{ tick.amt || '00.00' }}
             </td>
-           <td class="py-3 px-4 text-center">
-              <div class="flex justify-center gap-4 sm:gap-3 flex-wrap">
+
+            <td class="py-3 px-4 text-center">
+              <div class="flex justify-center">
                 <button
                   *ngIf="tick.docs?.length"
-                  class="p-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition flex items-center justify-center w-10 h-10"
                   (click)="downloadGuide(tick)"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                  </svg>
+                  class="w-10 h-10 flex items-center justify-center rounded-xl shadow hover:shadow-lg transition">
+                  <img
+                    src="/assets/images/pdf.png"
+                    alt="PDF"
+                    class="w-6 h-6 object-contain"
+                  />
                 </button>
               </div>
             </td>
           </tr>
         }
       </tbody>
-
     </table>
-
-    <div *ngIf="loading()" class="text-center p-6 text-gray-500 animate-pulse">
-      Cargando documentos...
-    </div>
   </div>
+
+  <!-- SIN RESULTADOS -->
+  <div
+    *ngIf="!loading() && results.length === 0"
+    class="bg-white shadow-lg rounded-2xl mt-10 border border-gray-200
+          p-10 text-center text-gray-500">
+
+    <div class="flex justify-center mb-4">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-14 h-14 text-cyan-600"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="1.5">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M12 9v3.75m0 3h.008M10.29 3.86l-8.09 14.02A1.5 1.5 0 0 0 3.5 20.25h17a1.5 1.5 0 0 0 1.3-2.37L13.71 3.86a1.5 1.5 0 0 0-2.42 0Z" />
+      </svg>
+    </div>
+
+    <p class="text-lg font-semibold mb-2">
+      No hay documentos asociados a tu cliente
+    </p>
+
+    <p class="text-sm">
+      Intenta ajustar los filtros o vuelve más tarde.
+    </p>
+  </div>
+
 
   <footer class="mt-10 text-xs text-gray-400 text-center">
     © {{ currentYear }} TRANSEX CLIENT UI — Todos los derechos reservados.

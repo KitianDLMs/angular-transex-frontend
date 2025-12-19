@@ -31,9 +31,6 @@ export class DocsPageComponent implements OnInit {
   userCustCode: string | null = null;
   projectOptions: { proj_code: string; proj_name: string }[] = [];
 
-  // -------------------------
-  // 🔹 Filtros
-  // -------------------------
   filterWork: string = '';
   filterDocType: string = '';
   filterDocNumber: string = '';
@@ -42,26 +39,19 @@ export class DocsPageComponent implements OnInit {
 
   selectedProject: string = '';
 
-  // -------------------------
-  // 🔹 Datos
-  // -------------------------
   loading = signal(true);
+  // results: any[] = [];   
   results: any[] = [];   
 
-  // -------------------------
-  // 🔹 Resource inicial
-  // -------------------------
   ticksResource = rxResource({
     request: () => ({}),
     loader: () =>
       this.tickService.getTicks().pipe(
         tap(r => {
-          console.log("📦 Ticks cargados:", r);
-          this.results = r; // Los cargamos en results
+          this.results = r;
           this.loading.set(false);
         }),
         catchError(err => {
-          console.error("❌ Error al cargar ticks:", err);
           this.loading.set(false);
           return of([]);
         })
@@ -148,55 +138,14 @@ export class DocsPageComponent implements OnInit {
     });
   }
 
-  // download(filename: string) {
-  //   this.tickService.downloadFile(filename).subscribe({
-  //     next: (file: Blob) => {
-  //       const url = window.URL.createObjectURL(file);
-  //       const a = document.createElement('a');
-  //       a.href = url;
-  //       a.download = filename;
-  //       a.click();
-  //       window.URL.revokeObjectURL(url);
-  //     },
-  //     error: err => console.error('Error descargando archivo', err)
-  //   });
-  // }
-
-  // downloadPdf(filename: string) {
-  //   this.tickService.downloadFile(filename).subscribe({
-  //     next: (file: Blob) => {
-  //       const url = window.URL.createObjectURL(file);
-  //       const a = document.createElement('a');
-  //       a.href = url;
-  //       a.download = filename;
-  //       a.click();
-  //       window.URL.revokeObjectURL(url);
-  //     },
-  //     error: err => console.error('Error descargando PDF', err)
-  //   });
-  // }
-
-
-  // isExcel(filename: string): boolean {
-  //   return filename.toLowerCase().endsWith('.xlsx');
-  // }
-
-  // isPdf(filename: string): boolean {
-  //   return filename.toLowerCase().endsWith('.pdf');
-  // }
-
-  downloadGuide(tick: any) {
-    console.log('tick.docs', tick.docs);
-
+  downloadGuide(tick: any) {    
     if (!tick.docs || tick.docs.length === 0) {
       alert("No hay archivos asociados a este tick.");
       return;
     }
 
     const file = tick.docs[0];
-    const filename = file.filename || file.fileName; // dependiendo de cómo lo tengas en tu entidad
-
-    // Obtener la extensión
+    const filename = file.filename || file.fileName;
     const ext = filename.split('.').pop()?.toLowerCase();
 
     console.log('Archivo a descargar:', filename, 'Extensión:', ext);
@@ -205,17 +154,14 @@ export class DocsPageComponent implements OnInit {
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
-
-        // Dependiendo de la extensión, puedes renombrar o dejar igual
+        a.href = url;        
         if (ext === 'pdf') {
-          a.download = filename; // ya es PDF
+          a.download = filename;
         } else if (ext === 'xlsx') {
-          a.download = filename; // ya es Excel
+          a.download = filename;
         } else {
-          a.download = filename; // cualquier otro tipo
+          a.download = filename;
         }
-
         a.click();
         window.URL.revokeObjectURL(url);
       },
@@ -224,8 +170,6 @@ export class DocsPageComponent implements OnInit {
       }
     });
   }
-
-
 
   downloadExcel(tick: any) {
     console.log("Descargar Excel para:", tick);
@@ -240,5 +184,4 @@ export class DocsPageComponent implements OnInit {
     this.results = [];
     console.log("Filtros limpiados");
   }
-
 }
