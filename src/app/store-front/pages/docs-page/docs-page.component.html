@@ -77,12 +77,14 @@
       </button>
     </div>
   </div>  
+
   <div *ngIf="results.length > 0" class="flex justify-end mt-4">
     <button
-    class="btn bg-cyan-700 hover:bg-cyan-800 text-white px-5 py-2 rounded-lg shadow"
-    (click)="downloadSelected()">
-    Descargar seleccionados
-  </button>
+      class="btn bg-cyan-700 hover:bg-cyan-800 text-white
+            w-full sm:w-auto px-5 py-2 rounded-lg shadow"
+      (click)="downloadSelected()">
+      Descargar seleccionados
+    </button>
   </div>
   &nbsp;
   
