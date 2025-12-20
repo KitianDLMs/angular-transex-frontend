@@ -42,7 +42,7 @@
 
   <!-- LOADING -->
   @if (imstResource.isLoading()) {
-    <div class="text-center p-6 text-gray-500 animate-pulse">
+    <div class="text-center p-6 text-black animate-pulse">
       Cargando productos...
     </div>
   }
@@ -103,7 +103,6 @@
     </table>
   </div>
 
-  <!-- SIN PRODUCTOS -->
   <div
     *ngIf="!imstResource.isLoading() && imstResource.value()?.length === 0"
     class="bg-white shadow-lg rounded-2xl mt-10 border border-gray-200

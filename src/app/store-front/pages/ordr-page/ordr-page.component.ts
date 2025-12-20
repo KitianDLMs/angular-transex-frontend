@@ -20,6 +20,11 @@ export class OrdrPageComponent {
   selectedProject: string = '';
   loading = signal(true);
 
+  page = 1;
+  limit = 10;
+  totalPages = 0;
+  totalItems = 0;
+
   expandedOrder: string | null = null;
   orderLines: any[] = [];
 
@@ -95,17 +100,42 @@ export class OrdrPageComponent {
   }
 
   loadOrders() {
-    const proj = this.selectedProject?.trim() || '';
+    if (!this.userCustCode) return;
 
-    this.ordrService.getOrders(this.userCustCode!, proj)
-      .subscribe(
-        (data: any) => {
-          this.orders = data;
+    this.loading.set(true);
+
+    this.ordrService
+      .getOrdersByCustomerPaginated(
+        this.userCustCode,
+        this.selectedProject,
+        this.page,
+        this.limit
+      )
+      .subscribe({
+        next: (res: any) => {
+          this.orders = res.data;
+          this.totalPages = res.totalPages;
+          this.totalItems = res.total;
           this.loading.set(false);
         },
-        () => this.loading.set(false)
-      );
+        error: () => this.loading.set(false),
+      });
   }
+
+  nextPage() {
+    if (this.page < this.totalPages) {
+      this.page++;
+      this.loadOrders();
+    }
+  }
+
+  prevPage() {
+    if (this.page > 1) {
+      this.page--;
+      this.loadOrders();
+    }
+  }
+
 
   // loadData() {
   //   this.service.getAll().subscribe(data => {

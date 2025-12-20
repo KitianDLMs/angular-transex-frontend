@@ -15,13 +15,33 @@ export class TickService {
     return this.http.get<any>(`${this.baseUrl}`);
   }
 
+  // http://localhost:3000/api/tick/by-customer/780834498
+
+
   getOne(order_date: string, order_code: string, tkt_code: string) {
     return this.http.get<any>(`${this.baseUrl}/${order_date}/${order_code}/${tkt_code}`);
   }
 
-  getOrdersByCustomer(cust_code: any)  {
-    return this.http.get<any>(`${this.baseUrl}/${cust_code}`);
+  // getTicksByCustomer(cust_code: any)  {
+  //   return this.http.get<any>(`${this.baseUrl}/by-customer/${cust_code}`);
+  // }
+
+  downloadTickPDF(tkt_code: string) {
+    return this.http.get(`${this.baseUrl}/download/${tkt_code}`, {
+      responseType: 'blob' // importante para recibir el PDF
+    });
   }
+
+  getTicksByCustomer(
+    custCode: string,
+    page = 1,
+    limit = 20
+  ) {
+    return this.http.get<any>(
+      `${this.baseUrl}/by-customer/${custCode}?page=${page}&limit=${limit}`
+    );
+  }
+
 
   getProjectsByOrder(order_code: any) {
     return this.http.get<any>(`${this.baseUrl}/${order_code}`);

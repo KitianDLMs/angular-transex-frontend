@@ -1,12 +1,8 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { rxResource } from '@angular/core/rxjs-interop';
-import { catchError, of, tap } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 
 import { TickService } from '@products/services/tick.service';
-import { ProjService } from '@shared/services/proj.service';
-import { ProdService } from '@shared/services/prod.service';
 import { AuthService } from '@auth/services/auth.service';
 import { CustService } from '@dashboard/cust/services/cust.service';
 
@@ -18,62 +14,69 @@ import { CustService } from '@dashboard/cust/services/cust.service';
 })
 export class DocsPageComponent implements OnInit {
 
-  tickService = inject(TickService);
-  projService = inject(ProjService);
-  prodService = inject(ProdService); 
-  authService = inject(AuthService);
-  custService = inject(CustService);
-  customerName: string = '';
-  customerAddress: string = '';
+  private tickService = inject(TickService);
+  private authService = inject(AuthService);
+  private custService = inject(CustService);
 
-  today = new Date();
+  customerName = '';
+  customerAddress = '';
   currentYear = new Date().getFullYear();
+  today = new Date();
   userCustCode: string | null = null;
+
+  page = 1;
+  limit = 20;
+  totalPages = 0;
+  totalItems = 0;
+
+  loading = signal(false);
+  results: any[] = [];
+  filterDateFrom: any;
+
   projectOptions: { proj_code: string; proj_name: string }[] = [];
 
   filterWork: string = '';
   filterDocType: string = '';
   filterDocNumber: string = '';
-  filterDateFrom: string = '';
   filterDateTo: string = '';
 
   selectedProject: string = '';
 
-  loading = signal(true);
-  // results: any[] = [];   
-  results: any[] = [];   
-
-  ticksResource = rxResource({
-    request: () => ({}),
-    loader: () =>
-      this.tickService.getTicks().pipe(
-        tap(r => {
-          this.results = r;
-          this.loading.set(false);
-        }),
-        catchError(err => {
-          this.loading.set(false);
-          return of([]);
-        })
-      )
-  });
-
-  ngOnInit() {
+  ngOnInit(): void {
     const user = this.authService.user();
-    this.userCustCode = user?.cust_code || null;
-    if (this.userCustCode) {
-      this.custService.getCustByCode(this.userCustCode).subscribe(cust => {
-        this.customerName = cust.name || 'Sin nombre';
-        this.customerAddress = cust.addr_line_1 || 'Sin dirección';
-      });
-      this.projService.getByCustomer(this.userCustCode).subscribe(opts => {
-        this.projectOptions = opts.map(p => ({
-          proj_code: p.proj_code,
-          proj_name: p.proj_name
-        }));
-      });
+    this.userCustCode = user?.cust_code ?? null;
+
+    if (!this.userCustCode) {
+      return;
     }
-    // this.loadProductsByCustomer();
+
+
+    this.custService.getCustByCode(this.userCustCode).subscribe(cust => {
+      this.customerName = cust.name ?? 'Sin nombre';
+      this.customerAddress = cust.addr_line_1 ?? 'Sin dirección';
+    });
+    
+    this.loadTicksByCustomer();
+  }
+
+  loadTicksByCustomer(): void {
+    if (!this.userCustCode) return;
+
+    this.loading.set(true);
+
+    this.tickService
+      .getTicksByCustomer(this.userCustCode, this.page, this.limit)
+      .subscribe({
+        next: res => {
+          this.results = res.data;
+          this.totalPages = res.totalPages;
+          this.loading.set(false);
+        },
+        error: err => {
+          console.error('ERROR API:', err);
+          this.loading.set(false);
+        }
+      });
   }
 
   clearFilter() {
@@ -92,87 +95,57 @@ export class DocsPageComponent implements OnInit {
   }
 
   onSearch() {
+    if (!this.userCustCode) return;
+
     this.loading.set(true);
 
-    this.tickService.getTicks().subscribe({
-      next: (data: any[]) => {
-        let filtered = data;
-
-        if (this.filterWork.trim()) {
-          filtered = filtered.filter(x =>
-            (x.project_name || '').toLowerCase().includes(
-              this.filterWork.toLowerCase()
-            )
-          );
+    this.tickService
+      .getTicksByCustomer(this.userCustCode, this.page, this.limit)
+      .subscribe({
+        next: (res: any) => {
+          this.results = res.data;
+          this.totalPages = res.totalPages;
+          this.totalItems = res.total;
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
         }
-
-        if (this.filterDocNumber.trim()) {
-          filtered = filtered.filter(x =>
-            (x.guide_number || '').toString()
-              .includes(this.filterDocNumber)
-          );
-        }
-
-        if (this.selectedProject.trim()) {
-          filtered = filtered.filter(x =>
-            x.project_code === this.selectedProject
-          );
-        }
-
-        if (this.filterDateFrom) {
-          const from = new Date(this.filterDateFrom);
-          filtered = filtered.filter(x => new Date(x.date) >= from);
-        }
-
-        if (this.filterDateTo) {
-          const to = new Date(this.filterDateTo);
-          filtered = filtered.filter(x => new Date(x.date) <= to);
-        }
-
-        this.results = filtered;
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-      }
-    });
+      });
   }
 
-  downloadGuide(tick: any) {    
-    if (!tick.docs || tick.docs.length === 0) {
-      alert("No hay archivos asociados a este tick.");
-      return;
-    }
+  downloadTicket(tkt_code: string) {
+    if (!tkt_code) return;
 
-    const file = tick.docs[0];
-    const filename = file.filename || file.fileName;
-    const ext = filename.split('.').pop()?.toLowerCase();
-
-    console.log('Archivo a descargar:', filename, 'Extensión:', ext);
-
-    this.tickService.downloadFile(filename).subscribe({
-      next: (blob) => {
+    this.tickService.downloadTickPDF(tkt_code).subscribe({
+      next: (blob: Blob) => {
+        // Crear URL temporal para descargar el archivo
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;        
-        if (ext === 'pdf') {
-          a.download = filename;
-        } else if (ext === 'xlsx') {
-          a.download = filename;
-        } else {
-          a.download = filename;
-        }
-        a.click();
-        window.URL.revokeObjectURL(url);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${tkt_code}.pdf`; // nombre del archivo
+        link.click();
+        window.URL.revokeObjectURL(url); // limpiar memoria
       },
-      error: () => {
-        alert("Error al descargar el archivo.");
+      error: (err) => {
+        console.error('Error descargando ticket:', err);
       }
     });
   }
 
-  downloadExcel(tick: any) {
-    console.log("Descargar Excel para:", tick);
+
+  nextPage() {
+    if (this.page < this.totalPages) {
+      this.page++;
+      this.onSearch();
+    }
+  }
+
+  prevPage() {
+    if (this.page > 1) {
+      this.page--;
+      this.onSearch();
+    }
   }
 
   handleClearFilters() {

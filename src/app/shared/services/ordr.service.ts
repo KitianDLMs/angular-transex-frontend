@@ -24,6 +24,28 @@ export class OrdrService {
     );
   }
 
+  getOrdersByCustomerPaginated(
+    custCode: string,
+    projCode: string,
+    page: number,
+    limit: number,
+  ) {
+    const params: any = {
+      page,
+      limit,
+    };
+
+    if (projCode) {
+      params.proj_code = projCode;
+    }
+
+    return this.http.get<any>(
+      `${this.baseUrl}/ordr/by-customer/${custCode}`,
+      { params }
+    );
+  }
+
+
   getOrdersByCustCode(cust_code: string): Observable<Ordr[]> {
     const params = new HttpParams().set('cust_code', cust_code.trim());
 
