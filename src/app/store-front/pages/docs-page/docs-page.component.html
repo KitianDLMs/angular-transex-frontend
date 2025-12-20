@@ -76,12 +76,19 @@
         Limpiar
       </button>
     </div>
+  </div>  
+  <div *ngIf="results.length > 0" class="flex justify-end mt-4">
+    <button
+    class="btn bg-cyan-700 hover:bg-cyan-800 text-white px-5 py-2 rounded-lg shadow"
+    (click)="downloadSelected()">
+    Descargar seleccionados
+  </button>
   </div>
-
-
+  &nbsp;
+  
   <div *ngIf="loading()" class="text-center p-6 text-black animate-pulse">
     Cargando documentos...
-  </div>
+  </div>  
 
   <div
     *ngIf="!loading() && results.length > 0"
@@ -90,6 +97,9 @@
     <table class="min-w-full border-collapse text-sm text-gray-700">
       <thead class="bg-cyan-700 text-white uppercase text-xs tracking-wide">
         <tr>
+          <th class="py-3 px-4 text-center">
+            <input type="checkbox" [(ngModel)]="selectAll" (change)="toggleAll()" />
+          </th>
           <th class="py-3 px-4 text-left">Fecha</th>
           <th class="py-3 px-4 text-left">Pedido</th>
           <th class="py-3 px-4 text-left">Guía</th>
@@ -103,7 +113,9 @@
       <tbody>
         @for (tick of results; track $index) {
           <tr class="border-t hover:bg-cyan-50 transition">
-
+            <td class="py-3 px-4 text-center">
+              <input type="checkbox" [(ngModel)]="tick.selected" (change)="updateSelectAll()" />
+            </td>
             <td class="py-3 px-4">
               {{ tick.order_date | date:'dd/MM/yyyy' }}
             </td>
@@ -134,8 +146,7 @@
                   alt="Descargar PDF"
                   class="w-6 h-6 cursor-pointer hover:opacity-80"
                   (click)="downloadTicket(tick.tkt_code)"
-                />
-                <!-- Tooltip arriba de la imagen -->
+                />                
                 <span
                   class="absolute bottom-full right-0 mb-2 hidden group-hover:block 
                         bg-black text-white text-xs rounded py-1 px-2 whitespace-nowrap z-50"

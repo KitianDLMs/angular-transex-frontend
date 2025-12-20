@@ -23,7 +23,7 @@ export class DocsPageComponent implements OnInit {
   currentYear = new Date().getFullYear();
   today = new Date();
   userCustCode: string | null = null;
-
+  selectAll: boolean = false;
   page = 1;
   limit = 20;
   totalPages = 0;
@@ -57,6 +57,28 @@ export class DocsPageComponent implements OnInit {
     });
     
     this.loadTicksByCustomer();
+  }
+  
+  downloadSelected() {
+    const selectedTickets = this.results.filter(t => t.selected);
+    if (selectedTickets.length === 0) {
+      alert('Debes seleccionar al menos un ticket');
+      return;
+    }
+
+    selectedTickets.forEach(t => this.downloadTicket(t.tkt_code));
+
+    // 🔹 Opcional: en vez de descargar uno por uno,
+    // puedes enviar los IDs al backend para generar un ZIP
+    console.log('Descargando masivamente tickets:', selectedTickets.map(t => t.tkt_code));
+  }
+
+  toggleAll() {
+    this.results.forEach(t => t.selected = this.selectAll);
+  }
+
+  updateSelectAll() {
+    this.selectAll = this.results.every(t => t.selected);
   }
 
   loadTicksByCustomer(): void {
