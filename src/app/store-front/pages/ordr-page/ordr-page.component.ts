@@ -113,6 +113,7 @@ export class OrdrPageComponent {
       )
       .subscribe({
         next: (res: any) => {
+          console.log('ORDERS:', res.data);
           this.orders = res.data;
           this.totalPages = res.totalPages;
           this.totalItems = res.total;

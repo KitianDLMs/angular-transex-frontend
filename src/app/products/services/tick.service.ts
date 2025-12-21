@@ -15,6 +15,14 @@ export class TickService {
     return this.http.get<any>(`${this.baseUrl}`);
   }
 
+  downloadZip(codes: string[]) {
+    return this.http.post(
+      `${this.baseUrl}/download-zip`,
+      codes,
+      { responseType: 'blob' }
+    );
+  }
+
   getOne(order_date: string, order_code: string, tkt_code: string) {
     return this.http.get<any>(`${this.baseUrl}/${order_date}/${order_code}/${tkt_code}`);
   }
