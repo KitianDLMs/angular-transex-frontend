@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { TickService } from '@products/services/tick.service';
 import { AuthService } from '@auth/services/auth.service';
 import { CustService } from '@dashboard/cust/services/cust.service';
+import { ProjService } from '@shared/services/proj.service';
 
 @Component({
   selector: 'app-docs-page',
@@ -17,7 +18,8 @@ export class DocsPageComponent implements OnInit {
   private tickService = inject(TickService);
   private authService = inject(AuthService);
   private custService = inject(CustService);
-
+  private projService = inject(ProjService);
+  
   customerName = '';
   customerAddress = '';
   currentYear = new Date().getFullYear();
@@ -50,13 +52,34 @@ export class DocsPageComponent implements OnInit {
       return;
     }
 
-
     this.custService.getCustByCode(this.userCustCode).subscribe(cust => {
       this.customerName = cust.name ?? 'Sin nombre';
       this.customerAddress = cust.addr_line_1 ?? 'Sin dirección';
     });
-    
+
+    this.loadProjectsByCustomer();   // 👈 AQUI
     this.loadTicksByCustomer();
+  }
+
+  loadProjectsByCustomer(): void {
+    if (!this.userCustCode) return;
+    this.projService.getByCust(this.userCustCode).subscribe({
+      next: (projects) => {
+        console.log(projects);        
+        this.projectOptions = projects.map(p => ({
+          proj_code: p.proj_code,
+          proj_name: p.proj_name,
+        }));
+      },
+      error: (err) => {
+        console.error('Error cargando obras:', err);
+        this.projectOptions = [];
+      }
+    });
+  }
+
+  downloadExcel() {
+    console.log('DESCARGAR EXCEL');    
   }
   
   downloadSelected() {
@@ -127,38 +150,62 @@ export class DocsPageComponent implements OnInit {
     this.onSearch();
   }
 
-  onSearch() {
-    if (!this.userCustCode) return;
+onSearch() {
+  if (!this.userCustCode) return;
 
-    this.loading.set(true);
+  this.page = 1;
 
-    this.tickService
-      .getTicksByCustomer(this.userCustCode, this.page, this.limit)
-      .subscribe({
-        next: (res: any) => {
-          this.results = res.data;
-          this.totalPages = res.totalPages;
-          this.totalItems = res.total;
-          this.loading.set(false);
-        },
-        error: () => {
-          this.loading.set(false);
-        }
-      });
-  }
+  this.loading.set(true);
+
+  const payload = {
+    cust_code: this.userCustCode.trim(),
+
+    proj_code: this.selectedProject || undefined,
+    doc_type: this.filterDocType || undefined,
+    tkt_code: this.filterDocNumber?.trim() || undefined,
+
+    date_from: this.filterDateFrom
+      ? `${this.filterDateFrom} 00:00:00`
+      : undefined,
+
+    date_to: this.filterDateTo
+      ? `${this.filterDateTo} 23:59:59`
+      : undefined,
+
+    page: this.page,
+    limit: this.limit,
+  };
+
+  console.log('🔎 Payload filtros:', payload);
+
+  this.tickService.searchTicks(payload).subscribe({
+    next: res => {
+      this.results = res.data.map((r: any) => ({
+        ...r,
+        selected: false,
+      }));
+      this.totalPages = res.totalPages;
+      this.totalItems = res.total;
+      this.loading.set(false);
+    },
+    error: err => {
+      console.error('ERROR SEARCH:', err);
+      this.loading.set(false);
+    },
+  });
+}
 
   downloadTicket(tkt_code: string) {
     if (!tkt_code) return;
 
     this.tickService.downloadTickPDF(tkt_code).subscribe({
-      next: (blob: Blob) => {
-        // Crear URL temporal para descargar el archivo
+      next: (blob: Blob) => {      
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `${tkt_code}.pdf`; // nombre del archivo
+        link.download = `${tkt_code}.pdf`;
         link.click();
-        window.URL.revokeObjectURL(url); // limpiar memoria
+        window.URL.revokeObjectURL(url);
       },
       error: (err) => {
         console.error('Error descargando ticket:', err);

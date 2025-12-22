@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable, of, tap } from 'rxjs';
-import { environment } from 'src/environments/environment';
 import { Cust } from '../interfaces/cust.interface';
+import { environment } from 'src/environments/environment.development';
 
 const baseUrl = environment.baseUrl;
 

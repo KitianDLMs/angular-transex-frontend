@@ -15,6 +15,21 @@ export class TickService {
     return this.http.get<any>(`${this.baseUrl}`);
   }
 
+  searchTicks(filters: {
+    cust_code: string;
+    project?: string;
+    docNumber?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    return this.http.post<any>(
+      `${this.baseUrl}/search`,
+      filters
+    );
+  }
+
   downloadZip(codes: string[]) {
     return this.http.post(
       `${this.baseUrl}/download-zip`,
