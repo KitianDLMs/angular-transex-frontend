@@ -53,6 +53,16 @@ export class TickService {
     });
   }
 
+  downloadExcel(filters: any) {
+    return this.http.get(
+      `${this.baseUrl}/export/excel`,
+      {
+        params: filters,
+        responseType: 'blob'
+      }
+    );
+  }
+
   getTicksByCustomer(
     custCode: string,
     page = 1,
