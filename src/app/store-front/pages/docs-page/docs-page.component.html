@@ -133,74 +133,58 @@
         <th class="py-3 px-4 text-left">Fecha</th>
         <th class="py-3 px-4 text-left">Guía</th>
         <th class="py-3 px-4 text-left">Pedido</th>
+        <th class="py-3 px-4 text-left">Proyecto</th>
         <th class="py-3 px-4 text-left">Obra</th>
-        <th class="py-3 px-4 text-left">Producto</th>
-        <th class="py-3 px-4 text-right">Cantidad</th>
-        <th class="py-3 px-4 text-right">Precio</th>
-        <th class="py-3 px-4 text-right">Total</th>
+        <th class="py-3 px-4 text-left">Hormigón</th>
+        <th class="py-3 px-4 text-right">Cantidad</th>      
+        <th class="py-3 px-4 text-right">Precio Total</th>        
         <th class="py-3 px-4 text-center">Descargar</th>
       </tr>
     </thead>
 
 
       <tbody>
-        @for (tick of results; track $index) {
-          <tr class="border-t hover:bg-cyan-50 transition">
-            
-            <td class="py-3 px-4 text-center">
-              <input type="checkbox" [(ngModel)]="tick.selected" (change)="updateSelectAll()" />
-            </td>
+        <tr *ngFor="let tick of results" class="border-t hover:bg-cyan-50 transition">
+          <!-- Checkbox -->
+          <td class="py-3 px-4 text-center">
+            <input type="checkbox" [(ngModel)]="tick.selected" (change)="updateSelectAll()" />
+          </td>
 
-            <td class="py-3 px-4">
-              {{ tick.order_date | date:'dd/MM/yyyy' }}
-            </td>
+          <!-- Datos del ticket -->
+          <td class="py-3 px-4">{{ tick.order_date | date:'dd/MM/yyyy' }}</td>
+          <td class="py-3 px-4 font-semibold">{{ tick.tkt_code }}</td>
+          <td class="py-3 px-4">{{ tick.order_code }}</td>
+          <td class="py-3 px-4">{{ tick.proj_code?.trim() }}</td>
+          <td class="py-3 px-4">{{ tick.proj_name ? tick.proj_name.trim() : tick.proj_code?.trim() }}</td>
 
-            <td class="py-3 px-4 font-semibold">
-              {{ tick.tkt_code }}
-            </td>
+          <!-- Productos -->
+          <td class="py-3 px-4">
+            {{ tick.product?.prod_descr }}
+          </td>
 
-            <td class="py-3 px-4">
-              {{ tick.order_code }}
-            </td>
+          <!-- Totales -->
+          <td class="py-3 px-4">{{ tick.total_qty }}</td>
+          <td class="py-3 px-4 text-right">{{ tick.total_price | number:'1.2-2' }}</td>
 
-            <td class="py-3 px-4">
-              {{ tick.proj_name }}
-            </td>
-
-            <td class="py-3 px-4">
-              {{ tick.product_name }}
-            </td>
-
-            <td class="py-3 px-4 text-right">
-              {{ tick.qty }}
-            </td>
-
-            <td class="py-3 px-4 text-right">
-              {{ tick.unit_price | number:'1.0-2' }}
-            </td>
-
-            <td class="py-3 px-4 text-right">
-              {{ tick.total_price | number:'1.0-2' }}
-            </td>
-
-            <td class="py-3 px-4 relative">
-              <div class="flex justify-end items-center group pr-2">
-                <img
-                  src="assets/images/pdf.png"
-                  alt="Descargar PDF"
-                  class="w-6 h-6 cursor-pointer hover:opacity-80"
-                  (click)="downloadTicket(tick.tkt_code)"
-                />
-                <span
-                  class="absolute bottom-full right-0 mb-2 hidden group-hover:block 
-                        bg-black text-white text-xs rounded py-1 px-2 whitespace-nowrap z-50">
-                  Descargar Guía N° {{ tick.tkt_code }}
-                </span>
-              </div>
-            </td>
-          </tr>
-        }
+          <!-- PDF -->
+          <td class="py-3 px-4 relative">
+            <div class="flex justify-end items-center group pr-2">
+              <img
+                src="assets/images/pdf.png"
+                alt="Descargar PDF"
+                class="w-6 h-6 cursor-pointer hover:opacity-80"
+                (click)="downloadTicket(tick.tkt_code)"
+              />
+              <span
+                class="absolute bottom-full right-0 mb-2 hidden group-hover:block
+                      bg-black text-white text-xs rounded py-1 px-2 whitespace-nowrap z-50">
+                Descargar Guía N° {{ tick.tkt_code }}
+              </span>
+            </div>
+          </td>
+        </tr>
       </tbody>
+
     </table>
   </div>
 

@@ -1,7 +1,6 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { environment } from "src/environments/environment";
-
 
 @Injectable({ providedIn: 'root' })
 export class TickService {
@@ -10,24 +9,30 @@ export class TickService {
 
  constructor(private http: HttpClient) {}
 
-
   getTicks() {
     return this.http.get<any>(`${this.baseUrl}`);
   }
 
   searchTicks(filters: {
     cust_code: string;
-    project?: string;
+    proj_code?: string;
     docNumber?: string;
     dateFrom?: string;
     dateTo?: string;
     page?: number;
     limit?: number;
   }) {
-    return this.http.post<any>(
-      `${this.baseUrl}/search`,
-      filters
-    );
+    let params = new HttpParams()
+      .set('custCode', filters.cust_code)
+      .set('page', (filters.page ?? 1).toString())
+      .set('limit', (filters.limit ?? 20).toString());
+
+    if (filters.proj_code) params = params.set('projCode', filters.proj_code);
+    if (filters.docNumber) params = params.set('docNumber', filters.docNumber);
+    if (filters.dateFrom) params = params.set('dateFrom', filters.dateFrom);
+    if (filters.dateTo) params = params.set('dateTo', filters.dateTo);
+
+    return this.http.get<any>(`${this.baseUrl}/search`, { params });
   }
 
   downloadZip(codes: string[]) {
@@ -57,9 +62,7 @@ export class TickService {
       `${this.baseUrl}/by-customer/${custCode}?page=${page}&limit=${limit}`
     );
   }
-
-
-  getProjectsByOrder(order_code: any) {
+    getProjectsByOrder(order_code: any) {
     return this.http.get<any>(`${this.baseUrl}/${order_code}`);
   }
 

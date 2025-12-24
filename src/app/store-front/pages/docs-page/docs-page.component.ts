@@ -57,15 +57,14 @@ export class DocsPageComponent implements OnInit {
       this.customerAddress = cust.addr_line_1 ?? 'Sin dirección';
     });
 
-    this.loadProjectsByCustomer();   // 👈 AQUI
-    this.loadTicksByCustomer();
+    this.loadProjectsByCustomer();
+    this.onSearch(true);
   }
 
   loadProjectsByCustomer(): void {
     if (!this.userCustCode) return;
     this.projService.getByCust(this.userCustCode).subscribe({
-      next: (projects) => {
-        console.log(projects);        
+      next: (projects) => {         
         this.projectOptions = projects.map(p => ({
           proj_code: p.proj_code,
           proj_name: p.proj_name,
@@ -115,26 +114,6 @@ export class DocsPageComponent implements OnInit {
     this.selectAll = this.results.every(t => t.selected);
   }
 
-  loadTicksByCustomer(): void {
-    if (!this.userCustCode) return;
-
-    this.loading.set(true);
-
-    this.tickService
-      .getTicksByCustomer(this.userCustCode, this.page, this.limit)
-      .subscribe({
-        next: res => {
-          this.results = res.data;
-          this.totalPages = res.totalPages;
-          this.loading.set(false);
-        },
-        error: err => {
-          console.error('ERROR API:', err);
-          this.loading.set(false);
-        }
-      });
-  }
-
   clearFilter() {
     this.selectedProject = '';
     this.filterWork = '';
@@ -146,54 +125,59 @@ export class DocsPageComponent implements OnInit {
   }
 
   onSelectProject() {
-    console.log("Proyecto seleccionado:", this.selectedProject);
-    this.onSearch();
+    this.onSearch(true);
   }
 
-onSearch() {
-  if (!this.userCustCode) return;
+  onSearch(resetPage: boolean = false) {
+    if (!this.userCustCode) return;
 
-  this.page = 1;
+    if (resetPage) this.page = 1;
 
-  this.loading.set(true);
+    this.loading.set(true);
+    
+    const params: any = { cust_code: this.userCustCode.trim() };
 
-  const payload = {
-    cust_code: this.userCustCode.trim(),
+    if (this.selectedProject?.trim()) {
+      params.projCode = this.selectedProject.trim();
+    }
 
-    proj_code: this.selectedProject || undefined,
-    doc_type: this.filterDocType || undefined,
-    tkt_code: this.filterDocNumber?.trim() || undefined,
+    if (this.filterDocNumber?.trim()) {
+      params.docNumber = this.filterDocNumber.trim();
+    }
 
-    date_from: this.filterDateFrom
-      ? `${this.filterDateFrom} 00:00:00`
-      : undefined,
+    params.page = this.page.toString();
+    params.limit = this.limit.toString();    
 
-    date_to: this.filterDateTo
-      ? `${this.filterDateTo} 23:59:59`
-      : undefined,
+    if (this.filterDateFrom) {
+      params.dateFrom = new Date(this.filterDateFrom).toISOString();
+    }
+    if (this.filterDateTo) {
+      params.dateTo = new Date(this.filterDateTo).toISOString();
+    }   
+    this.tickService.searchTicks(params).subscribe({
+      next: res => {        
+        console.log(res);        
+        this.results = res.data.map((r: any) => ({
+          ...r,
+          selected: false,
+        }));
+        this.totalPages = res.totalPages;
+        this.totalItems = res.total;
+        this.loading.set(false);
+      },
+      error: err => {
+        console.error('ERROR SEARCH:', err);
+        this.loading.set(false);
+      },
+    });
+  }
 
-    page: this.page,
-    limit: this.limit,
-  };
-
-  console.log('🔎 Payload filtros:', payload);
-
-  this.tickService.searchTicks(payload).subscribe({
-    next: res => {
-      this.results = res.data.map((r: any) => ({
-        ...r,
-        selected: false,
-      }));
-      this.totalPages = res.totalPages;
-      this.totalItems = res.total;
-      this.loading.set(false);
-    },
-    error: err => {
-      console.error('ERROR SEARCH:', err);
-      this.loading.set(false);
-    },
-  });
-}
+  getProjectName(code: string): string {
+    const proj = this.projectOptions.find(
+      p => p.proj_code === code?.trim(),      
+    );    
+    return proj?.proj_name || code;
+  }
 
   downloadTicket(tkt_code: string) {
     if (!tkt_code) return;
@@ -213,7 +197,6 @@ onSearch() {
     });
   }
 
-
   nextPage() {
     if (this.page < this.totalPages) {
       this.page++;
@@ -232,9 +215,9 @@ onSearch() {
     this.selectedProject = "";
     this.filterDocType = "";
     this.filterDocNumber = "";
-    this.filterDateFrom = "";
+    this.filterDateFrom = null;
     this.filterDateTo = "";
     this.results = [];
-    console.log("Filtros limpiados");
+    this.onSearch();
   }
 }
