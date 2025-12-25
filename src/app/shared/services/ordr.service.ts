@@ -31,20 +31,24 @@ export class OrdrService {
     limit: number,
   ) {
     const params: any = {
+      custCode,
       page,
       limit,
     };
 
     if (projCode) {
-      params.proj_code = projCode;
+      params.projCode = projCode;
     }
 
     return this.http.get<any>(
-      `${this.baseUrl}/ordr/by-customer/${custCode}`,
+      `${this.baseUrl}/ordl/by-customer`,
       { params }
     );
   }
 
+  getOrdersByCustomer(custCode: string) {
+    return this.http.get<any[]>(`${environment.baseUrl}/ordrl/customer/${custCode}`);
+  }
 
   getOrdersByCustCode(cust_code: string): Observable<Ordr[]> {
     const params = new HttpParams().set('cust_code', cust_code.trim());
@@ -56,13 +60,11 @@ export class OrdrService {
 
     const params: any = {
       cust_code: cust_code?.trim() || '',
-      proj_code: proj_code?.trim() || ''  // <--- SIEMPRE
+      proj_code: proj_code?.trim() || ''
     };
 
     return this.http.get(`${this.baseUrl}/ordr`, { params });
   }
-
-
 
   getLines(order_date: string, order_code: string) {
     return this.http.get(`${this.baseUrl}/ordl/byOrder/${order_date}/${order_code}`);
