@@ -1,4 +1,3 @@
-<!-- 🔹 Encabezado -->
 <header class="bg-cyan-700 text-white p-4 rounded-t-lg flex justify-between items-center shadow-sm">
   <h1 class="text-xl font-semibold">Laboratorio</h1>
   <span class="text-sm opacity-90">
@@ -7,10 +6,9 @@
 </header>
 
 <div class="p-4 bg-gray-50">
-
- <!-- 🔹 Filtro de proyecto -->
+ 
  <div class="bg-white shadow-md rounded-xl p-4 border border-gray-200 flex items-center gap-4">
-  <!-- Aquí aparece el cust_code -->
+  
   <span class="mr-auto text-gray-600 text-sm font-semibold">
     Cliente: {{ userCustCode }}
   </span>
@@ -32,47 +30,42 @@
     Limpiar
   </button>  
 </div>
+  
+<div class="bg-white shadow-lg rounded-2xl mt-10 border border-gray-200">
+  <div class="flex flex-col items-center justify-center p-12 text-center text-gray-600">
+    <!-- Ícono -->
+    <svg xmlns="http://www.w3.org/2000/svg"
+         class="h-16 w-16 text-cyan-600 mb-4"
+         fill="none"
+         viewBox="0 0 24 24"
+         stroke="currentColor">
+      <path stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19.428 15.428a2 2 0 00-1.428-.6H6a2 2 0 00-2 2V20h16v-2.172a2 2 0 00-.572-1.4zM15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
 
-  <!-- Tabla IMST -->
-  <div class="overflow-x-auto bg-white shadow-lg rounded-2xl mt-10 border border-gray-200">
+    <!-- Título -->
+    <h3 class="text-xl font-semibold text-gray-800 mb-2">
+      Sección en construcción
+    </h3>
 
-    <h2 class="text-lg font-semibold p-4 bg-gray-100 border-b">Laboratorio</h2>
+    <!-- Mensaje -->
+    <p class="max-w-md text-sm text-gray-500">
+      Estamos trabajando para habilitar el módulo de laboratorio.
+      Muy pronto podrás visualizar y gestionar esta información desde aquí.
+    </p>
 
-    <table class="min-w-full border-collapse text-sm text-gray-700">
+    <!-- Etiqueta opcional -->
+    <span class="mt-4 inline-block bg-cyan-100 text-cyan-700 text-xs font-semibold px-3 py-1 rounded-full">
+      Próximamente disponible
+    </span>
 
-      <thead class="bg-cyan-700 text-white uppercase text-xs tracking-wide">
-        <tr>
-          <th class="py-3 px-4 text-left font-semibold">Código</th>
-          <th class="py-3 px-4 text-left font-semibold">Descripción</th>
-          <th class="py-3 px-4 text-left font-semibold">Categoría</th>
-          <th class="py-3 px-4 text-left font-semibold">Slump</th>
-          <th class="py-3 px-4 text-left font-semibold">UOM</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        @for (prod of imstResource.value(); track prod.item_code) {
-          <tr class="border-t hover:bg-cyan-50 transition duration-150 ease-in-out">
-            <td class="py-3 px-4 font-semibold">{{ prod.item_code }}</td>
-            <td class="py-3 px-4">{{ prod.descr || '—' }}</td>
-            <td class="py-3 px-4">{{ prod.item_cat || '—' }}</td>
-            <td class="py-3 px-4">{{ prod.slump || '—' }}</td>
-            <td class="py-3 px-4">{{ prod.slump_uom || '—' }}</td>
-          </tr>
-        }
-      </tbody>
-
-    </table>
-
-    @if (imstResource.isLoading()) {
-      <div class="text-center p-6 text-black animate-pulse">
-        Cargando laboratorio...
-      </div>
-    }
   </div>
+</div>
 
 
-  <!-- Footer -->
+
   <footer class="mt-10 text-xs text-gray-400 text-center">
     © {{ currentYear }} TRANSEX CLIENT UI — Todos los derechos reservados.
   </footer>
