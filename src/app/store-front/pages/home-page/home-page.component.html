@@ -53,40 +53,32 @@
       </thead>
 
       <tbody>
-        <ng-container *ngFor="let p of products">          
+          <ng-container *ngFor="let g of groupedProducts">      
+            <tr
+              class="border-t bg-white hover:bg-cyan-50 cursor-pointer font-semibold"
+              (click)="toggleGroup(g.product_code)"
+            >
+              <td class="p-3">{{ g.product_desc }}</td>
+              <td class="p-3">{{ g.product_code }}</td>
+              <td class="p-3">—</td>
+              <td class="p-3">{{ g.totalQuantity }}</td>
+              <td class="p-3">0</td>
+              <td class="p-3">{{ g.totalQuantity }}</td>
+            </tr>   
+               
+       <ng-container *ngIf="expandedGroup === g.product_code">
           <tr
-            class="border-t hover:bg-cyan-50 cursor-pointer"
-            (click)="toggleRow(p.product_code)"
+            *ngFor="let p of g.items"
+            class="bg-gray-100 text-sm"
           >
-            <td class="p-3">{{ p.product_desc }}</td>
+            <td class="p-3 pl-8">↳ {{ p.product_desc }}</td>
             <td class="p-3">{{ p.product_code }}</td>
             <td class="p-3">{{ p.order_code }}</td>
             <td class="p-3">{{ p.quantity }}</td>
             <td class="p-3">0</td>
             <td class="p-3">{{ p.quantity }}</td>
           </tr>
-          
-          <tr *ngIf="expandedRow === p.product_code" class="bg-gray-100">
-            <td class="p-3 text-sm text-gray-700">
-               {{ p.product_desc }}
-            </td>
-            <td class="p-3 text-sm text-gray-700">
-               {{ p.product_code }}
-            </td>
-            <td class="p-3 text-sm text-gray-700">
-               {{ p.order_code }}
-            </td>
-            <td class="p-3 text-sm text-gray-700">
-               {{ p.quantity }}
-            </td>
-            <td class="p-3 text-sm text-gray-700">
-               0
-            </td>
-            <td class="p-3 text-sm text-gray-700">
-               {{ p.quantity }}
-            </td>
-          </tr>
-
+        </ng-container>        
         </ng-container>
       </tbody>
     </table>

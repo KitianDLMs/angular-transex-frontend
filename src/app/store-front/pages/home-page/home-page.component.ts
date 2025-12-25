@@ -30,6 +30,8 @@ export class HomePageComponent implements OnInit {
   currentYear = new Date().getFullYear();
   loading = false;
   expandedRow: string | null = null;
+  groupedProducts: any[] = [];
+  expandedGroup: string | null = null;
 
   today = new Date();
 
@@ -47,8 +49,8 @@ export class HomePageComponent implements OnInit {
     this.loadProducts();
   }  
 
-  toggleRow(code: string) {
-    this.expandedRow = this.expandedRow === code ? null : code;
+  toggleGroup(code: string) {
+    this.expandedGroup = this.expandedGroup === code ? null : code;
   }
 
   loadProducts() {
@@ -64,11 +66,15 @@ export class HomePageComponent implements OnInit {
         this.limit
       )
       .subscribe({
-        next: (res) => {
+       next: (res) => {
           this.products = res.data;
           this.totalPages = res.totalPages;
+
+          this.groupProducts(); // 👈 CLAVE
+
           this.loading = false;
         },
+
         error: () => {
           this.products = [];
           this.loading = false;
@@ -99,5 +105,26 @@ export class HomePageComponent implements OnInit {
       this.page--;
       this.loadProducts();
     }
+  }
+
+  groupProducts() {
+    const map = new Map<string, any>();
+
+    for (const p of this.products) {
+      if (!map.has(p.product_code)) {
+        map.set(p.product_code, {
+          product_code: p.product_code,
+          product_desc: p.product_desc,
+          totalQuantity: 0,
+          items: []
+        });
+      }
+
+      const group = map.get(p.product_code);
+      group.items.push(p);
+      group.totalQuantity += Number(p.quantity);
+    }
+
+    this.groupedProducts = Array.from(map.values());
   }
 }

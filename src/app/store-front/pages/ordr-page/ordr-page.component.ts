@@ -40,11 +40,10 @@ export class OrdrPageComponent {
   custService = inject(CustService);  
     
   filteredCustCode = signal('');
-
   projectOptions: any[] = [];
-
   userName: string | null = null;
   userCustCode: string | null = null;
+  groupedOrders: any[] = [];
 
   constructor(
     private ordrService: OrdrService,    
@@ -73,30 +72,28 @@ export class OrdrPageComponent {
     this.loadOrders();
   }
 
-  toggleOrder(  ord: any) {
-    const order_date = ord.order_date.slice(0, 10);
-    const order_code = ord.order_code;
-
-    if (this.expandedOrder === order_code) {
-      this.expandedOrder = null;
-      this.orderLines = [];
-      return;
-    }
-
-    this.ordrService.getLines(order_date, order_code)
-      .subscribe((res: any) => {
-        this.expandedOrder = order_code;
-        this.orderLines = res;
-      });
-  }
-
-
   searchOrders() {
     const code = this.custCode.trim();
     if (!code) return;
 
     this.ordrService.getOrdersByCustCode(code)
       .subscribe(data => this.orders = data);
+  }
+
+  groupOrders() {
+    const map = new Map<string, any>();
+    for (const o of this.orders) {
+      if (!map.has(o.order_code)) {
+        map.set(o.order_code, {
+          order_code: o.order_code,
+          order_date: o.order_date,
+          status: o.status,
+          totalQuantity: 0,
+        });
+      }
+      map.get(o.order_code).totalQuantity += Number(o.quantity);
+    }
+    this.groupedOrders = Array.from(map.values());
   }
 
   loadOrders() {
@@ -112,9 +109,9 @@ export class OrdrPageComponent {
         this.limit
       )
       .subscribe({
-        next: (res: any) => {
-          console.log(res.data);          
+        next: (res: any) => {          
           this.orders = res.data;
+          this.groupOrders();        
           this.totalPages = res.totalPages;
           this.totalItems = res.total;
           this.loading.set(false);
@@ -174,9 +171,11 @@ export class OrdrPageComponent {
   }
 
   goToSeguimiento(ord: any) {
-    this.router.navigate(['/store-front/seguimiento'], {
-      queryParams: { code: ord.order_code }
-    });
+    this.router.navigate(
+      ['/store-front/seguimiento'],
+      { queryParams: { code: ord.order_code } }
+    );
   }
+
 
 }
