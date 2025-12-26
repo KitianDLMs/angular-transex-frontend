@@ -32,6 +32,7 @@ export class HomePageComponent implements OnInit {
   expandedRow: string | null = null;
   groupedProducts: any[] = [];
   expandedGroup: string | null = null;
+  availableProjects: string[] = [];
 
   today = new Date();
 
@@ -57,6 +58,7 @@ export class HomePageComponent implements OnInit {
     if (!this.userCustCode) return;
 
     this.loading = true;
+    this.expandedGroup = null;
 
     this.ordrService
       .getOrdersByCustomerPaginated(
@@ -66,20 +68,32 @@ export class HomePageComponent implements OnInit {
         this.limit
       )
       .subscribe({
-       next: (res) => {
+            next: (res) => {
           this.products = res.data;
           this.totalPages = res.totalPages;
 
-          this.groupProducts(); // 👈 CLAVE
+          this.extractProjectsFromProducts();
+          this.groupProducts();
 
           this.loading = false;
         },
-
         error: () => {
           this.products = [];
           this.loading = false;
         }
       });
+  }
+
+  extractProjectsFromProducts() {
+    const set = new Set<string>();
+
+    for (const p of this.products) {
+      if (p.proj_code) {
+        set.add(p.proj_code.trim());
+      }
+    }
+
+    this.availableProjects = Array.from(set);
   }
 
   onFilterChange() {

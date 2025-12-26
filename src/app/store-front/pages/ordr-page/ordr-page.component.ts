@@ -1,10 +1,8 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { OrdrService } from '@shared/services/ordr.service';
 import { AuthService } from '@auth/services/auth.service';
-import { ProjService } from '@shared/services/proj.service';
-import { ProdService } from '@shared/services/prod.service';
 import { CustService } from '@dashboard/cust/services/cust.service';
 import { Router } from '@angular/router';
 
@@ -15,9 +13,12 @@ import { Router } from '@angular/router';
   templateUrl: './ordr-page.component.html',
 })
 export class OrdrPageComponent {
+
   orders: any[] = [];
-  custCode: string = '';
-  selectedProject: string = '';
+
+  selectedProject: string = '';       // obra seleccionada
+  projectOptions: string[] = [];      // obras únicas
+
   loading = signal(true);
 
   page = 1;
@@ -25,29 +26,21 @@ export class OrdrPageComponent {
   totalPages = 0;
   totalItems = 0;
 
-  expandedOrder: string | null = null;
-  orderLines: any[] = [];
-
   today = new Date();
   currentYear = new Date().getFullYear();
 
   customerName: string | null = null;
   customerAddress: string | null = null;
 
-  authService = inject(AuthService);
-  projService = inject(ProjService);
-  prodService = inject(ProdService);
-  custService = inject(CustService);  
-    
-  filteredCustCode = signal('');
-  projectOptions: any[] = [];
-  userName: string | null = null;
   userCustCode: string | null = null;
-  groupedOrders: any[] = [];
+  userName: string | null = null;
+
+  authService = inject(AuthService);
+  custService = inject(CustService);
 
   constructor(
-    private ordrService: OrdrService,    
-    private router: Router,
+    private ordrService: OrdrService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -56,46 +49,42 @@ export class OrdrPageComponent {
     this.userName = user?.fullName || 'Usuario';
     this.userCustCode = user?.cust_code || null;
 
-    this.filteredCustCode.set(this.userCustCode?.trim() || '');
+    if (!this.userCustCode) return;
 
-    if (this.userCustCode) {
-      this.custService.getCustByCode(this.userCustCode).subscribe(cust => {
-        this.customerName = cust.name || 'Sin nombre';
-        this.customerAddress = cust.addr_line_1 || 'Sin dirección';
+    this.custService.getCustByCode(this.userCustCode).subscribe(cust => {
+      this.customerName = cust.name;
+      this.customerAddress = cust.addr_line_1 ?? null;
+    });
+
+    this.loadProjects(); // 👈 obras
+    this.loadOrders();   // 👈 pedidos
+  }
+
+  // ✅ SACAR OBRAS DESDE LOS PEDIDOS
+  loadProjects() {
+    if (!this.userCustCode) return;
+
+    this.ordrService
+      .getOrdersByCustomerPaginated(
+        this.userCustCode,
+        '',        // sin filtro de obra
+        1,
+        1000       // número alto SOLO para el select
+      )
+      .subscribe(res => {
+        const set = new Set<string>();
+
+        for (const o of res.data) {
+          if (o.proj_code) {
+            set.add(o.proj_code.trim());
+          }
+        }
+
+        this.projectOptions = Array.from(set);
       });
-      this.projService.getByCustomer(this.userCustCode.trim()).subscribe({
-        next: res => this.projectOptions = res,
-        error: err => console.error(err)
-      });
-    }
-
-    this.loadOrders();
   }
 
-  searchOrders() {
-    const code = this.custCode.trim();
-    if (!code) return;
-
-    this.ordrService.getOrdersByCustCode(code)
-      .subscribe(data => this.orders = data);
-  }
-
-  groupOrders() {
-    const map = new Map<string, any>();
-    for (const o of this.orders) {
-      if (!map.has(o.order_code)) {
-        map.set(o.order_code, {
-          order_code: o.order_code,
-          order_date: o.order_date,
-          status: o.status,
-          totalQuantity: 0,
-        });
-      }
-      map.get(o.order_code).totalQuantity += Number(o.quantity);
-    }
-    this.groupedOrders = Array.from(map.values());
-  }
-
+  // ✅ PEDIDOS FILTRADOS POR OBRA
   loadOrders() {
     if (!this.userCustCode) return;
 
@@ -104,20 +93,30 @@ export class OrdrPageComponent {
     this.ordrService
       .getOrdersByCustomerPaginated(
         this.userCustCode,
-        this.selectedProject,
+        this.selectedProject, // filtro obra
         this.page,
         this.limit
       )
       .subscribe({
-        next: (res: any) => {          
+        next: (res: any) => {
           this.orders = res.data;
-          this.groupOrders();        
           this.totalPages = res.totalPages;
           this.totalItems = res.total;
           this.loading.set(false);
         },
         error: () => this.loading.set(false),
       });
+  }
+
+  onSelectProject() {
+    this.page = 1;
+    this.loadOrders();
+  }
+
+  clearFilter() {
+    this.selectedProject = '';
+    this.page = 1;
+    this.loadOrders();
   }
 
   nextPage() {
@@ -134,48 +133,10 @@ export class OrdrPageComponent {
     }
   }
 
-
-  // loadData() {
-  //   this.service.getAll().subscribe(data => {
-  //     this.items = data;
-  //   });
-  // }
-
-  trackByProj(index: number, item: any) {
-    // this.loadOrders();
-    return item.proj_code;
-  }
-
-
-  onFilterCustCode(value: string) {
-    this.filteredCustCode.set(value.trim());
-    this.loadOrders();
-  }
-
-  onSelectProject() {
-    console.log("Proyecto seleccionado:", this.selectedProject);
-    this.loadOrders();
-  }
-
-  clearFilter() {
-    this.selectedProject = '';
-    this.loadOrders();
-  }
-
-  loadProductsByCustomer() {
-    if (!this.userCustCode) return;
-
-    this.prodService.getByCustomer(this.userCustCode).subscribe(res => {
-      // this.imstResource.set(res);
-    });
-  }
-
   goToSeguimiento(ord: any) {
     this.router.navigate(
       ['/store-front/seguimiento'],
       { queryParams: { code: ord.order_code } }
     );
   }
-
-
 }

@@ -13,27 +13,40 @@ export class TickService {
     return this.http.get<any>(`${this.baseUrl}`);
   }
 
-  searchTicks(filters: {
-    cust_code: string;
-    proj_code?: string;
-    docNumber?: string;
-    dateFrom?: string;
-    dateTo?: string;
-    page?: number;
-    limit?: number;
-  }) {
-    let params = new HttpParams()
-      .set('custCode', filters.cust_code)
-      .set('page', (filters.page ?? 1).toString())
-      .set('limit', (filters.limit ?? 20).toString());
+searchTicks(filters: {
+  cust_code: string;
+  projCode: string;
+  docNumber?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  limit?: number;
+}) {
+  let params = new HttpParams()
+    .set('custCode', filters.cust_code)
+    .set('projCode', filters.projCode)
+    .set('page', (filters.page ?? 1).toString())
+    .set('limit', (filters.limit ?? 20).toString());
 
-    if (filters.proj_code) params = params.set('projCode', filters.proj_code);
-    if (filters.docNumber) params = params.set('docNumber', filters.docNumber);
-    if (filters.dateFrom) params = params.set('dateFrom', filters.dateFrom);
-    if (filters.dateTo) params = params.set('dateTo', filters.dateTo);
-
-    return this.http.get<any>(`${this.baseUrl}/search`, { params });
+  if (filters.projCode) {
+    params = params.set('projCode', filters.projCode);
   }
+
+  if (filters.docNumber) {
+    params = params.set('docNumber', filters.docNumber);
+  }
+
+  if (filters.dateFrom) {
+    params = params.set('dateFrom', filters.dateFrom);
+  }
+
+  if (filters.dateTo) {
+    params = params.set('dateTo', filters.dateTo);
+  }
+
+  return this.http.get<any>(`${this.baseUrl}/search`, { params });
+}
+
 
   downloadZip(codes: string[]) {
     return this.http.post(

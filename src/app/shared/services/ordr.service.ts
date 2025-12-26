@@ -46,6 +46,16 @@ export class OrdrService {
     );
   }
 
+  getProjectsByCustomer(custCode: string) {
+    return this.http.get<any[]>(
+      `${this.baseUrl}/ordr/projects-by-customer`,
+      {
+        params: { custCode }
+      }
+    );
+  }
+
+
   getOrdersByCustomer(custCode: string) {
     return this.http.get<any[]>(`${environment.baseUrl}/ordrl/customer/${custCode}`);
   }

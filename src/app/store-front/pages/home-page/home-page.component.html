@@ -17,9 +17,9 @@
       class="select select-bordered bg-gray-50 w-full sm:w-64"
       [(ngModel)]="selectedProduct"
       (change)="onFilterChange()">
-      <option value="">Seleccionar la obra</option>
-      <option *ngFor="let p of products" [value]="p.item_code">
-        {{ p.item_code }}
+      <option value="">Todas las obras</option>
+      <option *ngFor="let proj of availableProjects" [value]="proj">
+        {{ proj }}
       </option>
     </select>
 
@@ -66,19 +66,19 @@
               <td class="p-3">{{ g.totalQuantity }}</td>
             </tr>   
                
-       <ng-container *ngIf="expandedGroup === g.product_code">
-          <tr
-            *ngFor="let p of g.items"
-            class="bg-gray-100 text-sm"
-          >
-            <td class="p-3 pl-8">↳ {{ p.product_desc }}</td>
-            <td class="p-3">{{ p.product_code }}</td>
-            <td class="p-3">{{ p.order_code }}</td>
-            <td class="p-3">{{ p.quantity }}</td>
-            <td class="p-3">0</td>
-            <td class="p-3">{{ p.quantity }}</td>
-          </tr>
-        </ng-container>        
+        <ng-container *ngIf="expandedGroup === g.product_code">
+            <tr
+              *ngFor="let p of g.items"
+              class="bg-gray-100 text-sm"
+            >
+              <td class="p-3 pl-8">↳ {{ p.product_desc }}</td>
+              <td class="p-3">{{ p.product_code }}</td>
+              <td class="p-3">OC:{{ p.order_code }}</td>
+              <td class="p-3">{{ p.quantity }}</td>
+              <td class="p-3">0</td>
+              <td class="p-3">{{ p.quantity }}</td>
+            </tr>
+          </ng-container>        
         </ng-container>
       </tbody>
     </table>

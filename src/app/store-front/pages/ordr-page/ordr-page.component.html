@@ -23,14 +23,14 @@
       class="select select-bordered bg-gray-50 w-full sm:w-64"
       [(ngModel)]="selectedProject"
       (change)="onSelectProject()">
-      <option ngValue="" disabled>Selecciona la obra</option>
-      <option ngValue="">Todas</option>
-      <option
-        *ngFor="let p of projectOptions; trackBy: trackByProj"
-        [ngValue]="p.proj_code">
-        {{ p.proj_code }} - {{ p.proj_name }}
+
+      <option value="">Todas las obras</option>
+
+      <option *ngFor="let proj of projectOptions" [value]="proj">
+        {{ proj }}
       </option>
     </select>
+
 
     <button
       class="btn bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg shadow-sm

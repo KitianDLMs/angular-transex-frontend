@@ -8,6 +8,7 @@ import { CustService } from '@dashboard/cust/services/cust.service';
 import { ProjService } from '@shared/services/proj.service';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import { OrdrService } from '@shared/services/ordr.service';
 
 @Component({
   selector: 'app-docs-page',
@@ -19,8 +20,8 @@ export class DocsPageComponent implements OnInit {
 
   private tickService = inject(TickService);
   private authService = inject(AuthService);
-  private custService = inject(CustService);
-  private projService = inject(ProjService);
+  private custService = inject(CustService);  
+  private ordrService = inject(OrdrService);  
     
   customerName = '';
   customerAddress = '';
@@ -65,19 +66,19 @@ export class DocsPageComponent implements OnInit {
 
   loadProjectsByCustomer(): void {
     if (!this.userCustCode) return;
-    this.projService.getByCust(this.userCustCode).subscribe({
-      next: (projects) => {         
-        this.projectOptions = projects.map(p => ({
-          proj_code: p.proj_code,
-          proj_name: p.proj_name,
-        }));
+
+    this.ordrService.getProjectsByCustomer(this.userCustCode).subscribe({
+      next: (projects) => {
+        console.log('OBRAS:', projects);
+        this.projectOptions = projects;
       },
-      error: (err) => {
+      error: err => {
         console.error('Error cargando obras:', err);
         this.projectOptions = [];
       }
     });
   }
+
 
   downloadExcel() {
     const data = this.results.map(tick => ({
@@ -191,7 +192,8 @@ export class DocsPageComponent implements OnInit {
     this.loading.set(true);
     
     const params: any = { cust_code: this.userCustCode.trim() };
-
+    console.log(this.selectedProject);
+    
     if (this.selectedProject?.trim()) {
       params.projCode = this.selectedProject.trim();
     }
@@ -209,6 +211,7 @@ export class DocsPageComponent implements OnInit {
     if (this.filterDateTo) {
       params.dateTo = new Date(this.filterDateTo).toISOString();
     }   
+    console.log(params);    
     this.tickService.searchTicks(params).subscribe({
       next: res => {        
         console.log(res);        
