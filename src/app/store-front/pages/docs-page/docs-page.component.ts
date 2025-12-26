@@ -190,9 +190,14 @@ export class DocsPageComponent implements OnInit {
     if (resetPage) this.page = 1;
 
     this.loading.set(true);
+    console.log(this.userCustCode);
     
-    const params: any = { cust_code: this.userCustCode.trim() };
-    console.log(this.selectedProject);
+    const params: any = {
+      custCode: this.userCustCode.trim(),
+      page: this.page,
+      limit: this.limit,
+    };
+    console.log('params', params);
     
     if (this.selectedProject?.trim()) {
       params.projCode = this.selectedProject.trim();
@@ -202,15 +207,15 @@ export class DocsPageComponent implements OnInit {
       params.docNumber = this.filterDocNumber.trim();
     }
 
-    params.page = this.page.toString();
-    params.limit = this.limit.toString();    
-
     if (this.filterDateFrom) {
-      params.dateFrom = new Date(this.filterDateFrom).toISOString();
+      params.dateFrom = this.filterDateFrom;
     }
     if (this.filterDateTo) {
-      params.dateTo = new Date(this.filterDateTo).toISOString();
-    }   
+      params.dateTo = this.filterDateTo;
+    }
+
+    params.page = this.page.toString();
+    params.limit = this.limit.toString();    
     console.log(params);    
     this.tickService.searchTicks(params).subscribe({
       next: res => {        
