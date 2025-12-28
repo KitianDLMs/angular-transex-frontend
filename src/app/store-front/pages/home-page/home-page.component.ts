@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '@auth/services/auth.service';
 import { CustService } from '@dashboard/cust/services/cust.service';
 import { OrdrService } from '@shared/services/ordr.service';
+import { ProjService } from '@shared/services/proj.service';
 
 @Component({
   selector: 'app-home-page',
@@ -16,6 +17,7 @@ export class HomePageComponent implements OnInit {
   authService = inject(AuthService);
   custService = inject(CustService);
   ordrService = inject(OrdrService);
+  projService = inject(ProjService);
 
   userCustCode: string | null = null;
   customerName: string | null = null;
@@ -23,6 +25,9 @@ export class HomePageComponent implements OnInit {
 
   products: any[] = [];
   selectedProduct: string = '';
+
+  selectedProject: string = '';
+  projectOptions: { proj_code: string; proj_descr: string }[] = [];
 
   page = 1;
   limit = 10;
@@ -32,7 +37,7 @@ export class HomePageComponent implements OnInit {
   expandedRow: string | null = null;
   groupedProducts: any[] = [];
   expandedGroup: string | null = null;
-  availableProjects: string[] = [];
+  availableProjects: any[] = [];
 
   today = new Date();
 
@@ -46,9 +51,21 @@ export class HomePageComponent implements OnInit {
       this.customerName = c.name;
       this.customerAddress = c.addr_line_1 ?? null;
     });
-
+    this.loadProjects();
     this.loadProducts();
   }  
+
+  loadProjects() {
+    if (!this.userCustCode) return;
+
+    this.projService
+      .getByCust(this.userCustCode)
+      .subscribe(res => {
+        console.log('proj', res);      
+        this.projectOptions = res;
+      });
+  }
+
 
   toggleGroup(code: string) {
     this.expandedGroup = this.expandedGroup === code ? null : code;
@@ -63,18 +80,16 @@ export class HomePageComponent implements OnInit {
     this.ordrService
       .getOrdersByCustomerPaginated(
         this.userCustCode,
-        this.selectedProduct || '',
+        this.selectedProject || '',   // 👈 filtro por obra
         this.page,
         this.limit
       )
       .subscribe({
-            next: (res) => {
+        next: (res) => {
           this.products = res.data;
           this.totalPages = res.totalPages;
 
-          this.extractProjectsFromProducts();
           this.groupProducts();
-
           this.loading = false;
         },
         error: () => {
@@ -84,25 +99,26 @@ export class HomePageComponent implements OnInit {
       });
   }
 
+
   extractProjectsFromProducts() {
-    const set = new Set<string>();
+    const map = new Map<string, string>();
 
     for (const p of this.products) {
-      if (p.proj_code) {
-        set.add(p.proj_code.trim());
+      if (p.proj_code && p.proj_descr) {
+        map.set(p.proj_code.trim(), p.proj_descr.trim());
       }
     }
-
-    this.availableProjects = Array.from(set);
+    
+    this.availableProjects = Array.from(map, ([proj_code, proj_descr]) => ({ proj_code, proj_descr }));
   }
 
-  onFilterChange() {
+  onSelectProject() {
     this.page = 1;
     this.loadProducts();
   }
 
   clearFilter() {
-    this.selectedProduct = '';
+    this.selectedProject = '';
     this.page = 1;
     this.loadProducts();
   }

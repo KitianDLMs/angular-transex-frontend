@@ -5,6 +5,7 @@ import { OrdrService } from '@shared/services/ordr.service';
 import { AuthService } from '@auth/services/auth.service';
 import { CustService } from '@dashboard/cust/services/cust.service';
 import { Router } from '@angular/router';
+import { ProjService } from '@shared/services/proj.service';
 
 @Component({
   selector: 'app-ordr-page',
@@ -16,8 +17,8 @@ export class OrdrPageComponent {
 
   orders: any[] = [];
 
-  selectedProject: string = '';       // obra seleccionada
-  projectOptions: string[] = [];      // obras únicas
+  projectOptions: { proj_code: string; proj_descr: string }[] = [];
+  selectedProject: string = '';
 
   loading = signal(true);
 
@@ -37,6 +38,7 @@ export class OrdrPageComponent {
 
   authService = inject(AuthService);
   custService = inject(CustService);
+  projService = inject(ProjService);
 
   constructor(
     private ordrService: OrdrService,
@@ -56,35 +58,21 @@ export class OrdrPageComponent {
       this.customerAddress = cust.addr_line_1 ?? null;
     });
 
-    this.loadProjects(); // 👈 obras
-    this.loadOrders();   // 👈 pedidos
+    this.loadProjects();
+    this.loadOrders();  
   }
 
-  // ✅ SACAR OBRAS DESDE LOS PEDIDOS
   loadProjects() {
     if (!this.userCustCode) return;
 
-    this.ordrService
-      .getOrdersByCustomerPaginated(
-        this.userCustCode,
-        '',        // sin filtro de obra
-        1,
-        1000       // número alto SOLO para el select
-      )
+    this.projService
+      .getByCust(this.userCustCode)
       .subscribe(res => {
-        const set = new Set<string>();
-
-        for (const o of res.data) {
-          if (o.proj_code) {
-            set.add(o.proj_code.trim());
-          }
-        }
-
-        this.projectOptions = Array.from(set);
+        console.log('proj', res);      
+        this.projectOptions = res;
       });
   }
 
-  // ✅ PEDIDOS FILTRADOS POR OBRA
   loadOrders() {
     if (!this.userCustCode) return;
 
@@ -93,12 +81,12 @@ export class OrdrPageComponent {
     this.ordrService
       .getOrdersByCustomerPaginated(
         this.userCustCode,
-        this.selectedProject, // filtro obra
+        this.selectedProject,
         this.page,
         this.limit
       )
       .subscribe({
-        next: (res: any) => {
+        next: (res: any) => {                        
           this.orders = res.data;
           this.totalPages = res.totalPages;
           this.totalItems = res.total;

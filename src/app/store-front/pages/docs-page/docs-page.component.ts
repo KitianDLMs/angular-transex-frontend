@@ -5,10 +5,10 @@ import { FormsModule } from '@angular/forms';
 import { TickService } from '@products/services/tick.service';
 import { AuthService } from '@auth/services/auth.service';
 import { CustService } from '@dashboard/cust/services/cust.service';
-import { ProjService } from '@shared/services/proj.service';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { OrdrService } from '@shared/services/ordr.service';
+import { ProjService } from '@shared/services/proj.service';
 
 @Component({
   selector: 'app-docs-page',
@@ -21,7 +21,7 @@ export class DocsPageComponent implements OnInit {
   private tickService = inject(TickService);
   private authService = inject(AuthService);
   private custService = inject(CustService);  
-  private ordrService = inject(OrdrService);  
+  private projService = inject(ProjService);  
     
   customerName = '';
   customerAddress = '';
@@ -67,10 +67,14 @@ export class DocsPageComponent implements OnInit {
   loadProjectsByCustomer(): void {
     if (!this.userCustCode) return;
 
-    this.ordrService.getProjectsByCustomer(this.userCustCode).subscribe({
+    this.projService.getByCust(this.userCustCode).subscribe({
       next: (projects) => {
-        console.log('OBRAS:', projects);
-        this.projectOptions = projects;
+        this.projectOptions = projects
+          .filter(p => p.proj_code && p.proj_descr)
+          .map(p => ({
+            proj_code: p.proj_code.trim(),
+            proj_name: p.proj_descr.trim() // usar proj_descr como nombre
+          }));
       },
       error: err => {
         console.error('Error cargando obras:', err);
@@ -78,7 +82,6 @@ export class DocsPageComponent implements OnInit {
       }
     });
   }
-
 
   downloadExcel() {
     const data = this.results.map(tick => ({
@@ -177,7 +180,11 @@ export class DocsPageComponent implements OnInit {
     this.filterDocType = '';
     this.filterDateFrom = '';
     this.filterDateTo = '';
-    this.onSearch();
+    this.onSearch(true);
+  }
+
+  isService(tick: any): boolean {
+    return tick?.prod_descr?.toUpperCase() === 'SERVICIO BOMBEO';
   }
 
   onSelectProject() {
@@ -197,7 +204,6 @@ export class DocsPageComponent implements OnInit {
       page: this.page,
       limit: this.limit,
     };
-    console.log('params', params);
     
     if (this.selectedProject?.trim()) {
       params.projCode = this.selectedProject.trim();
@@ -216,7 +222,6 @@ export class DocsPageComponent implements OnInit {
 
     params.page = this.page.toString();
     params.limit = this.limit.toString();    
-    console.log(params);    
     this.tickService.searchTicks(params).subscribe({
       next: res => {        
         console.log(res);        
@@ -267,7 +272,7 @@ export class DocsPageComponent implements OnInit {
     this.filterDateFrom = null;
     this.filterDateTo = "";
     this.results = [];
-    this.onSearch();
+    this.onSearch(true);
   }
 
   prevPage() {

@@ -42,4 +42,18 @@ export class ProdService {
   delete(item_code: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/item/${item_code}`);
   }
+
+  getByCustomerAndProject(
+    cust_code: string,
+    proj_code?: string
+  ): Observable<Imst[]> {
+
+    let url = `${this.baseUrl}/customer/${cust_code}/projects`;
+
+    if (proj_code) {
+      url += `?proj_code=${proj_code}`;
+    }
+
+    return this.http.get<Imst[]>(url);
+  }
 }

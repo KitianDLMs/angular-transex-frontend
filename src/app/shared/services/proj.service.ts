@@ -40,7 +40,7 @@ export class ProjService {
     return this.http.get<Proj[]>(`${this.baseUrl}/proj`);
   }  
 
-  getByCust(cust_code: string): Observable<Proj[]> {
+  getByCust(cust_code: string): Observable<any[]> {
     const key = cust_code.trim();
 
     if (this.projCache.has(key)) {
