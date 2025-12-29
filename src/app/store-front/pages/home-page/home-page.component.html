@@ -59,7 +59,18 @@
               class="border-t bg-white hover:bg-cyan-50 cursor-pointer font-semibold"
               (click)="toggleGroup(g.product_code)"
             >
-              <td class="p-3">{{ g.product_desc }}</td>
+              <td class="p-3">
+                <div
+                  class="
+                    max-w-[180px] sm:max-w-none
+                    overflow-x-auto
+                    whitespace-nowrap
+                    scrollbar-thin
+                  "
+                >
+                  {{ g.product_desc }}
+                </div>
+              </td>
               <td class="p-3">{{ g.product_code }}</td>
               <td class="p-3">—</td>
               <td class="p-3">{{ g.totalQuantity }}</td>

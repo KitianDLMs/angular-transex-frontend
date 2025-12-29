@@ -6,8 +6,7 @@
 </header>
 
 <div class="p-4 bg-gray-50">
-
-  <!-- Filtros + Cliente -->
+  
   <div
     class="bg-white shadow-md rounded-xl p-4 border border-gray-200
            flex flex-col sm:flex-row sm:items-center gap-4">
@@ -55,14 +54,75 @@
     <table class="min-w-full border-collapse text-sm text-gray-700">
       <thead class="bg-cyan-700 text-white uppercase text-xs tracking-wide">
         <tr>
-          <th class="py-3 px-4 text-left font-semibold">Fecha</th>
-          <th class="py-3 px-4 text-left font-semibold"># Pedido</th>
-          <th class="py-3 px-4 text-left font-semibold">Cod. Producto</th>
-          <th class="py-3 px-4 text-left font-semibold">Hormigón</th>
-          <th class="py-3 px-4 text-left font-semibold">Cantidad</th>
-          <th class="py-3 px-4 text-left font-semibold">Hora de Inicio</th>
-          <th class="py-3 px-4 text-left font-semibold">Frecuencia</th>
-          <th class="py-3 px-4 text-left font-semibold">Estado</th>
+          <th class="py-3 px-4 text-left font-semibold">
+            <div
+              class="
+                max-w-[100px] sm:max-w-none
+                overflow-x-auto
+                whitespace-nowrap
+                scrollbar-thin
+              "
+            >
+              Fecha
+            </div>
+          </th>
+          <th class="py-3 px-4 text-left font-semibold">
+            <div
+              class="
+                max-w-[90px] sm:max-w-none
+                overflow-x-auto
+                whitespace-nowrap
+                scrollbar-thin
+              "
+            >
+              # Pedido
+            </div>
+          </th>
+          <th class="py-3 px-4 text-left font-semibold">
+            <div
+              class="
+                max-w-[140px] sm:max-w-none
+                overflow-x-auto
+                whitespace-nowrap
+                scrollbar-thin
+              "
+            >
+              Cod. Producto
+            </div>
+          </th>
+          <th class="py-3 px-4 text-left font-semibold">
+            <div
+              class="
+                max-w-[180px] sm:max-w-none
+                overflow-x-auto
+                whitespace-nowrap
+                scrollbar-thin
+              "
+            >
+              Hormigón
+            </div>
+          </th>
+          <th class="py-3 px-4 text-left font-semibold">
+            <div class="whitespace-nowrap">Cantidad</div>
+          </th>
+          <th class="py-3 px-4 text-left font-semibold">
+            <div
+              class="
+                max-w-[140px] sm:max-w-none
+                overflow-x-auto
+                whitespace-nowrap
+                scrollbar-thin
+              "
+            >
+              Hora de Inicio
+            </div>
+          </th>
+          <th class="py-3 px-4 text-left font-semibold">
+            <div class="whitespace-nowrap">Frecuencia</div>
+          </th>
+          <th class="py-3 px-4 text-left font-semibold">
+            <div class="whitespace-nowrap">Estado</div>
+          </th>
         </tr>
       </thead>
 
@@ -71,13 +131,35 @@
           *ngFor="let ord of orders"
           class="border-t hover:bg-cyan-50 transition duration-150 ease-in-out cursor-pointer"
           (click)="goToSeguimiento(ord)">
-          <td class="py-3 px-4">{{ ord.order_date | date:'dd-MM-yyyy' }}</td>
+          <td class="py-3 px-4">
+            <div
+              class="
+                max-w-[100px] sm:max-w-none
+                overflow-x-auto
+                whitespace-nowrap
+                scrollbar-thin
+              "
+            >
+              {{ ord.order_date | date:'dd-MM-yyyy' }}
+            </div>
+          </td>
           <td class="py-3 px-4 font-semibold">{{ ord.order_code }}</td>
           <td class="py-3 px-4">{{ ord.product_code }}</td>
-          <td class="py-3 px-4">{{ ord.product_desc }}</td> <!-- cambio -->
+          <td class="py-3 px-4">
+            <div
+              class="
+                max-w-[180px] sm:max-w-none
+                overflow-x-auto
+                whitespace-nowrap
+                scrollbar-thin
+              "
+            >
+              {{ ord.product_desc }}
+            </div>
+          </td>
           <td class="py-3 px-4">{{ ord.quantity }} m³</td>
-          <td class="py-3 px-4">{{ ord.start_time | date:'HH:mm' }}</td> <!-- mostrar solo hora -->
-          <td class="py-3 px-4">{{ ord.setup_time | date:'HH:mm' }}</td> <!-- frequency -->
+          <td class="py-3 px-4">{{ ord.start_time | date:'HH:mm' }}</td>
+          <td class="py-3 px-4">{{ ord.setup_time | date:'HH:mm' }}</td>
           <td class="py-3 px-4">{{ ord.status }}</td>
         </tr>
       </tbody>

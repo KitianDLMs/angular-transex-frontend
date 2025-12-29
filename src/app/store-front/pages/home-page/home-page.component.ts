@@ -58,14 +58,38 @@ export class HomePageComponent implements OnInit {
   loadProjects() {
     if (!this.userCustCode) return;
 
-    this.projService
-      .getByCust(this.userCustCode)
-      .subscribe(res => {
-        console.log('proj', res);      
-        this.projectOptions = res;
-      });
-  }
+    this.projService.getByCust(this.userCustCode).subscribe({
+      next: (res) => {
+        const map = new Map<string, { proj_code: string; proj_descr: string }>();
 
+        res.forEach((p: any) => {
+          if (!p.proj_code || !p.proj_descr) return;
+
+          const code = p.proj_code.trim();
+          const descr = p.proj_descr.trim();
+
+          if (!map.has(code)) {
+            map.set(code, {
+              proj_code: code,
+              proj_descr: descr
+            });
+          }
+          else if (descr.length > map.get(code)!.proj_descr.length) {
+            map.set(code, {
+              proj_code: code,
+              proj_descr: descr
+            });
+          }
+        });
+
+        this.projectOptions = Array.from(map.values());
+      },
+      error: err => {
+        console.error('Error cargando proyectos:', err);
+        this.projectOptions = [];
+      }
+    });
+  }
 
   toggleGroup(code: string) {
     this.expandedGroup = this.expandedGroup === code ? null : code;

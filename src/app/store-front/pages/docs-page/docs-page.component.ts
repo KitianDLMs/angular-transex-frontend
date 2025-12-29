@@ -69,12 +69,29 @@ export class DocsPageComponent implements OnInit {
 
     this.projService.getByCust(this.userCustCode).subscribe({
       next: (projects) => {
-        this.projectOptions = projects
-          .filter(p => p.proj_code && p.proj_descr)
-          .map(p => ({
-            proj_code: p.proj_code.trim(),
-            proj_name: p.proj_descr.trim() // usar proj_descr como nombre
-          }));
+        const map = new Map<string, { proj_code: string; proj_name: string }>();
+
+        projects.forEach(p => {
+          if (!p.proj_code || !p.proj_descr) return;
+
+          const code = p.proj_code.trim();
+          const name = p.proj_descr.trim();
+
+          if (!map.has(code)) {
+            map.set(code, {
+              proj_code: code,
+              proj_name: name,
+            });
+          }
+          else if (name.length > map.get(code)!.proj_name.length) {
+            map.set(code, {
+              proj_code: code,
+              proj_name: name,
+            });
+          }
+        });
+
+        this.projectOptions = Array.from(map.values());
       },
       error: err => {
         console.error('Error cargando obras:', err);
@@ -82,6 +99,7 @@ export class DocsPageComponent implements OnInit {
       }
     });
   }
+
 
   downloadExcel() {
     const data = this.results.map(tick => ({

@@ -133,7 +133,19 @@
         <th class="py-3 px-4 text-left">Obra</th>
         <th class="py-3 px-4 text-left">Hormigón</th>
         <th class="py-3 px-4 text-right">Cantidad</th>      
-        <th class="py-3 px-4 text-right">Precio Total</th>        
+        <th class="py-3 px-4 text-right font-semibold">
+          <div
+            class="
+              max-w-[120px] sm:max-w-none
+              overflow-x-auto
+              whitespace-nowrap
+              scrollbar-thin
+              text-right
+            "
+          >
+            Precio Total
+          </div>
+        </th>
         <th class="py-3 px-4 text-center">Descargar</th>
       </tr>
     </thead>
@@ -149,12 +161,30 @@
           <td class="py-3 px-4 font-semibold">{{ tick.tkt_code }}</td>
           <td class="py-3 px-4">{{ tick.order_code }}</td>
           <td class="py-3 px-4">{{ tick.proj_code?.trim() }}</td>
-          <td class="py-3 px-4">{{ tick.proj_name ? tick.proj_name.trim() : tick.proj_code?.trim() }}</td>
-          
           <td class="py-3 px-4">
-            {{ tick.prod_descr }}
+            <div
+              class="
+                max-w-[160px] sm:max-w-none
+                overflow-x-auto
+                whitespace-nowrap
+                scrollbar-thin
+              "
+            >
+              {{ tick.proj_name ? tick.proj_name.trim() : tick.proj_code?.trim() }}
+            </div>
           </td>
-          
+         <td class="py-3 px-4">
+          <div
+            class="
+              max-w-[160px] sm:max-w-none
+              overflow-x-auto
+              whitespace-nowrap
+              scrollbar-thin
+            "
+          >
+            {{ tick.prod_descr }}
+          </div>
+         </td>                  
           <td class="py-3 px-4 text-right">
             <ng-container *ngIf="!isService(tick); else serviceQty">
               {{ tick.total_qty }} m3
@@ -249,8 +279,7 @@
       class="max-w-7xl mx-auto
             flex flex-col md:flex-row
             gap-6">
-
-      <!-- TEXTO -->
+      
       <div class="space-y-3 text-[11px] sm:text-xs text-gray-500">
 
         <p>

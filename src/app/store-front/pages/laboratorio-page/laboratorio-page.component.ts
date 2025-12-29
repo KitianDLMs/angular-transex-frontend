@@ -7,6 +7,7 @@ import { PaginationService } from '@shared/components/pagination/pagination.serv
 import { rxResource } from '@angular/core/rxjs-interop';
 import { catchError, of, tap } from 'rxjs';
 import { ProdService } from '@shared/services/prod.service';
+import { CustService } from '@dashboard/cust/services/cust.service';
 
 @Component({
   selector: 'app-laboratorio-page',
@@ -20,9 +21,12 @@ export class LaboratorioPageComponent implements OnInit {
   prodService = inject(ProdService); 
   authService = inject(AuthService);
   paginationService = inject(PaginationService);
+  custService = inject(CustService);  
 
   projectOptions: { proj_code: string; proj_name: string }[] = [];
   selectedProject: string | null = null;
+  customerName = '';
+  customerAddress = '';
 
   today = new Date();
   currentYear = new Date().getFullYear();
@@ -34,7 +38,10 @@ export class LaboratorioPageComponent implements OnInit {
     const user = this.authService.user();
     this.userCustCode = user?.cust_code || null;
 
-    // Load customer projects for the filter
+    this.custService.getCustByCode(this.userCustCode!).subscribe(cust => {
+      this.customerName = cust.name ?? 'Sin nombre';
+      this.customerAddress = cust.addr_line_1 ?? 'Sin dirección';
+    });
     if (this.userCustCode) {
       this.projService.getByCustomer(this.userCustCode).subscribe(opts => {
         this.projectOptions = opts.map(p => ({
