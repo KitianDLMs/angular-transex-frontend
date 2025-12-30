@@ -19,7 +19,6 @@
   <div
     class="bg-white shadow-md rounded-xl p-4 border border-gray-200
            grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
-
     <select
       class="select select-bordered bg-gray-50 w-full"
       [(ngModel)]="selectedProject"
@@ -148,9 +147,7 @@
         </th>
         <th class="py-3 px-4 text-center">Descargar</th>
       </tr>
-    </thead>
-
-
+    </thead>  
       <tbody>
         <tr *ngFor="let tick of results" class="border-t hover:bg-cyan-50 transition">          
           <td class="py-3 px-4 text-center">
@@ -185,14 +182,8 @@
             {{ tick.prod_descr }}
           </div>
          </td>                  
-          <td class="py-3 px-4 text-right">
-            <ng-container *ngIf="!isService(tick); else serviceQty">
-              {{ tick.total_qty }} m3
-            </ng-container>
-
-            <ng-template #serviceQty>
-              {{ tick.total_qty }}
-            </ng-template>
+          <td class="py-3 px-4 text-right">            
+              {{ tick.total_qty }} m3            
           </td>
 
           <td class="py-3 px-4 text-right">{{ tick.total_price | number:'1.2-2' }}</td>
@@ -214,7 +205,6 @@
           </td>
         </tr>
       </tbody>
-
     </table>
   </div>
 

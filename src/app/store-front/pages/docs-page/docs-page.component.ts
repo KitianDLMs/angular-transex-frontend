@@ -100,23 +100,63 @@ export class DocsPageComponent implements OnInit {
     });
   }
 
-
   downloadExcel() {
-    const data = this.results.map(tick => ({
-      Fecha: new Date(tick.order_date).toLocaleDateString('es-CL'),
-      Guía: tick.tkt_code,
-      Pedido: tick.order_code,
-      Proyecto: tick.proj_code?.trim(),
-      Obra: tick.proj_name?.trim() ?? tick.proj_code?.trim(),
-      Hormigón: tick.product?.prod_descr,
-      Cantidad: tick.total_qty,
-      'Precio Total': tick.total_price,
-    }));
+    if (!this.userCustCode) return;
+
+    const params: any = {
+      custCode: this.userCustCode.trim(),
+      page: 1,
+      limit: 0,
+    };
+
+    if (this.selectedProject?.trim()) {
+      params.projCode = this.selectedProject.trim();
+    }
+
+    if (this.filterDocNumber?.trim()) {
+      params.docNumber = this.filterDocNumber.trim();
+    }
+
+    if (this.filterDateFrom) {
+      params.dateFrom = this.filterDateFrom;
+    }
+
+    if (this.filterDateTo) {
+      params.dateTo = this.filterDateTo;
+    }
+
+    this.loading.set(true);
+
+    this.tickService.searchTicks(params).subscribe({
+      next: res => {
+        const data = res.data.map((tick: any) => ({
+          Fecha: new Date(tick.order_date).toLocaleDateString('es-CL'),
+          Guía: tick.tkt_code,
+          Pedido: tick.order_code,
+          Proyecto: tick.proj_code?.trim(),
+          Obra: tick.proj_name?.trim() ?? tick.proj_code?.trim(),
+          Hormigón: tick.prod_descr,
+          Cantidad: tick.total_qty,
+          'Precio Total': tick.total_price,
+        }));
+
+        this.generateExcel(data);
+        this.loading.set(false);
+      },
+      error: err => {
+        console.error('Error Excel:', err);
+        this.loading.set(false);
+      },
+    });
+  }
+
+  private generateExcel(data: any[]) {
+    if (!data.length) return;
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Documentos');
-    
+
     const headerCells = Object.keys(data[0]).map((_, i) =>
       XLSX.utils.encode_cell({ r: 0, c: i })
     );
@@ -125,23 +165,8 @@ export class DocsPageComponent implements OnInit {
       if (!worksheet[cell]) return;
 
       worksheet[cell].s = {
-        fill: {
-          fgColor: { rgb: 'E5E7EB' },
-        },
-        font: {
-          bold: true,
-          color: { rgb: '000000' },
-        },
-        alignment: {
-          horizontal: 'center',
-          vertical: 'center',
-        },
-        border: {
-          top: { style: 'thin' },
-          bottom: { style: 'thin' },
-          left: { style: 'thin' },
-          right: { style: 'thin' },
-        },
+        font: { bold: true },
+        alignment: { horizontal: 'center' },
       };
     });
 
@@ -155,7 +180,7 @@ export class DocsPageComponent implements OnInit {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
 
-    saveAs(blob, `documentos_${Date.now()}.xlsx`);
+    saveAs(blob, `documentos_completos_${Date.now()}.xlsx`);
   }
 
   downloadSelected() {
