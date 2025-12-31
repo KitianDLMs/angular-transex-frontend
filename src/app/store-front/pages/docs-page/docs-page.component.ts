@@ -9,6 +9,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { OrdrService } from '@shared/services/ordr.service';
 import { ProjService } from '@shared/services/proj.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-docs-page',
@@ -100,55 +101,53 @@ export class DocsPageComponent implements OnInit {
     });
   }
 
-  downloadExcel() {
-    if (!this.userCustCode) return;
+downloadExcel() {
+  if (!this.userCustCode) return;
 
-    const params: any = {
-      custCode: this.userCustCode.trim(),
-      page: 1,
-      limit: 0,
-    };
+  this.loading.set(true);
 
-    if (this.selectedProject?.trim()) {
-      params.projCode = this.selectedProject.trim();
-    }
+  const filters: any = {
+    custCode: this.userCustCode.trim(),
+  };
 
-    if (this.filterDocNumber?.trim()) {
-      params.docNumber = this.filterDocNumber.trim();
-    }
-
-    if (this.filterDateFrom) {
-      params.dateFrom = this.filterDateFrom;
-    }
-
-    if (this.filterDateTo) {
-      params.dateTo = this.filterDateTo;
-    }
-
-    this.loading.set(true);
-
-    this.tickService.searchTicks(params).subscribe({
-      next: res => {
-        const data = res.data.map((tick: any) => ({
-          Fecha: new Date(tick.order_date).toLocaleDateString('es-CL'),
-          Guía: tick.tkt_code,
-          Pedido: tick.order_code,
-          Proyecto: tick.proj_code?.trim(),
-          Obra: tick.proj_name?.trim() ?? tick.proj_code?.trim(),
-          Hormigón: tick.prod_descr,
-          Cantidad: tick.total_qty,
-          'Precio Total': tick.total_price,
-        }));
-
-        this.generateExcel(data);
-        this.loading.set(false);
-      },
-      error: err => {
-        console.error('Error Excel:', err);
-        this.loading.set(false);
-      },
-    });
+  if (this.selectedProject?.trim()) {
+    filters.projCode = this.selectedProject.trim();
   }
+
+  if (this.filterDocNumber?.trim()) {
+    filters.docNumber = this.filterDocNumber.trim();
+  }
+
+  if (this.filterDateFrom) {
+    filters.dateFrom = this.filterDateFrom;
+  }
+
+  if (this.filterDateTo) {
+    filters.dateTo = this.filterDateTo;
+  }
+
+  this.tickService.getAllForExcel(filters).subscribe({
+    next: (data: any[]) => {
+      const formatted = data.map(tick => ({
+        Fecha: new Date(tick.order_date).toLocaleDateString('es-CL'),
+        Guía: tick.tkt_code,
+        Pedido: tick.order_code,
+        Proyecto: tick.proj_code?.trim(),
+        Obra: tick.proj_name?.trim() ?? tick.proj_code?.trim(),
+        Hormigón: tick.prod_descr,
+        Cantidad: tick.total_qty,
+        'Precio Total': tick.total_price,
+      }));
+
+      this.generateExcel(formatted);
+      this.loading.set(false);
+    },
+    error: err => {
+      console.error('Error exportando Excel:', err);
+      this.loading.set(false);
+    }
+  });
+}
 
   private generateExcel(data: any[]) {
     if (!data.length) return;

@@ -64,13 +64,10 @@ export class TickService {
     });
   }
 
-  downloadExcel(filters: any) {
-    return this.http.get(
+  getAllForExcel(filters: any) {
+    return this.http.get<any[]>(
       `${this.baseUrl}/export/excel`,
-      {
-        params: filters,
-        responseType: 'blob'
-      }
+      { params: filters }
     );
   }
 
