@@ -16,36 +16,45 @@
     </div>
   </div>
   &nbsp;
-  <div
+ <div
     class="bg-white shadow-md rounded-xl p-4 border border-gray-200
-           grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
-    <select
-      class="select select-bordered bg-gray-50 w-full"
-      [(ngModel)]="selectedProject"
-    >
-      <option value="">Todas las obras</option>
+           grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-8 gap-4 items-end">
 
-      <option *ngFor="let proj of projectOptions" [value]="proj.proj_code">
-        {{ proj.proj_code }} - {{ proj.proj_name }}
-      </option>
-    </select>
+    <!-- Proyecto -->
+    <div class="lg:col-span-2">
+      <select
+        class="select select-bordered bg-gray-50 w-full"
+        [(ngModel)]="selectedProject">
+        <option value="">Todas las obras</option>
+        <option *ngFor="let proj of projectOptions" [value]="proj.proj_code">
+          {{ proj.proj_code }} - {{ proj.proj_name }}
+        </option>
+      </select>
+    </div>
 
-    <select
-      class="select select-bordered bg-gray-50 w-full"
-      [(ngModel)]="filterDocType">
-      <option value="">Tipo Doc</option>
-      <option value="guia-despacho">Guía de Despacho</option>
-      <option value="factura">Factura</option>
-    </select>
+    <!-- Tipo Doc -->
+    <div class="lg:col-span-1">
+      <select
+        class="select select-bordered bg-gray-50 w-full"
+        [(ngModel)]="filterDocType">
+        <option value="">Tipo Doc</option>
+        <option value="guia-despacho">Guía de Despacho</option>
+        <option value="factura">Factura</option>
+      </select>
+    </div>
 
-    <input
-      type="text"
-      class="input input-bordered bg-gray-50 w-full"
-      placeholder="Num. Doc"
-      [(ngModel)]="filterDocNumber"
-    />
+    <!-- Número Doc -->
+    <div class="lg:col-span-1">
+      <input
+        type="text"
+        class="input input-bordered bg-gray-50 w-full"
+        placeholder="Num. Doc"
+        [(ngModel)]="filterDocNumber"
+      />
+    </div>
 
-    <div class="flex flex-col w-full">
+    <!-- Desde -->
+    <div class="flex flex-col w-full lg:col-span-1">
       <label class="text-gray-600 text-xs mb-1">Desde</label>
       <input
         type="date"
@@ -54,7 +63,8 @@
       />
     </div>
 
-    <div class="flex flex-col w-full">
+    <!-- Hasta -->
+    <div class="flex flex-col w-full lg:col-span-1">
       <label class="text-gray-600 text-xs mb-1">Hasta</label>
       <input
         type="date"
@@ -63,48 +73,38 @@
       />
     </div>
 
-    <div class="flex flex-col sm:flex-row gap-3 w-full lg:justify-end">
+    <!-- Botones -->
+    <div
+      class="flex flex-col sm:flex-row gap-3
+             w-full lg:col-span-2 lg:justify-end">
+
       <button
-        class="btn bg-cyan-700 hover:bg-cyan-800 text-white w-full sm:w-auto px-5 py-2 rounded-lg shadow"
+        class="btn bg-cyan-700 hover:bg-cyan-800 text-white
+               w-full sm:w-auto px-5 py-2 rounded-lg shadow
+               flex items-center justify-center gap-2"
         (click)="onSearch(true)">
-         <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M21 21l-4.35-4.35m1.85-5.4a7.25 7.25 0 11-14.5 0 7.25 7.25 0 0114.5 0z"
-          />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-4.35-4.35m1.85-5.4a7.25 7.25 0 11-14.5 0 7.25 7.25 0 0114.5 0z"/>
         </svg>
         Buscar
       </button>
 
       <button
-        class="btn bg-gray-200 hover:bg-gray-300 text-gray-700 w-full sm:w-auto px-4 py-2 rounded-lg shadow-sm"
+        class="btn bg-gray-200 hover:bg-gray-300 text-gray-700
+               w-full sm:w-auto px-4 py-2 rounded-lg shadow-sm
+               flex items-center justify-center gap-2"
         (click)="handleClearFilters()">
-         <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 20l5-5m0 0l3 3m-3-3l6-6m3-3a2.828 2.828 0 10-4-4l4 4z"
-          />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 20l5-5m0 0l3 3m-3-3l6-6m3-3a2.828 2.828 0 10-4-4l4 4z"/>
         </svg>
         Limpiar
       </button>
     </div>
-  </div>  
+  </div>
 
   <div
     *ngIf="results.length > 0"
