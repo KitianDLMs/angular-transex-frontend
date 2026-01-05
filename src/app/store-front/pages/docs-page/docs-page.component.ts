@@ -34,6 +34,7 @@ export class DocsPageComponent implements OnInit {
   limit = 10;
   totalPages = 0;
   totalItems = 0;
+  loadingDownload = signal(false);
 
   loading = signal(false);
   results: any[] = [];
@@ -185,14 +186,16 @@ downloadExcel() {
   downloadSelected() {
     const selectedCodes = this.results
       .filter(t => t.selected)
-      .map(t => t.tkt_code);
+      .map(t => t.tkt_code?.trim())
 
-    if (selectedCodes.length === 0) {
+    const cleanCodes = selectedCodes.filter(code => code);
+
+    if (cleanCodes.length === 0) {
       alert('Debes seleccionar al menos un ticket');
       return;
     }
-
-    this.tickService.downloadZip(selectedCodes).subscribe({
+    this.loadingDownload.set(true);
+    this.tickService.downloadZip(cleanCodes).subscribe({
       next: (blob: Blob) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -200,9 +203,11 @@ downloadExcel() {
         a.download = `Guias${Date.now()}.zip`;
         a.click();
         window.URL.revokeObjectURL(url);
+        this.loadingDownload.set(false); 
       },
       error: err => {
         console.error('Error descarga ZIP:', err);
+        this.loadingDownload.set(false);
       }
     });
   }
