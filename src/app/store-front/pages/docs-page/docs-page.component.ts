@@ -135,8 +135,8 @@ downloadExcel() {
         Proyecto: tick.proj_code?.trim(),
         Obra: tick.proj_name?.trim() ?? tick.proj_code?.trim(),
         Hormigón: tick.prod_descr,
-        Cantidad: tick.total_qty,
-        'Precio Total': tick.total_price,
+        Cantidad: tick.m3,
+        'Precio Unitario': tick.unit_price,
       }));
 
       this.generateExcel(formatted);

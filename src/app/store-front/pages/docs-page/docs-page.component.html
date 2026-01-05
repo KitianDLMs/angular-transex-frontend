@@ -199,7 +199,7 @@
               text-right
             "
           >
-            Precio Total
+            Precio unitario
           </div>
         </th>
         <th class="py-3 px-4 text-center">Descargar</th>
@@ -236,14 +236,14 @@
                 scrollbar-thin
               "
             >
-              {{ tick.prod_name }}
+              {{ tick.prod_descr }}
             </div>
           </td>                  
           <td class="py-3 px-4 text-right">            
-              {{ tick.quantity }} m3            
+              {{ tick.m3 }} m3            
           </td>
 
-          <td class="py-3 px-4 text-right">{{ tick.total_price | number:'1.2-2' }}</td>
+          <td class="py-3 px-4 text-right">{{ tick.unit_price | number:'1.2-2' }} UF</td>
           
           <td class="py-3 px-4 relative">
             <div class="flex justify-end items-center group pr-2">
