@@ -292,12 +292,14 @@ downloadExcel() {
   downloadTicket(tkt_code: string) {
     if (!tkt_code) return;
 
-    this.tickService.downloadTickPDF(tkt_code).subscribe({
+    const cleanTktCode = tkt_code.trim();
+
+    this.tickService.downloadTickPDF(cleanTktCode).subscribe({
       next: (blob: Blob) => {      
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `${tkt_code}.pdf`;
+        link.download = `${cleanTktCode}.pdf`;
         link.click();
         window.URL.revokeObjectURL(url);
       },
