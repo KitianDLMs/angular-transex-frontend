@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, signal, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { OrdrService } from '@shared/services/ordr.service';
 import { AuthService } from '@auth/services/auth.service';
@@ -13,14 +13,13 @@ import { ProjService } from '@shared/services/proj.service';
   imports: [CommonModule, DatePipe, FormsModule],
   templateUrl: './ordr-page.component.html',
 })
-export class OrdrPageComponent {
+export class OrdrPageComponent implements OnInit {
 
   orders: any[] = [];
-
   projectOptions: { proj_code: string; proj_descr: string }[] = [];
   selectedProject: string = '';
 
-  loading = signal(true);
+  loading = false;
 
   page = 1;
   limit = 10;
@@ -53,46 +52,37 @@ export class OrdrPageComponent {
 
     if (!this.userCustCode) return;
 
+    // Cargar datos del cliente
     this.custService.getCustByCode(this.userCustCode).subscribe(cust => {
       this.customerName = cust.name;
       this.customerAddress = cust.addr_line_1 ?? null;
     });
 
     this.loadProjects();
-    this.loadOrders();  
+    this.loadOrders(); // ✅ Carga inicial de pedidos
   }
 
   loadProjects() {
     if (!this.userCustCode) return;
 
     this.projService.getByCust(this.userCustCode).subscribe({
-      next: (res) => {
+      next: (res: any[]) => {
         const map = new Map<string, { proj_code: string; proj_descr: string }>();
-
-        res.forEach((p: any) => {
+        res.forEach(p => {
           if (!p.proj_code || !p.proj_descr) return;
 
           const code = p.proj_code.trim();
           const descr = p.proj_descr.trim();
 
-          if (!map.has(code)) {
-            map.set(code, {
-              proj_code: code,
-              proj_descr: descr,
-            });
-          }
-          else if (descr.length > map.get(code)!.proj_descr.length) {
-            map.set(code, {
-              proj_code: code,
-              proj_descr: descr,
-            });
+          if (!map.has(code) || descr.length > map.get(code)!.proj_descr.length) {
+            map.set(code, { proj_code: code, proj_descr: descr });
           }
         });
 
         this.projectOptions = Array.from(map.values());
       },
       error: err => {
-        console.error('Error cargando obras:', err);
+        console.error('Error cargando proyectos:', err);
         this.projectOptions = [];
       }
     });
@@ -101,24 +91,25 @@ export class OrdrPageComponent {
   loadOrders() {
     if (!this.userCustCode) return;
 
-    this.loading.set(true);
+    this.loading = true;
 
-    this.ordrService
-      .getOrdersByCustomerPaginated(
-        this.userCustCode,
-        this.selectedProject,
-        this.page,
-        this.limit
-      )
-      .subscribe({
-        next: (res: any) => {                        
-          this.orders = res.data;
-          this.totalPages = res.totalPages;
-          this.totalItems = res.total;
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false),
-      });
+    this.ordrService.getOrdersByCustomerPaginated(
+      this.userCustCode,
+      this.selectedProject,
+      this.page,
+      this.limit
+    ).subscribe({
+      next: (res: any) => {
+        this.orders = res.data || [];
+        this.totalPages = res.totalPages || 0;
+        this.totalItems = res.total || 0;
+        this.loading = false;
+      },
+      error: () => {
+        this.orders = [];
+        this.loading = false;
+      }
+    });
   }
 
   onSelectProject() {
@@ -151,5 +142,10 @@ export class OrdrPageComponent {
       ['/store-front/seguimiento'],
       { queryParams: { code: ord.order_code } }
     );
+  }
+
+  /** ✅ Método para saber si no hay pedidos */
+  get hasOrders(): boolean {
+    return !this.loading && this.orders.length === 0;
   }
 }

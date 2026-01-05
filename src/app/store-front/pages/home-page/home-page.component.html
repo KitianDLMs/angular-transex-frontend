@@ -105,15 +105,17 @@
     </button>
   </div>
 
-  <div *ngIf="loading" class="flex flex-col items-center justify-center py-8 text-gray-500 gap-3">
-    <img 
-      src="assets/images/logoHORMIGONES.png"
-      alt="Cargando"
-      class="h-8 w-8 animate-pulse"
-    />
+    @if (loading) {
+    <div class="flex flex-col items-center justify-center p-6 text-gray-500 gap-3">
+      <img
+        src="assets/images/logoHORMIGONES.png"
+        alt="Cargando"
+        class="h-8 w-8 animate-pulse"
+      />
 
-    <span>Cargando productos...</span>
-  </div>
+      <span>Cargando productos...</span>
+    </div>
+    }
 
   <div *ngIf="!loading && products.length > 0"
        class="overflow-x-auto mt-6 bg-white rounded-lg shadow animate__animated animate__fadeIn">

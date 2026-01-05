@@ -110,7 +110,7 @@
     </button>
   </div>
 
-  @if (loading()) {
+  @if (loading) {
   <div class="flex flex-col items-center justify-center p-6 text-gray-500 gap-3">
     <img
       src="assets/images/logoHORMIGONES.png"
@@ -123,7 +123,7 @@
   }
 
   <div
-    *ngIf="!loading() && orders.length > 0"
+    *ngIf="!loading && orders.length > 0"
     class="overflow-x-auto bg-white shadow-lg rounded-2xl mt-10 border border-gray-200 animate__animated animate__fadeIn">
 
     <table class="min-w-full border-collapse text-sm text-gray-700">
@@ -242,7 +242,7 @@
   </div>
   
   <div
-    *ngIf="!loading() && totalPages > 1"
+    *ngIf="!loading && totalPages > 1"
     class="flex items-center justify-between mt-6 px-4">
     
     <button
@@ -265,7 +265,7 @@
   </div>
 
   <div
-    *ngIf="!loading() && orders.length === 0"
+    *ngIf="!loading && orders.length === 0"
     class="bg-white shadow-lg rounded-2xl mt-10 border border-gray-200
           p-10 text-center text-gray-500">
 

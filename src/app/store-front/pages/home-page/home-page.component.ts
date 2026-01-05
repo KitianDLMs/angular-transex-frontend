@@ -52,7 +52,7 @@ export class HomePageComponent implements OnInit {
       this.customerAddress = c.addr_line_1 ?? null;
     });
     this.loadProjects();
-    this.loadProducts();
+    // this.loadProducts();
   }  
 
   loadProjects() {
@@ -104,7 +104,7 @@ export class HomePageComponent implements OnInit {
     this.ordrService
       .getOrdersByCustomerPaginated(
         this.userCustCode,
-        this.selectedProject || '',   // 👈 filtro por obra
+        this.selectedProject || '',
         this.page,
         this.limit
       )
@@ -138,26 +138,26 @@ export class HomePageComponent implements OnInit {
 
   onSelectProject() {
     this.page = 1;
-    this.loadProducts();
+    // this.loadProducts();
   }
 
   clearFilter() {
     this.selectedProject = '';
     this.page = 1;
-    this.loadProducts();
+    // this.loadProducts();
   }
 
   nextPage() {
     if (this.page < this.totalPages) {
       this.page++;
-      this.loadProducts();
+      // this.loadProducts();
     }
   }
 
   prevPage() {
     if (this.page > 1) {
       this.page--;
-      this.loadProducts();
+      // this.loadProducts();
     }
   }
 
