@@ -92,25 +92,12 @@ export class OrdrPageComponent implements OnInit {
     if (!this.userCustCode) return;
 
     this.loading = true;
-
-    this.ordrService.getOrdersByCustomerPaginated(
-      this.userCustCode,
-      this.selectedProject,
-      this.page,
-      this.limit
-    ).subscribe({
-      next: (res: any) => {
-        this.orders = res.data || [];
-        this.totalPages = res.totalPages || 0;
-        this.totalItems = res.total || 0;
-        this.loading = false;
-      },
-      error: () => {
-        this.orders = [];
-        this.loading = false;
-      }
-    });
+    
+    setTimeout(() => {    
+      this.loading = false;
+    }, 2000);
   }
+
 
   onSelectProject() {
     this.page = 1;

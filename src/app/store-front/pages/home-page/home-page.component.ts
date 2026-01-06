@@ -100,29 +100,11 @@ export class HomePageComponent implements OnInit {
 
     this.loading = true;
     this.expandedGroup = null;
-
-    this.ordrService
-      .getOrdersByCustomerPaginated(
-        this.userCustCode,
-        this.selectedProject || '',
-        this.page,
-        this.limit
-      )
-      .subscribe({
-        next: (res) => {
-          this.products = res.data;
-          this.totalPages = res.totalPages;
-
-          this.groupProducts();
-          this.loading = false;
-        },
-        error: () => {
-          this.products = [];
-          this.loading = false;
-        }
-      });
+    
+    setTimeout(() => {      
+      this.loading = false;
+    }, 2000); 
   }
-
 
   extractProjectsFromProducts() {
     const map = new Map<string, string>();
