@@ -52,7 +52,7 @@ export class HomePageComponent implements OnInit {
       this.customerAddress = c.addr_line_1 ?? null;
     });
     this.loadProjects();
-    // this.loadProducts();
+    this.loadProducts();
   }  
 
   loadProjects() {
