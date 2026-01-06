@@ -186,7 +186,7 @@ downloadExcel() {
   downloadSelected() {
     const selectedCodes = this.results
       .filter(t => t.selected)
-      .map(t => t.tkt_code?.trim())
+      .map(t => t.tktCode?.trim());
 
     const cleanCodes = selectedCodes.filter(code => code);
 
@@ -269,11 +269,15 @@ downloadExcel() {
     params.page = this.page.toString();
     params.limit = this.limit.toString();    
     this.tickService.searchTicks(params).subscribe({
-      next: res => {                
-        this.results = res.data.map((r: any) => ({
-          ...r,
-          selected: false,
-        }));
+      next: res => {        
+        console.log(res);                
+        this.results = res.data.map((r: any) => {
+          const prev = this.results.find(t => t.tktCode === r.tkt_code);
+          return {
+            ...r,
+            selected: prev ? prev.selected : false,
+          };
+        });
         this.totalPages = res.totalPages;
         this.totalItems = res.total;
         this.loading.set(false);
