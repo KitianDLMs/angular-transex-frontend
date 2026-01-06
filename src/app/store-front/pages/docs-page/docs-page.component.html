@@ -54,7 +54,7 @@
         [(ngModel)]="selectedProject">
         <option value="">Todas las obras</option>
         <option *ngFor="let proj of projectOptions" [value]="proj.proj_code">
-          {{ proj.proj_code }} - {{ proj.proj_name }}
+          {{ proj.proj_code }} - {{ proj.proj_name }}        
         </option>
       </select>
     </div>
@@ -223,10 +223,10 @@
             <input type="checkbox" [(ngModel)]="tick.selected" (change)="updateSelectAll()" />
           </td>
           
-          <td class="py-3 px-4">{{ tick.order_date | date:'dd/MM/yyyy' }}</td>
-          <td class="py-3 px-4 font-semibold">{{ tick.tkt_code }}</td>
-          <td class="py-3 px-4">{{ tick.order_code }}</td>
-          <td class="py-3 px-4">{{ tick.proj_code?.trim() }}</td>
+          <td class="py-3 px-4">{{ tick.orderDate | date:'dd/MM/yyyy' }}</td>
+          <td class="py-3 px-4 font-semibold">{{ tick.tktCode }}</td>
+          <td class="py-3 px-4">{{ tick.orderCode }}</td>
+          <td class="py-3 px-4">{{ tick.projCode?.trim() }}</td>
           <td class="py-3 px-4">
             <div
               class="
@@ -236,7 +236,7 @@
                 scrollbar-thin
               "
             >
-              {{ tick.proj_name ? tick.proj_name.trim() : tick.proj_code?.trim() }}
+              {{ tick.projName ? tick.projName.trim() : tick.proj_code?.trim() }}
             </div>
           </td>
           <td class="py-3 px-4">
@@ -248,14 +248,14 @@
                 scrollbar-thin
               "
             >
-              {{ tick.prod_descr }}
+              {{ tick.prodDescr }}
             </div>
           </td>                  
-          <td class="py-3 px-4 text-right">            
+          <td class="py-3 px-4 text-right">          
               {{ tick.m3 }} m3            
           </td>
 
-          <td class="py-3 px-4 text-right">{{ tick.unit_price | number:'1.2-2' }} UF</td>
+          <td class="py-3 px-4 text-right">{{ tick.unitPrice | number:'1.2-2' }} UF</td>
           
           <td class="py-3 px-4 relative">
             <div class="flex justify-end items-center group pr-2">

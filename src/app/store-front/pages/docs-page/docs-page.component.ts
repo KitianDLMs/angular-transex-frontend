@@ -68,16 +68,16 @@ export class DocsPageComponent implements OnInit {
 
   loadProjectsByCustomer(): void {
     if (!this.userCustCode) return;
-
+    
     this.projService.getByCust(this.userCustCode).subscribe({
       next: (projects) => {
         const map = new Map<string, { proj_code: string; proj_name: string }>();
-
+        
         projects.forEach(p => {
-          if (!p.proj_code || !p.proj_descr) return;
-
-          const code = p.proj_code.trim();
-          const name = p.proj_descr.trim();
+          if (!p.projcode || !p.projname) return;
+          
+          const code = p.projcode.trim();
+          const name = p.projname.trim();
 
           if (!map.has(code)) {
             map.set(code, {
@@ -243,8 +243,7 @@ downloadExcel() {
 
     if (resetPage) this.page = 1;
 
-    this.loading.set(true);
-    console.log(this.userCustCode);
+    this.loading.set(true); 
     
     const params: any = {
       custCode: this.userCustCode.trim(),
@@ -270,8 +269,7 @@ downloadExcel() {
     params.page = this.page.toString();
     params.limit = this.limit.toString();    
     this.tickService.searchTicks(params).subscribe({
-      next: res => {        
-        console.log(res);        
+      next: res => {                
         this.results = res.data.map((r: any) => ({
           ...r,
           selected: false,
