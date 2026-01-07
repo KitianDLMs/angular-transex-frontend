@@ -162,96 +162,163 @@ export class DocsPageComponent implements OnInit {
     saveAs(blob, `documentos_completos_${Date.now()}.xlsx`);
   }
 
-  downloadSelected() {
-    const selectedCodes = this.results
-      .filter(t => t.selected)
-      .map(t => t.tktCode?.trim())
-      .filter(code => code);
+  // downloadSelected() {
+  //   const selectedCodes = this.results
+  //     .filter(t => t.selected)
+  //     .map(t => t.tktCode?.trim())
+  //     .filter(code => code);
 
-    if (selectedCodes.length === 0) {
-      alert('Debes seleccionar al menos un ticket');
-      return;
-    }
+  //   if (selectedCodes.length === 0) {
+  //     alert('Debes seleccionar al menos un ticket');
+  //     return;
+  //   }
 
-    this.loadingDownload.set(true);
+  //   this.loadingDownload.set(true);
 
-    this.tickService.downloadZip(selectedCodes).subscribe({
-      next: (response: any) => {
-        const status = response.status;
+  //   this.tickService.downloadZip(selectedCodes).subscribe({
+  //     next: (response: any) => {
+  //       const status = response.status;
 
-        // 📌 Si es ZIP → descargar
-        if (status === 200) {
+  //       // 📌 Si es ZIP → descargar
+  //       if (status === 200) {
+  //         const blob = response.body;
+  //         const url = window.URL.createObjectURL(blob);
+  //         const a = document.createElement('a');
+  //         a.href = url;
+  //         a.download = `Guias${Date.now()}.zip`;
+  //         a.click();
+  //         window.URL.revokeObjectURL(url);
+  //         this.loadingDownload.set(false);
+  //         return;
+  //       }
+
+  //       // 📌 Si el backend dice que faltan
+  //       if (status === 207) {
+  //         const text = response.body;
+  //         const reader = new FileReader();
+
+  //         reader.onload = () => {
+  //           const json = JSON.parse(reader.result as string);
+
+  //           const missingList = json.missing.join(', ');
+
+  //           const ok = confirm(
+  //             `Las siguientes guías NO están disponibles:\n\n${missingList}\n\n¿Deseas descargar solo las que sí existen?`
+  //           );
+
+  //           if (!ok) {
+  //             this.loadingDownload.set(false);
+  //             return;
+  //           }
+
+  //           // Segunda llamada solo con las existentes
+  //           this.tickService.downloadZip(json.existing).subscribe({
+  //             next: (resp: any) => {
+  //               const blob = resp.body;
+  //               const url = window.URL.createObjectURL(blob);
+  //               const a = document.createElement('a');
+  //               a.href = url;
+  //               a.download = `Guias${Date.now()}.zip`;
+  //               a.click();
+  //               window.URL.revokeObjectURL(url);
+  //               this.loadingDownload.set(false);
+  //             },
+  //             error: () => {
+  //               alert('Error al descargar las guías restantes.');
+  //               this.loadingDownload.set(false);
+  //             }
+  //           });
+  //         };
+
+  //         reader.readAsText(text);
+  //       }
+  //     },
+
+  //     error: (err) => {
+  //       this.loadingDownload.set(false);
+        
+  //       if (err.status === 404) {
+  //         const reader = new FileReader();
+  //         reader.onload = () => {
+  //           const json = JSON.parse(reader.result as string);
+  //           alert(`No se encontró ninguna guía.\nFaltantes: ${json.missing.join(', ')}`);
+  //         };
+  //         reader.readAsText(err.error);
+  //         return;
+  //       }
+
+  //       alert('Error al intentar descargar los documentos.');
+  //     }
+  //   });
+  // }
+
+downloadAll() {
+  if (!this.userCustCode) return;
+
+  this.loadingDownload.set(true); // 🔹 Inicia el loader
+
+  const filters: any = { custCode: this.userCustCode.trim() };
+  if (this.selectedProject?.trim()) filters.projCode = this.selectedProject.trim();
+  if (this.filterDocNumber?.trim()) filters.docNumber = this.filterDocNumber.trim();
+  if (this.filterDateFrom) filters.dateFrom = this.filterDateFrom;
+  if (this.filterDateTo) filters.dateTo = this.filterDateTo;
+
+  // Paso 1: pedir códigos y validar
+  this.tickService.checkTktCodes(filters).subscribe({
+    next: (res: any) => {
+      const { existing, missing } = res;
+
+      // 🔹 Si hay guías faltantes y el usuario cancela
+      if (missing.length > 0) {
+        const ok = confirm(`⚠️ Algunas guías NO están en la carpeta:\n${missing.join(', ')}\n\n¿Deseas continuar descargando las que sí existen?`);
+        if (!ok) {
+          this.loadingDownload.set(false); // 🔹 Aquí ocultamos el loader
+          return;
+        }
+      }
+
+      // 🔹 Si no hay guías disponibles
+      if (existing.length === 0) {
+        alert('No hay guías disponibles para descargar.');
+        this.loadingDownload.set(false); // 🔹 Aquí también
+        return;
+      }
+
+      // Paso 2: Descargar ZIP de guías existentes
+      this.tickService.downloadZipByCodes(existing).subscribe({
+        next: (response: any) => {
           const blob = response.body;
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `Guias${Date.now()}.zip`;
+          a.download = `Guias_${Date.now()}.zip`;
           a.click();
           window.URL.revokeObjectURL(url);
-          this.loadingDownload.set(false);
-          return;
-        }
 
-        // 📌 Si el backend dice que faltan
-        if (status === 207) {
-          const text = response.body;
-          const reader = new FileReader();
-
-          reader.onload = () => {
-            const json = JSON.parse(reader.result as string);
-
-            const missingList = json.missing.join(', ');
-
-            const ok = confirm(
-              `Las siguientes guías NO están disponibles:\n\n${missingList}\n\n¿Deseas descargar solo las que sí existen?`
-            );
-
-            if (!ok) {
-              this.loadingDownload.set(false);
-              return;
+          // 🔹 Aquí revisamos headers, si quieres alert adicional
+          const missingHeader = response.headers.get('X-Missing-Files');
+          if (missingHeader) {
+            const missingList = missingHeader.split(',').map((s: any) => s.trim()).join(', ');
+            if (missingList) {
+              alert(`⚠️ Algunas guías no se descargaron porque no existen:\n${missingList}`);
             }
+          }
 
-            // Segunda llamada solo con las existentes
-            this.tickService.downloadZip(json.existing).subscribe({
-              next: (resp: any) => {
-                const blob = resp.body;
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `Guias${Date.now()}.zip`;
-                a.click();
-                window.URL.revokeObjectURL(url);
-                this.loadingDownload.set(false);
-              },
-              error: () => {
-                alert('Error al descargar las guías restantes.');
-                this.loadingDownload.set(false);
-              }
-            });
-          };
-
-          reader.readAsText(text);
+          this.loadingDownload.set(false); // 🔹 🔹 Aquí ocultamos el loader al terminar la descarga
+        },
+        error: (err) => {
+          alert('Error descargando las guías.');
+          this.loadingDownload.set(false); // 🔹 🔹 También ocultar loader si hay error
         }
-      },
+      });
 
-      error: (err) => {
-        this.loadingDownload.set(false);
-
-        // 📌 Si NO existe ninguna
-        if (err.status === 404) {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const json = JSON.parse(reader.result as string);
-            alert(`No se encontró ninguna guía.\nFaltantes: ${json.missing.join(', ')}`);
-          };
-          reader.readAsText(err.error);
-          return;
-        }
-
-        alert('Error al intentar descargar los documentos.');
-      }
-    });
-  }
+    },
+    error: () => {
+      alert('Error al obtener códigos de guías.');
+      this.loadingDownload.set(false); // 🔹 Ocultar loader si falla el primer paso
+    }
+  });
+}
 
   toggleAll() {
     this.results.forEach(t => t.selected = this.selectAll);
@@ -341,6 +408,8 @@ export class DocsPageComponent implements OnInit {
 
     const cleanTktCode = tkt_code.trim();
 
+    this.loadingDownload.set(true);
+
     this.tickService.downloadTickPDF(cleanTktCode).subscribe({
       next: (blob: Blob) => {      
         const url = window.URL.createObjectURL(blob);
@@ -349,9 +418,17 @@ export class DocsPageComponent implements OnInit {
         link.download = `${cleanTktCode}.pdf`;
         link.click();
         window.URL.revokeObjectURL(url);
+
+        this.loadingDownload.set(false);
       },
       error: (err) => {
-        console.error('Error descargando ticket:', err);
+        this.loadingDownload.set(false);
+        if (err.status === 404) {        
+          alert(`⚠️ La guía ${cleanTktCode} no se encuentra en la carpeta. No se puede descargar.`);
+        } else {        
+          console.error('Error descargando ticket:', err);
+          alert('Ocurrió un error al intentar descargar la guía.');
+        }
       }
     });
   }

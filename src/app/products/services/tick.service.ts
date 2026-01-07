@@ -46,12 +46,38 @@ export class TickService {
     return this.http.get<any>(`${this.baseUrl}/search`, { params });
   }
 
-  downloadZip(codes: string[]) {
-    return this.http.post(
-      `${this.baseUrl}/download-zip`,
-      codes,
-      { observe: 'response', responseType: 'blob' }
-    );
+  downloadZip(filters: {
+    custCode: string;
+    projCode?: string;
+    docNumber?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  }) {
+    return this.http.post(`${this.baseUrl}/download-all-zip`, filters, {
+      observe: 'response',  // Necesario para leer headers
+      responseType: 'blob', // Para recibir el ZIP
+    });
+  }
+
+  checkTktCodes(filters: any) {
+    return this.http.post(`${this.baseUrl}/check-tkt-codes`, filters);
+  }
+
+  downloadZipByCodes(tktCodes: string[]) {
+    return this.http.post(`${this.baseUrl}/download-zip`, { tktCodes }, {
+      observe: 'response',
+      responseType: 'blob'
+    });
+  }
+
+  getAllTktCodes(filters: {
+    custCode: string;
+    projCode?: string;
+    docNumber?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  }) {
+    return this.http.post<string[]>(`${this.baseUrl}/search-tkt-codes`, filters);
   }
 
   getOne(order_date: string, order_code: string, tkt_code: string) {
