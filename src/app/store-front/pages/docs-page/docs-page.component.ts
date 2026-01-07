@@ -252,73 +252,157 @@ export class DocsPageComponent implements OnInit {
   //   });
   // }
 
-downloadAll() {
-  if (!this.userCustCode) return;
+  // Función para descargar solo los tickets seleccionados
+  downloadSelected() {
+    if (!this.userCustCode) return;
 
-  this.loadingDownload.set(true); // 🔹 Inicia el loader
+    const selectedTicks = this.results
+      .filter(t => t.selected)
+      .map(t => t.tktCode?.trim())
+      .filter(code => code);
 
-  const filters: any = { custCode: this.userCustCode.trim() };
-  if (this.selectedProject?.trim()) filters.projCode = this.selectedProject.trim();
-  if (this.filterDocNumber?.trim()) filters.docNumber = this.filterDocNumber.trim();
-  if (this.filterDateFrom) filters.dateFrom = this.filterDateFrom;
-  if (this.filterDateTo) filters.dateTo = this.filterDateTo;
+    if (selectedTicks.length === 0) {
+      alert('Debes seleccionar al menos una guía para descargar.');
+      return;
+    }
 
-  // Paso 1: pedir códigos y validar
-  this.tickService.checkTktCodes(filters).subscribe({
-    next: (res: any) => {
-      const { existing, missing } = res;
+    this.loadingDownload.set(true);
 
-      // 🔹 Si hay guías faltantes y el usuario cancela
-      if (missing.length > 0) {
-        const ok = confirm(`⚠️ Algunas guías NO están en la carpeta:\n${missing.join(', ')}\n\n¿Deseas continuar descargando las que sí existen?`);
-        if (!ok) {
-          this.loadingDownload.set(false); // 🔹 Aquí ocultamos el loader
+    this.tickService.checkTktCodes({ tktCodes: selectedTicks }).subscribe({
+      next: (res: any) => {
+        const { existing, missing } = res;
+
+        if (missing.length > 0) {
+          const ok = confirm(
+            `⚠️ Algunas guías NO están en la carpeta:\n${missing.join(', ')}\n\n` +
+            `¿Deseas descargar solo las que sí existen?`
+          );
+
+          if (!ok) {
+            this.loadingDownload.set(false);
+            return;
+          }
+        }
+        
+        if (existing.length === 0) {
+          alert('No hay guías disponibles para descargar.');
+          this.loadingDownload.set(false);
           return;
         }
-      }
+        
+        this.tickService.downloadZipByCodes(existing).subscribe({
+          next: (response: any) => {
+            const blob = response.body;
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Guias_${Date.now()}.zip`;
+            a.click();
+            window.URL.revokeObjectURL(url);
 
-      // 🔹 Si no hay guías disponibles
-      if (existing.length === 0) {
-        alert('No hay guías disponibles para descargar.');
-        this.loadingDownload.set(false); // 🔹 Aquí también
-        return;
-      }
-
-      // Paso 2: Descargar ZIP de guías existentes
-      this.tickService.downloadZipByCodes(existing).subscribe({
-        next: (response: any) => {
-          const blob = response.body;
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `Guias_${Date.now()}.zip`;
-          a.click();
-          window.URL.revokeObjectURL(url);
-
-          // 🔹 Aquí revisamos headers, si quieres alert adicional
-          const missingHeader = response.headers.get('X-Missing-Files');
-          if (missingHeader) {
-            const missingList = missingHeader.split(',').map((s: any) => s.trim()).join(', ');
-            if (missingList) {
-              alert(`⚠️ Algunas guías no se descargaron porque no existen:\n${missingList}`);
-            }
+            this.loadingDownload.set(false);
+          },
+          error: (err) => {
+            alert('Error descargando las guías.');
+            this.loadingDownload.set(false);
           }
+        });
+      },
+      error: () => {
+        alert('Error al obtener información de las guías.');
+        this.loadingDownload.set(false);
+      }
+    });
+  }
 
-          this.loadingDownload.set(false); // 🔹 🔹 Aquí ocultamos el loader al terminar la descarga
-        },
-        error: (err) => {
-          alert('Error descargando las guías.');
-          this.loadingDownload.set(false); // 🔹 🔹 También ocultar loader si hay error
+  downloadAllFiltered() {
+    if (!this.userCustCode) return;
+
+    this.loadingDownload.set(true);
+
+    const filters: any = { custCode: this.userCustCode.trim() };
+    if (this.selectedProject?.trim()) filters.projCode = this.selectedProject.trim();
+    if (this.filterDocNumber?.trim()) filters.docNumber = this.filterDocNumber.trim();
+    if (this.filterDateFrom) filters.dateFrom = this.filterDateFrom;
+    if (this.filterDateTo) filters.dateTo = this.filterDateTo;
+
+    this.tickService.getAllTickCodes(filters).subscribe({
+      next: (allTickCodes: string[]) => {
+        if (allTickCodes.length === 0) {
+          alert('No hay guías disponibles para descargar.');
+          this.loadingDownload.set(false);
+          return;
         }
-      });
 
-    },
-    error: () => {
-      alert('Error al obtener códigos de guías.');
-      this.loadingDownload.set(false); // 🔹 Ocultar loader si falla el primer paso
-    }
-  });
-}
+        this.tickService.checkTktCodes({ tktCodes: allTickCodes }).subscribe({
+          next: (res: any) => {
+            const { existing, missing } = res;
+
+            if (existing.length === 0) {
+              alert('No hay guías válidas para descargar.');
+              this.loadingDownload.set(false);
+              return;
+            }
+
+            if (missing.length > 0) {
+              const ok = confirm(
+                `⚠️ Algunas guías NO están en la carpeta:\n${missing.join(', ')}\n\n¿Deseas continuar descargando las que sí existen?`
+              );
+              if (!ok) {
+                this.loadingDownload.set(false);
+                return;
+              }
+            }
+
+            this.downloadTicketsByCodes(existing);
+          },
+          error: () => {
+            alert('Error validando códigos de guías.');
+            this.loadingDownload.set(false);
+          }
+        });
+      },
+      error: () => {
+        alert('Error obteniendo todos los códigos de guías.');
+        this.loadingDownload.set(false);
+      }
+    });
+  }
+
+  private downloadTicketsByCodes(codes: string[]) {
+    this.tickService.downloadZipByCodes(codes).subscribe({
+      next: (response: any) => {
+        const blob = response.body;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Guias_${Date.now()}.zip`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+
+        const missingHeader = response.headers.get('X-Missing-Files');
+        if (missingHeader) {
+          const missingList = missingHeader.split(',').map((s: any) => s.trim());
+          alert(`⚠️ Algunas guías no se descargaron porque no existen:\n${missingList.join(', ')}`);
+        }
+
+        this.loadingDownload.set(false);
+      },
+      error: (err) => {
+        if (err.status === 404) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const json = JSON.parse(reader.result as string);
+            alert(`⚠️ No se encontró ninguna guía.\nFaltantes: ${json.missing.join(', ')}`);
+          };
+          reader.readAsText(err.error);
+        } else {
+          alert('Error descargando las guías.');
+        }
+        this.loadingDownload.set(false);
+      }
+    });
+  }
 
   toggleAll() {
     this.results.forEach(t => t.selected = this.selectAll);

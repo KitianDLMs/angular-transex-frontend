@@ -70,6 +70,10 @@ export class TickService {
     });
   }
 
+  getAllTickCodes(filters: any) {
+    return this.http.post<string[]>(`${this.baseUrl}/all-codes`, filters);
+  }
+
   getAllTktCodes(filters: {
     custCode: string;
     projCode?: string;
