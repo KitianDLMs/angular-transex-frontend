@@ -50,7 +50,7 @@ export class TickService {
     return this.http.post(
       `${this.baseUrl}/download-zip`,
       codes,
-      { responseType: 'blob' }
+      { observe: 'response', responseType: 'blob' }
     );
   }
 

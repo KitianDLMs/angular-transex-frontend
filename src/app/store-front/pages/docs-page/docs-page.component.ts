@@ -102,53 +102,32 @@ export class DocsPageComponent implements OnInit {
     });
   }
 
-downloadExcel() {
-  if (!this.userCustCode) return;
+  downloadExcel() {
+    if (!this.userCustCode) return;
 
-  this.loading.set(true);
+    this.loading.set(true);
 
-  const filters: any = {
-    custCode: this.userCustCode.trim(),
-  };
+    const filters: any = {
+      custCode: this.userCustCode.trim(),
+    };
 
-  if (this.selectedProject?.trim()) {
-    filters.projCode = this.selectedProject.trim();
+    if (this.selectedProject?.trim()) filters.projCode = this.selectedProject.trim();
+    if (this.filterDocNumber?.trim()) filters.docNumber = this.filterDocNumber.trim();
+    if (this.filterDateFrom) filters.dateFrom = this.filterDateFrom;
+    if (this.filterDateTo) filters.dateTo = this.filterDateTo;
+
+    this.tickService.getAllForExcel(filters).subscribe({
+      next: (data: any[]) => {
+        const formatted = data;
+        this.generateExcel(formatted);
+        this.loading.set(false);
+      },
+      error: err => {
+        console.error("Error exportando Excel:", err);
+        this.loading.set(false);
+      }
+    });
   }
-
-  if (this.filterDocNumber?.trim()) {
-    filters.docNumber = this.filterDocNumber.trim();
-  }
-
-  if (this.filterDateFrom) {
-    filters.dateFrom = this.filterDateFrom;
-  }
-
-  if (this.filterDateTo) {
-    filters.dateTo = this.filterDateTo;
-  }
-
-  this.tickService.getAllForExcel(filters).subscribe({
-    next: (data: any[]) => {
-      const formatted = data.map(tick => ({
-        Fecha: new Date(tick.order_date).toLocaleDateString('es-CL'),
-        Guía: tick.tkt_code,
-        Pedido: tick.order_code,
-        Proyecto: tick.proj_code?.trim(),
-        Obra: tick.proj_name?.trim() ?? tick.proj_code?.trim(),
-        Hormigón: tick.prod_descr,
-        Cantidad: tick.m3,
-        'Precio Unitario': tick.unit_price,
-      }));
-
-      this.generateExcel(formatted);
-      this.loading.set(false);
-    },
-    error: err => {
-      console.error('Error exportando Excel:', err);
-      this.loading.set(false);
-    }
-  });
-}
 
   private generateExcel(data: any[]) {
     if (!data.length) return;
@@ -186,28 +165,90 @@ downloadExcel() {
   downloadSelected() {
     const selectedCodes = this.results
       .filter(t => t.selected)
-      .map(t => t.tktCode?.trim());
+      .map(t => t.tktCode?.trim())
+      .filter(code => code);
 
-    const cleanCodes = selectedCodes.filter(code => code);
-
-    if (cleanCodes.length === 0) {
+    if (selectedCodes.length === 0) {
       alert('Debes seleccionar al menos un ticket');
       return;
     }
+
     this.loadingDownload.set(true);
-    this.tickService.downloadZip(cleanCodes).subscribe({
-      next: (blob: Blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Guias${Date.now()}.zip`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-        this.loadingDownload.set(false); 
+
+    this.tickService.downloadZip(selectedCodes).subscribe({
+      next: (response: any) => {
+        const status = response.status;
+
+        // 📌 Si es ZIP → descargar
+        if (status === 200) {
+          const blob = response.body;
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Guias${Date.now()}.zip`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+          this.loadingDownload.set(false);
+          return;
+        }
+
+        // 📌 Si el backend dice que faltan
+        if (status === 207) {
+          const text = response.body;
+          const reader = new FileReader();
+
+          reader.onload = () => {
+            const json = JSON.parse(reader.result as string);
+
+            const missingList = json.missing.join(', ');
+
+            const ok = confirm(
+              `Las siguientes guías NO están disponibles:\n\n${missingList}\n\n¿Deseas descargar solo las que sí existen?`
+            );
+
+            if (!ok) {
+              this.loadingDownload.set(false);
+              return;
+            }
+
+            // Segunda llamada solo con las existentes
+            this.tickService.downloadZip(json.existing).subscribe({
+              next: (resp: any) => {
+                const blob = resp.body;
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Guias${Date.now()}.zip`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+                this.loadingDownload.set(false);
+              },
+              error: () => {
+                alert('Error al descargar las guías restantes.');
+                this.loadingDownload.set(false);
+              }
+            });
+          };
+
+          reader.readAsText(text);
+        }
       },
-      error: err => {
-        console.error('Error descarga ZIP:', err);
+
+      error: (err) => {
         this.loadingDownload.set(false);
+
+        // 📌 Si NO existe ninguna
+        if (err.status === 404) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const json = JSON.parse(reader.result as string);
+            alert(`No se encontró ninguna guía.\nFaltantes: ${json.missing.join(', ')}`);
+          };
+          reader.readAsText(err.error);
+          return;
+        }
+
+        alert('Error al intentar descargar los documentos.');
       }
     });
   }
@@ -270,7 +311,6 @@ downloadExcel() {
     params.limit = this.limit.toString();    
     this.tickService.searchTicks(params).subscribe({
       next: res => {        
-        console.log(res);                
         this.results = res.data.map((r: any) => {
           const prev = this.results.find(t => t.tktCode === r.tkt_code);
           return {
