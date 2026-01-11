@@ -46,7 +46,8 @@ export class DocsPageComponent implements OnInit {
   filterDocType: string = '';
   filterDocNumber: string = '';
   filterDateTo: string = '';
-
+  
+  userProjects: string[] = [];
   selectedProject: string = '';
 
   ngOnInit(): void {
@@ -314,59 +315,67 @@ export class DocsPageComponent implements OnInit {
     });
   }
 
-  downloadAllFiltered() {
-    if (!this.userCustCode) return;
+downloadAllFiltered() {
+  if (!this.userCustCode) return;
 
-    this.loadingDownload.set(true);
+  this.loadingDownload.set(true);
 
-    const filters: any = { custCode: this.userCustCode.trim() };
-    if (this.selectedProject?.trim()) filters.projCode = this.selectedProject.trim();
-    if (this.filterDocNumber?.trim()) filters.docNumber = this.filterDocNumber.trim();
-    if (this.filterDateFrom) filters.dateFrom = this.filterDateFrom;
-    if (this.filterDateTo) filters.dateTo = this.filterDateTo;
+  const filters: any = { custCode: this.userCustCode.trim() };
 
-    this.tickService.getAllTickCodes(filters).subscribe({
-      next: (allTickCodes: string[]) => {
-        if (allTickCodes.length === 0) {
-          alert('No hay guías disponibles para descargar.');
-          this.loadingDownload.set(false);
-          return;
-        }
+  // Solo incluir proyectos que el usuario tiene habilitados
+  if (this.userProjects?.length) {
+    filters.projCodes = this.userProjects.map(p => p.trim()); // suponer que es un array de strings
+  }
 
-        this.tickService.checkTktCodes({ tktCodes: allTickCodes }).subscribe({
-          next: (res: any) => {
-            const { existing, missing } = res;
+  // Otros filtros opcionales
+  if (this.filterDocNumber?.trim()) filters.docNumber = this.filterDocNumber.trim();
+  if (this.filterDateFrom) filters.dateFrom = this.filterDateFrom;
+  if (this.filterDateTo) filters.dateTo = this.filterDateTo;
 
-            if (existing.length === 0) {
-              alert('No hay guías válidas para descargar.');
+  this.tickService.getAllTickCodes(filters).subscribe({
+    next: (allTickCodes: string[]) => {
+      if (allTickCodes.length === 0) {
+        alert('No hay guías disponibles para descargar.');
+        this.loadingDownload.set(false);
+        return;
+      }
+
+      this.tickService.checkTktCodes({ tktCodes: allTickCodes }).subscribe({
+        next: (res: any) => {
+          const { existing, missing } = res;
+
+          if (existing.length === 0) {
+            alert('No hay guías válidas para descargar.');
+            this.loadingDownload.set(false);
+            return;
+          }
+
+          if (missing.length > 0) {
+            const ok = confirm(
+              `⚠️ Algunas guías NO están en la carpeta:\n${missing.join(', ')}\n\n¿Deseas continuar descargando las que sí existen?`
+            );
+            if (!ok) {
               this.loadingDownload.set(false);
               return;
             }
-
-            if (missing.length > 0) {
-              const ok = confirm(
-                `⚠️ Algunas guías NO están en la carpeta:\n${missing.join(', ')}\n\n¿Deseas continuar descargando las que sí existen?`
-              );
-              if (!ok) {
-                this.loadingDownload.set(false);
-                return;
-              }
-            }
-
-            this.downloadTicketsByCodes(existing);
-          },
-          error: () => {
-            alert('Error validando códigos de guías.');
-            this.loadingDownload.set(false);
           }
-        });
-      },
-      error: () => {
-        alert('Error obteniendo todos los códigos de guías.');
-        this.loadingDownload.set(false);
-      }
-    });
-  }
+
+          // Descargar solo las guías válidas
+          this.downloadTicketsByCodes(existing);
+        },
+        error: () => {
+          alert('Error validando códigos de guías.');
+          this.loadingDownload.set(false);
+        }
+      });
+    },
+    error: () => {
+      alert('Error obteniendo todos los códigos de guías.');
+      this.loadingDownload.set(false);
+    }
+  });
+}
+
 
   private downloadTicketsByCodes(codes: string[]) {
     this.tickService.downloadZipByCodes(codes).subscribe({
