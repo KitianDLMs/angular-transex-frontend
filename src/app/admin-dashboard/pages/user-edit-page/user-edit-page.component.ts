@@ -19,16 +19,8 @@ export class UserEditPageComponent implements OnInit {
   error = '';
   userId!: string;
   customerName = '';
-  projects: any[] = [];
-  dropdownSettings = {
-    singleSelection: false,
-    idField: 'projcode',
-    textField: 'projname',
-    selectAllText: 'Seleccionar todos',
-    unSelectAllText: 'Deseleccionar todos',
-    itemsShowLimit: 3,
-    allowSearchFilter: true
-  };
+  projects: any[] = [];          // inicializado como arreglo vacío
+  dropdownSettings: any;         // se inicializa en ngOnInit
 
   constructor(
     private route: ActivatedRoute,
@@ -39,15 +31,27 @@ export class UserEditPageComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.userId = this.route.snapshot.paramMap.get('id')!;
+    // Inicializar settings del dropdown
+    this.dropdownSettings = {
+      singleSelection: false,
+      idField: 'projcode',  // debe coincidir con los objetos de projects
+      textField: 'projname',
+      selectAllText: 'Seleccionar todos',
+      unSelectAllText: 'Deseleccionar todos',
+      itemsShowLimit: 3,
+      allowSearchFilter: true
+    };
+
+    // Inicializar form con projects como null (se asignará después)
     this.form = this.fb.group({
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       roles: ['', Validators.required],
       cust_code: [{ value: '', disabled: true }],
-      projects: [[]]
+      projects: [null]
     });
 
+    this.userId = this.route.snapshot.paramMap.get('id')!;
     this.loadUser();
   }
 
@@ -57,8 +61,6 @@ export class UserEditPageComponent implements OnInit {
     this.userService.getUserById(this.userId).subscribe({
       next: (user) => {
         this.loading = false;
-
-        console.log('🚀 USUARIO RECIBIDO DEL BACKEND:', user);
 
         this.form.patchValue({
           fullName: user.fullName,
@@ -73,24 +75,21 @@ export class UserEditPageComponent implements OnInit {
           ? user.projects.map(p => typeof p === 'string' ? p : p.proj_code)
           : [];
 
-        console.log('📌 CÓDIGOS DE PROYECTOS DEL USUARIO:', userProjectCodes);
-
+        // Cargar proyectos del cliente
         if (user.cust_code) {
           this.projService.getByCust(user.cust_code).subscribe({
             next: (projects: any[]) => {
-              console.log('📦 TODOS LOS PROYECTOS DEL CLIENTE:', projects);
-
-              this.projects = projects.map(p => ({
+              this.projects = (projects || []).map(p => ({
                 projcode: p.projcode ?? p.proj_code,
                 projname: p.projname ?? p.proj_name
               }));
 
+              // Seleccionar los proyectos del usuario
               const selectedObjects = this.projects.filter(p =>
                 userProjectCodes.includes(p.projcode)
               );
 
-              console.log('✅ PROYECTOS SELECCIONADOS PARA EL DROPDOWN:', selectedObjects);
-
+              // ⚡ Asignar proyectos al formControl después de cargarlos
               this.form.get('projects')!.setValue(selectedObjects);
             },
             error: () => {
@@ -107,27 +106,6 @@ export class UserEditPageComponent implements OnInit {
     });
   }
 
-  loadProjects(cust_code: string, userProjectCodes: string[]) {
-    this.projService.getByCust(cust_code).subscribe({
-      next: (projects: any[]) => {
-        this.projects = projects.map(p => ({
-          projcode: p.projcode ?? p.proj_code,
-          projname: p.projname ?? p.proj_name
-        }));
-
-        const selectedObjects = this.projects.filter(p =>
-          userProjectCodes.includes(p.projcode)
-        );
-
-        this.form.get('projects')!.setValue(selectedObjects);
-      },
-      error: () => {
-        console.error("Error cargando proyectos del cliente");
-        this.projects = [];
-      }
-    });
-  }
-
   save() {
     if (this.form.invalid) return;
 
@@ -137,8 +115,7 @@ export class UserEditPageComponent implements OnInit {
       fullName: formValue.fullName,
       email: formValue.email,
       roles: formValue.roles.split(',').map((r: string) => r.trim()),
-      // enviamos solo los códigos de proyecto al backend
-      projects: formValue.projects.map((p: any) => p.projcode)
+      projects: formValue.projects ? formValue.projects.map((p: any) => p.projcode) : []
     };
 
     this.userService.updateUser(this.userId, updateData).subscribe({

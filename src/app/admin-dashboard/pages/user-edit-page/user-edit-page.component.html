@@ -7,28 +7,17 @@
 
   <div class="col-span-1 sm:col-span-2">
     <label class="block mb-2 font-semibold">Nombre completo</label>
-    <input
-      formControlName="fullName"
-      class="input input-bordered text-black w-full"
-    />
+    <input formControlName="fullName" class="input input-bordered text-black w-full" />
   </div>
 
   <div class="col-span-1 sm:col-span-2">
     <label class="block mb-2 font-semibold">Email</label>
-    <input
-      formControlName="email"
-      type="email"
-      class="input input-bordered text-black w-full"
-    />
+    <input formControlName="email" type="email" class="input input-bordered text-black w-full" />
   </div>
 
   <div class="col-span-1 sm:col-span-2">
     <label class="block mb-2 font-semibold">Rol</label>
-
-    <select
-      class="select select-bordered text-black w-full"
-      formControlName="roles"
-    >
+    <select class="select select-bordered text-black w-full" formControlName="roles">
       <option value="user">Usuario</option>
       <option value="admin">Administrador</option>
       <option value="super-user">Super Usuario</option>
@@ -37,36 +26,28 @@
 
   <div class="col-span-1 sm:col-span-2">
     <label class="block mb-2 font-semibold">Cliente asignado</label>
-    <input
-      formControlName="cust_code"
-      class="input input-bordered text-black w-full bg-gray-200"
-    />
+    <input formControlName="cust_code" class="input input-bordered text-black w-full bg-gray-200" />
   </div>
 
-  <div class="col-span-1 sm:col-span-2">
+  <div class="col-span-1 sm:col-span-2" *ngIf="form && dropdownSettings">
     <label class="block mb-2 font-semibold">Proyectos</label>
-        <ng-multiselect-dropdown
-          [data]="projects"
-          [settings]="dropdownSettings"
-          formControlName="projects"
-          class="block w-full text-black"
-        >
-        </ng-multiselect-dropdown>
+    <ng-multiselect-dropdown
+      [settings]="dropdownSettings"
+      [data]="projects"               
+      [placeholder]="'Selecciona proyectos'"
+      formControlName="projects"
+      class="block w-full text-black"
+    >
+    </ng-multiselect-dropdown>
   </div>
 
   <div class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-4 mt-6">
-
     <button type="submit" class="btn btn-primary flex-1" [disabled]="form.invalid">
       Guardar cambios
       <span class="loading loading-spinner loading-sm" *ngIf="loading"></span>
     </button>
 
-    <a
-      routerLink="/admin/users"
-      class="btn btn-secondary flex-1"
-    >
-      Cancelar
-    </a>
+    <a routerLink="/admin/users" class="btn btn-secondary flex-1">Cancelar</a>
   </div>
 
 </form>
