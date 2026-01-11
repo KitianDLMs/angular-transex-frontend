@@ -6,58 +6,133 @@
   class="grid grid-cols-1 sm:grid-cols-2 gap-4"
 >
 
-  <!-- Nombre Completo -->
+  <!-- Campo: Nombre Completo -->
+<div class="field-group">
   <input
     formControlName="fullName"
     class="input text-black input-bordered w-full"
     placeholder="Nombre completo"
     required
+    minlength="15"
+    maxlength="30"
   />
 
-  <!-- Email -->
+  <div class="error-box">
+    <span *ngIf="form.get('fullName')?.touched && form.get('fullName')?.invalid">
+
+      <span *ngIf="form.get('fullName')?.errors?.['required']">
+        El nombre es obligatorio.
+      </span>
+
+      <span *ngIf="form.get('fullName')?.errors?.['minlength']">
+        Debe tener al menos 15 caracteres.
+      </span>
+
+      <span *ngIf="form.get('fullName')?.errors?.['maxlength']">
+        Máximo 30 caracteres permitidos.
+      </span>
+
+    </span>
+  </div>
+</div>
+
+<!-- Campo: Email -->
+<div class="field-group">
   <input
     formControlName="email"
     type="email"
     class="input text-black input-bordered w-full"
     placeholder="Email"
     required
+    maxlength="50"
   />
 
-  <!-- Password -->
+  <div class="error-box">
+    <span *ngIf="form.get('email')?.touched && form.get('email')?.invalid">
+      <span *ngIf="form.get('email')?.errors?.['required']">
+        El email es obligatorio.
+      </span>
+      <span *ngIf="form.get('email')?.errors?.['email']">
+        Debe ingresar un correo válido.
+      </span>
+      <span *ngIf="form.get('email')?.errors?.['maxlength']">
+        Máximo 50 caracteres permitidos.
+      </span>
+    </span>
+  </div>
+</div>
+
+
+<!-- Campo: Password -->
+<div class="field-group">
   <input
     formControlName="password"
     type="password"
     class="input text-black input-bordered w-full"
     placeholder="Contraseña (mínimo 6)"
     required
+    maxlength="30"
   />
 
-  <!-- Roles -->
+  <div class="error-box">
+    <span *ngIf="form.get('password')?.touched && form.get('password')?.invalid">
+      <span *ngIf="form.get('password')?.errors?.['required']">
+        La contraseña es obligatoria.
+      </span>
+      <span *ngIf="form.get('password')?.errors?.['minlength']">
+        Debe tener al menos 6 caracteres.
+      </span>
+      <span *ngIf="form.get('password')?.errors?.['maxlength']">
+        Máximo 30 caracteres permitidos.
+      </span>
+      <span *ngIf="form.get('password')?.errors?.['pattern']">
+        Debe incluir una mayúscula, una minúscula y un número.
+      </span>
+    </span>
+  </div>
+</div>
+
+
+<!-- Campo: Roles -->
+<div class="field-group">
   <select
     class="select select-bordered text-black w-full"
     formControlName="roles"
   >
+    <option value="" disabled selected>Seleccione un tipo de usuario</option>
     <option value="user">Usuario</option>
     <option value="admin">Administrador</option>
     <option value="super-user">Super Usuario</option>
   </select>
-  
-  <select
+
+  <div class="error-box"></div>
+</div>
+
+
+<!-- Campo: Código Cliente -->
+<div class="field-group">
+  <input
     formControlName="cust_code"
-    class="select select-bordered text-black w-full"
+    type="text"
+    class="input text-black input-bordered w-full"
+    placeholder="Código de cliente"
+    maxlength="13"
     required
-  >
-    <option value="" disabled selected>Seleccione un cliente</option>
-    <option *ngFor="let c of customers" [value]="c.cust_code">
-      {{ c.name }}
-    </option>
-  </select>
+    inputmode="numeric"
+    (input)="onCustCodeInput($event)"
+  />
 
-
-  <!-- ERROR -->
-  <div *ngIf="error" class="text-red-600 col-span-2">
-    {{ error }}
+  <div class="error-box">
+    <span *ngIf="form.get('cust_code')?.touched && form.get('cust_code')?.invalid">
+      <span *ngIf="form.get('cust_code')?.errors?.['required']">
+        El código de cliente es obligatorio.
+      </span>
+      <span *ngIf="form.get('cust_code')?.errors?.['maxlength']">
+        Máximo 13 caracteres permitidos.
+      </span>
+    </span>
   </div>
+</div>
 
   <!-- BOTONES ABAJO DEL FORMULARIO -->
   <div class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-4 mt-6">

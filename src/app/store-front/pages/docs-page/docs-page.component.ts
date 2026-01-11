@@ -68,28 +68,27 @@ export class DocsPageComponent implements OnInit {
 
   loadProjectsByCustomer(): void {
     if (!this.userCustCode) return;
-    
+
+    const user = this.authService.user();
+    const allowedProjects = user?.projects || []; // Proyectos habilitados del usuario
+
     this.projService.getByCust(this.userCustCode).subscribe({
       next: (projects) => {
         const map = new Map<string, { proj_code: string; proj_name: string }>();
-        
+
         projects.forEach(p => {
           if (!p.projcode || !p.projname) return;
-          
+
           const code = p.projcode.trim();
           const name = p.projname.trim();
 
+          // Solo incluimos si está habilitado para el usuario
+          if (!allowedProjects.includes(code)) return;
+
           if (!map.has(code)) {
-            map.set(code, {
-              proj_code: code,
-              proj_name: name,
-            });
-          }
-          else if (name.length > map.get(code)!.proj_name.length) {
-            map.set(code, {
-              proj_code: code,
-              proj_name: name,
-            });
+            map.set(code, { proj_code: code, proj_name: name });
+          } else if (name.length > map.get(code)!.proj_name.length) {
+            map.set(code, { proj_code: code, proj_name: name });
           }
         });
 

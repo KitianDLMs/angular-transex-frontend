@@ -2,7 +2,7 @@
 
 <h3 class="text-lg">
   Total de usuarios:
-  <span class="text-accent">{{ users.length }}</span>
+  <span class="text-accent">{{ totalUsers }}</span>
 </h3>
 
 <div class="divider"></div>
@@ -15,4 +15,45 @@
   </button>
 </div>
 
+<!-- Tabla -->
 <users-table [users]="users" />
+<div *ngIf="loading" class="text-center p-6 text-black animate-pulse">
+    <div class="flex flex-col items-center justify-center py-6 text-gray-500 gap-3">
+      <img 
+        src="assets/images/logoHORMIGONES.png"
+        alt="Cargando"
+        class="h-8 w-8 animate-pulse"
+      />
+      <span>Cargando usuarios...</span>
+    </div>
+  </div>
+<!-- Paginación -->
+<div class="flex justify-center mt-6" *ngIf="totalPages > 1">
+  <div class="join">
+
+    <button
+      class="join-item btn"
+      [disabled]="page === 1"
+      (click)="changePage(page - 1)"
+    >
+      «
+    </button>
+
+    <button
+      class="join-item btn"
+      *ngFor="let p of pages"
+      [ngClass]="{ 'btn-active': p === page }"
+      (click)="changePage(p)"
+    >
+      {{ p }}
+    </button>
+
+    <button
+      class="join-item btn"
+      [disabled]="page === totalPages"
+      (click)="changePage(page + 1)"
+    >
+      »
+    </button>
+  </div>
+</div>

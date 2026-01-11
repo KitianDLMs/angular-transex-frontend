@@ -18,11 +18,17 @@ export class CustService {
       return of(this.custsCache);
     }
 
-    return this.http.get<Cust[]>(`${baseUrl}/cust`).pipe(
+    return this.http.get<Cust[]>(`${baseUrl}/cust`, {
+      headers: { 'Cache-Control': 'no-cache' }
+    }).pipe(
       tap((custs) => this.custsCache = custs)
     );
   }
-  
+
+  searchCusts(term: string) {
+    return this.http.get<Cust[]>(`${baseUrl}/cust/search?q=${term}`);
+  }
+
   getCustByCode(cust_code: string): Observable<Cust> {
 
     if (this.custCache.has(cust_code)) {

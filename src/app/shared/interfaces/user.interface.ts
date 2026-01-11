@@ -10,7 +10,7 @@ export interface User {
     name: string;
   };
 
-  projs: { 
+  projects: { 
     proj_id: number; 
     proj_code: string; 
     proj_name: string;

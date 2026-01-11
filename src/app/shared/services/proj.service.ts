@@ -4,7 +4,6 @@ import { Observable, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment.development';
 import { Proj } from 'src/app/proj/interfaces/proj.interface';
-import { Ordr } from '@dashboard/ordr/interfaces/ordr.interface';
 
 @Injectable({ providedIn: 'root' })
 export class ProjService {

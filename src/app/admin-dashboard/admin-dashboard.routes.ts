@@ -110,7 +110,7 @@ export const adminDashboardRoutes: Routes = [
       },
       {
         path: '**',
-        redirectTo: 'customer',
+        redirectTo: 'users',
       },
     ],
   },

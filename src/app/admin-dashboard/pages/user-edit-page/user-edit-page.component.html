@@ -5,7 +5,6 @@
 
 <form [formGroup]="form" (ngSubmit)="save()" *ngIf="!loading" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-  <!-- Nombre -->
   <div class="col-span-1 sm:col-span-2">
     <label class="block mb-2 font-semibold">Nombre completo</label>
     <input
@@ -14,7 +13,6 @@
     />
   </div>
 
-  <!-- Email -->
   <div class="col-span-1 sm:col-span-2">
     <label class="block mb-2 font-semibold">Email</label>
     <input
@@ -24,7 +22,6 @@
     />
   </div>
 
-  <!-- Roles (SELECT) -->
   <div class="col-span-1 sm:col-span-2">
     <label class="block mb-2 font-semibold">Rol</label>
 
@@ -38,7 +35,6 @@
     </select>
   </div>
 
-  <!-- Customer (DESHABILITADO) -->
   <div class="col-span-1 sm:col-span-2">
     <label class="block mb-2 font-semibold">Cliente asignado</label>
     <input
@@ -47,17 +43,24 @@
     />
   </div>
 
+  <div class="col-span-1 sm:col-span-2">
+    <label class="block mb-2 font-semibold">Proyectos</label>
+        <ng-multiselect-dropdown
+          [data]="projects"
+          [settings]="dropdownSettings"
+          formControlName="projects"
+          class="block w-full text-black"
+        >
+        </ng-multiselect-dropdown>
+  </div>
 
-  <!-- BOTONES -->
   <div class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-4 mt-6">
 
-    <!-- GUARDAR -->
     <button type="submit" class="btn btn-primary flex-1" [disabled]="form.invalid">
       Guardar cambios
       <span class="loading loading-spinner loading-sm" *ngIf="loading"></span>
     </button>
 
-    <!-- CANCELAR -->
     <a
       routerLink="/admin/users"
       class="btn btn-secondary flex-1"

@@ -25,7 +25,7 @@ const emptyUser: User = {
   isActive: false,
   roles: [],
   cust: {cust_code: '', name: ''},
-  projs: []
+  projects: []
 };
 
 export const emptyObra: Obra = {

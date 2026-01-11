@@ -1,8 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from 'src/environments/environment';
 import { User } from '@shared/interfaces/user.interface';
+import { UsersPaginatedResponse } from '@auth/interfaces/users-paginated.interface';
+import { environment } from 'src/environments/environment.development';
 
 const baseUrl = environment.baseUrl;
 
@@ -14,6 +15,12 @@ export class UserService {
     return this.http.get<User[]>(`${baseUrl}/auth/users`);
   }
 
+  getPaginatedUsers(page: number = 1, limit: number = 10): Observable<UsersPaginatedResponse> {
+    return this.http.get<UsersPaginatedResponse>(
+      `${baseUrl}/auth/paginated?page=${page}&limit=${limit}`
+    );
+  }
+  
   getUserById(id: string) {
     return this.http.get<User>(`${baseUrl}/auth/users/${id}`);
   }

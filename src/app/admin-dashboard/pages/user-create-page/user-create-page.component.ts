@@ -15,6 +15,7 @@ import { CustService } from '@dashboard/cust/services/cust.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './user-create-page.component.html',
+  styleUrl: './user-create-page.component.css'
 })
 export class UserCreatePageComponent implements OnInit {
   
@@ -35,14 +36,24 @@ export class UserCreatePageComponent implements OnInit {
   
   ngOnInit(): void {
     this.form = this.fb.group({
-      fullName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      fullName: ['', Validators.required, Validators.minLength(6), Validators.maxLength(30)],
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(50)]],
+      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(30),
+      Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/)]],
       roles: ['', Validators.required],
-      cust_code: ['', Validators.required],
+      cust_code: [{ value: '', disabled: true }, Validators.required,],
       proj_ids: [[]],
     });
+    this.form.get('roles')?.valueChanges.subscribe(role => {
+      const custControl = this.form.get('cust_code');
 
+      if (role === 'user') {
+        custControl?.enable();   // habilita
+      } else {
+        custControl?.disable();  // deshabilita
+        custControl?.reset();    // limpia el valor
+      }
+    });
     this.loadCustomers();
     // this.form.get('cust_code')?.valueChanges.subscribe(custCode => {
     //   if (!custCode) return;
@@ -58,6 +69,11 @@ export class UserCreatePageComponent implements OnInit {
 
   }
 
+  onCustCodeInput(event: any) {
+    const input = event.target;
+    input.value = input.value.replace(/\D/g, '').slice(0, 13);
+  }
+
   loadCustomers() {
     this.custService.getCusts().subscribe({
       next: (custs) => this.customers = custs,
@@ -65,7 +81,6 @@ export class UserCreatePageComponent implements OnInit {
     });
   }
 
-  
   create() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
