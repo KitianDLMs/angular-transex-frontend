@@ -69,14 +69,17 @@
       </select>
     </div>
 
-    <div class="lg:col-span-1">
-      <input
-        type="text"
-        class="input input-bordered bg-gray-50 w-full"
-        placeholder="Num. Doc"
-        [(ngModel)]="filterDocNumber"
-      />
-    </div>
+  <div class="lg:col-span-1">
+    <input
+      type="text"
+      class="input input-bordered bg-gray-50 w-full"
+      placeholder="Num. Doc"
+      [ngModel]="filterDocNumber"
+      (ngModelChange)="onDocNumberInput($event)"
+      (keypress)="allowOnlyNumbers($event)"
+      maxlength="10"
+    />
+  </div>
 
     <div class="flex flex-col w-full lg:col-span-1">
       <label class="text-gray-600 text-xs mb-1">Desde</label>

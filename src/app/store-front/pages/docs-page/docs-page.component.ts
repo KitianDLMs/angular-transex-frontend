@@ -44,11 +44,12 @@ export class DocsPageComponent implements OnInit {
 
   filterWork: string = '';
   filterDocType: string = '';
-  filterDocNumber: string = '';
   filterDateTo: string = '';
   
   userProjects: string[] = [];
   selectedProject: string = '';
+  filterDocNumber: string | undefined;
+
 
   ngOnInit(): void {
     const user = this.authService.user();
@@ -65,6 +66,27 @@ export class DocsPageComponent implements OnInit {
 
     this.loadProjectsByCustomer();
     this.onSearch(true);
+  }
+
+  onDocNumberInput(value: string) {
+    this.filterDocNumber = value.replace(/[^0-9]/g, '').slice(0, 10);
+  }
+
+  allowOnlyNumbers(event: KeyboardEvent) {
+    const key = event.key;
+
+    if (event.ctrlKey || event.metaKey) {
+      return;
+    }
+
+    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
+    if (allowedKeys.includes(key)) {
+      return;
+    }
+
+    if (!/^[0-9]$/.test(key)) {
+      event.preventDefault();
+    }
   }
 
   loadProjectsByCustomer(): void {
@@ -315,66 +337,74 @@ export class DocsPageComponent implements OnInit {
     });
   }
 
-downloadAllFiltered() {
-  if (!this.userCustCode) return;
+  downloadAllFiltered() {
+    // ⚠️ Validamos filtros activos
+    const filtrosActivos = 
+        this.selectedProject?.trim() ||
+        this.filterDocNumber?.trim() ||
+        this.filterDocType?.trim() ||
+        this.filterDateFrom ||
+        this.filterDateTo;
 
-  this.loadingDownload.set(true);
+    if (filtrosActivos) {
+      alert("⚠️ Para descargar TODOS los documentos debes limpiar los filtros.");
+      return; // 🔥 detenemos aquí
+    }
 
-  const filters: any = { custCode: this.userCustCode.trim() };
+    // --- si llega aquí, no hay filtros y puede continuar ---
+    if (!this.userCustCode) return;
 
-  // Solo incluir proyectos que el usuario tiene habilitados
-  if (this.userProjects?.length) {
-    filters.projCodes = this.userProjects.map(p => p.trim()); // suponer que es un array de strings
-  }
+    this.loadingDownload.set(true);
 
-  // Otros filtros opcionales
-  if (this.filterDocNumber?.trim()) filters.docNumber = this.filterDocNumber.trim();
-  if (this.filterDateFrom) filters.dateFrom = this.filterDateFrom;
-  if (this.filterDateTo) filters.dateTo = this.filterDateTo;
+    const filters: any = { custCode: this.userCustCode.trim() };
 
-  this.tickService.getAllTickCodes(filters).subscribe({
-    next: (allTickCodes: string[]) => {
-      if (allTickCodes.length === 0) {
-        alert('No hay guías disponibles para descargar.');
-        this.loadingDownload.set(false);
-        return;
-      }
+    // Solo incluir proyectos que el usuario tiene habilitados
+    if (this.userProjects?.length) {
+      filters.projCodes = this.userProjects.map(p => p.trim());
+    }
 
-      this.tickService.checkTktCodes({ tktCodes: allTickCodes }).subscribe({
-        next: (res: any) => {
-          const { existing, missing } = res;
+    this.tickService.getAllTickCodes(filters).subscribe({
+      next: (allTickCodes: string[]) => {
+        if (allTickCodes.length === 0) {
+          alert('No hay guías disponibles para descargar.');
+          this.loadingDownload.set(false);
+          return;
+        }
 
-          if (existing.length === 0) {
-            alert('No hay guías válidas para descargar.');
-            this.loadingDownload.set(false);
-            return;
-          }
+        this.tickService.checkTktCodes({ tktCodes: allTickCodes }).subscribe({
+          next: (res: any) => {
+            const { existing, missing } = res;
 
-          if (missing.length > 0) {
-            const ok = confirm(
-              `⚠️ Algunas guías NO están en la carpeta:\n${missing.join(', ')}\n\n¿Deseas continuar descargando las que sí existen?`
-            );
-            if (!ok) {
+            if (existing.length === 0) {
+              alert('No hay guías válidas para descargar.');
               this.loadingDownload.set(false);
               return;
             }
-          }
 
-          // Descargar solo las guías válidas
-          this.downloadTicketsByCodes(existing);
-        },
-        error: () => {
-          alert('Error validando códigos de guías.');
-          this.loadingDownload.set(false);
-        }
-      });
-    },
-    error: () => {
-      alert('Error obteniendo todos los códigos de guías.');
-      this.loadingDownload.set(false);
-    }
-  });
-}
+            if (missing.length > 0) {
+              const ok = confirm(
+                `⚠️ Algunas guías NO están en la carpeta:\n${missing.join(', ')}\n\n¿Deseas continuar descargando las que sí existen?`
+              );
+              if (!ok) {
+                this.loadingDownload.set(false);
+                return;
+              }
+            }
+
+            this.downloadTicketsByCodes(existing);
+          },
+          error: () => {
+            alert('Error validando códigos de guías.');
+            this.loadingDownload.set(false);
+          }
+        });
+      },
+      error: () => {
+        alert('Error obteniendo todos los códigos de guías.');
+        this.loadingDownload.set(false);
+      }
+    });
+  }
 
 
   private downloadTicketsByCodes(codes: string[]) {
