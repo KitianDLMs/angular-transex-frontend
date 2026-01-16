@@ -19,8 +19,8 @@ export class UserEditPageComponent implements OnInit {
   error = '';
   userId!: string;
   customerName = '';
-  projects: any[] = [];          // inicializado como arreglo vacío
-  dropdownSettings: any;         // se inicializa en ngOnInit
+  projects: any[] = [];          // proyectos completos
+  dropdownSettings: any;         // settings del dropdown
 
   constructor(
     private route: ActivatedRoute,
@@ -42,7 +42,7 @@ export class UserEditPageComponent implements OnInit {
       allowSearchFilter: true
     };
 
-    // Inicializar form con projects como null (se asignará después)
+    // Inicializar form
     this.form = this.fb.group({
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -62,6 +62,7 @@ export class UserEditPageComponent implements OnInit {
       next: (user) => {
         this.loading = false;
 
+        // Asignar valores al form
         this.form.patchValue({
           fullName: user.fullName,
           email: user.email,
@@ -79,18 +80,21 @@ export class UserEditPageComponent implements OnInit {
         if (user.cust_code) {
           this.projService.getByCust(user.cust_code).subscribe({
             next: (projects: any[]) => {
-              this.projects = (projects || []).map(p => ({
+              // Convertir nombres a objeto consistente
+              const allProjects = (projects || []).map(p => ({
                 projcode: p.projcode ?? p.proj_code,
                 projname: p.projname ?? p.proj_name
               }));
 
-              // Seleccionar los proyectos del usuario
-              const selectedObjects = this.projects.filter(p =>
-                userProjectCodes.includes(p.projcode)
-              );
+              // Separar seleccionados y no seleccionados
+              const selected = allProjects.filter(p => userProjectCodes.includes(p.projcode));
+              const notSelected = allProjects.filter(p => !userProjectCodes.includes(p.projcode));
 
-              // ⚡ Asignar proyectos al formControl después de cargarlos
-              this.form.get('projects')!.setValue(selectedObjects);
+              // 🔹 Orden final: seleccionados arriba
+              this.projects = [...selected, ...notSelected];
+
+              // Asignar proyectos seleccionados al formControl
+              this.form.get('projects')!.setValue(selected);
             },
             error: () => {
               console.error("Error cargando proyectos del cliente");

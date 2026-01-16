@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
@@ -13,60 +14,134 @@ import { CustService } from '@dashboard/cust/services/cust.service';
 @Component({
   selector: 'app-user-create-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, FormsModule],
   templateUrl: './user-create-page.component.html',
-  styleUrl: './user-create-page.component.css'
+  styleUrl: './user-create-page.component.css',
 })
 export class UserCreatePageComponent implements OnInit {
-  
+
   form!: FormGroup;
   loading = false;
   error: string | null = null;
   customers: any[] = [];
   projects: any[] = [];
   roles: string[] = [];
-  
+  custCodeInput: string = '';
+  customerName: string = '';
+
   constructor(
     private fb: FormBuilder,
     private usersService: UserService,
     private router: Router,
     private custService: CustService,
-    // private projService: ProjService,    
   ) {}
-  
+
   ngOnInit(): void {
+
     this.form = this.fb.group({
-      fullName: ['', Validators.required, Validators.minLength(6), Validators.maxLength(30)],
-      email: ['', [Validators.required, Validators.email, Validators.maxLength(50)]],
-      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(30),
-      Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/)]],
-      roles: ['', Validators.required],
-      cust_code: [{ value: '', disabled: true }, Validators.required,],
-      proj_ids: [[]],
+      fullName: ['', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(30)
+      ]],
+      email: ['', [
+        Validators.required,
+        Validators.email,
+        Validators.maxLength(50)
+      ]],
+      password: ['', [
+        Validators.required,
+        Validators.minLength(6),
+        Validators.maxLength(30),
+        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/)
+      ]],
+      roles: ['', [Validators.required]],
+      cust_code: [{ value: '', disabled: true }, [
+        Validators.required,
+        Validators.maxLength(13)
+      ]],
+      cust_codes: [{ value: [], disabled: true }],
+      custCodeInput: ['', [
+        Validators.minLength(8),
+        Validators.maxLength(12)
+      ]],
     });
+
     this.form.get('roles')?.valueChanges.subscribe(role => {
-      const custControl = this.form.get('cust_code');
+      const one = this.form.get('cust_code');
+      const many = this.form.get('cust_codes');
 
       if (role === 'user') {
-        custControl?.enable();   // habilita
-      } else {
-        custControl?.disable();  // deshabilita
-        custControl?.reset();    // limpia el valor
+        one?.enable();
+        many?.disable();
+        many?.reset();
+      }
+
+      else if (role === 'super-user') {
+        many?.enable();
+        one?.disable();
+        one?.reset();
+      }
+
+      else {
+        one?.disable(); one?.reset();
+        many?.disable(); many?.reset();
       }
     });
+
     this.loadCustomers();
-    // this.form.get('cust_code')?.valueChanges.subscribe(custCode => {
-    //   if (!custCode) return;
+  }
 
-    //   this.projService.getProjectsByCust(custCode).subscribe({
-    //     next: (list) => {
-    //       this.projects = list;
-    //       this.form.patchValue({ proj_ids: [] }); // Limpiar selección
-    //     },
-    //     error: () => console.error('Error cargando proyectos'),
-    //   });
-    // });
+  addCustCode() {
+    const control = this.form.get('custCodeInput');
+    const code: string = control?.value?.trim();
 
+    if (!code) return;
+
+    if (code.length < 9) {
+      control?.setErrors({ minlength: true });
+      return;
+    }
+
+    const current = this.form.get('cust_codes')?.value || [];
+
+    if (current.includes(code)) return;
+
+    this.form.get('cust_codes')?.setValue([...current, code]);
+    control?.reset();
+  }
+
+  checkCustCode() {
+    const control = this.form.get('cust_code');
+    const code = control?.value?.trim();
+
+    if (!code) {
+      this.customerName = '';
+      control?.setErrors({ required: true });
+      return;
+    }
+
+    this.custService.getCustByCode(code).subscribe({
+      next: (cust) => {
+        if (cust) {
+          this.customerName = cust.name;          
+          control?.setErrors(null);
+        } else {
+          this.customerName = 'Cliente no encontrado';          
+          control?.setErrors({ notFound: true });
+        }
+      },
+      error: () => {
+        this.customerName = 'Error buscando cliente';
+        control?.setErrors({ notFound: true });
+      }
+    });
+  }
+
+  removeCustCode(code: string) {
+    const current = this.form.get('cust_codes')?.value || [];
+    const filtered = current.filter((c: string) => c !== code);
+    this.form.get('cust_codes')?.setValue(filtered);
   }
 
   onCustCodeInput(event: any) {
@@ -86,28 +161,27 @@ export class UserCreatePageComponent implements OnInit {
       this.form.markAllAsTouched();
       return;
     }
-    console.log('creando usuario');
-    
-    this.loading = true;
+    const role = this.form.value.roles;
+    const raw = this.form.getRawValue();
 
-    const payload = {
-      ...this.form.value,      
-      roles: Array.isArray(this.form.value.roles)
-        ? this.form.value.roles
-        : [this.form.value.roles],
-      proj_ids: this.form.value.proj_ids.map((x: string) => Number(x)),
+    let payload: any = {
+      fullName: raw.fullName,
+      email: raw.email,
+      password: raw.password,
+      roles: [role],
     };
 
+    if (role === 'user') {
+      payload.cust_code = raw.cust_code;
+    }
+
+    if (role === 'super-user') {
+      payload.cust_codes = raw.cust_codes;
+    }
+
     this.usersService.createUser(payload).subscribe({
-      next: () => {
-        this.loading = false;
-        this.router.navigate(['/admin/users']);
-      },
-      error: (err) => {
-        console.error(err);
-        this.error = 'Error al crear usuario';
-        this.loading = false;
-      },
+      next: () => this.router.navigate(['/admin/users']),
+      error: err => console.error(err),
     });
   }
 

@@ -360,6 +360,7 @@ export class DocsPageComponent implements OnInit {
 
     // Solo incluir proyectos que el usuario tiene habilitados
     if (this.userProjects?.length) {
+      console.log(this.userProjects);      
       filters.projCodes = this.userProjects.map(p => p.trim());
     }
 

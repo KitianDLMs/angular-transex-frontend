@@ -7,132 +7,199 @@
 >
 
   <!-- Campo: Nombre Completo -->
-<div class="field-group">
-  <input
-    formControlName="fullName"
-    class="input text-black input-bordered w-full"
-    placeholder="Nombre completo"
-    required
-    minlength="15"
-    maxlength="30"
-  />
+  <div class="field-group">
+    <input
+      formControlName="fullName"
+      class="input text-black input-bordered w-full"
+      placeholder="Nombre completo"
+      required
+      minlength="3"
+      maxlength="30"
+    />
 
-  <div class="error-box">
-    <span *ngIf="form.get('fullName')?.touched && form.get('fullName')?.invalid">
+    <div class="error-box">
+      <span *ngIf="form.get('fullName')?.touched && form.get('fullName')?.invalid">
 
-      <span *ngIf="form.get('fullName')?.errors?.['required']">
-        El nombre es obligatorio.
+        <span *ngIf="form.get('fullName')?.errors?.['required']">
+          El nombre es obligatorio.
+        </span>
+
+        <span *ngIf="form.get('fullName')?.errors?.['minlength']">
+          Debe tener al menos 15 caracteres.
+        </span>
+
+        <span *ngIf="form.get('fullName')?.errors?.['maxlength']">
+          Máximo 30 caracteres permitidos.
+        </span>
+
       </span>
-
-      <span *ngIf="form.get('fullName')?.errors?.['minlength']">
-        Debe tener al menos 15 caracteres.
-      </span>
-
-      <span *ngIf="form.get('fullName')?.errors?.['maxlength']">
-        Máximo 30 caracteres permitidos.
-      </span>
-
-    </span>
+    </div>
   </div>
-</div>
 
-<!-- Campo: Email -->
-<div class="field-group">
-  <input
-    formControlName="email"
-    type="email"
-    class="input text-black input-bordered w-full"
-    placeholder="Email"
-    required
-    maxlength="50"
-  />
+  <!-- Campo: Email -->
+  <div class="field-group">
+    <input
+      formControlName="email"
+      type="email"
+      class="input text-black input-bordered w-full"
+      placeholder="Email"
+      required
+      maxlength="50"
+    />
 
-  <div class="error-box">
-    <span *ngIf="form.get('email')?.touched && form.get('email')?.invalid">
-      <span *ngIf="form.get('email')?.errors?.['required']">
-        El email es obligatorio.
+    <div class="error-box">
+      <span *ngIf="form.get('email')?.touched && form.get('email')?.invalid">
+        <span *ngIf="form.get('email')?.errors?.['required']">
+          El email es obligatorio.
+        </span>
+        <span *ngIf="form.get('email')?.errors?.['email']">
+          Debe ingresar un correo válido.
+        </span>
+        <span *ngIf="form.get('email')?.errors?.['maxlength']">
+          Máximo 50 caracteres permitidos.
+        </span>
       </span>
-      <span *ngIf="form.get('email')?.errors?.['email']">
-        Debe ingresar un correo válido.
-      </span>
-      <span *ngIf="form.get('email')?.errors?.['maxlength']">
-        Máximo 50 caracteres permitidos.
-      </span>
-    </span>
+    </div>
   </div>
-</div>
 
+  <!-- Campo: Password -->
+  <div class="field-group">
+    <input
+      formControlName="password"
+      type="password"
+      class="input text-black input-bordered w-full"
+      placeholder="Contraseña (mínimo 6)"
+      required
+      maxlength="30"
+    />
 
-<!-- Campo: Password -->
-<div class="field-group">
-  <input
-    formControlName="password"
-    type="password"
-    class="input text-black input-bordered w-full"
-    placeholder="Contraseña (mínimo 6)"
-    required
-    maxlength="30"
-  />
-
-  <div class="error-box">
-    <span *ngIf="form.get('password')?.touched && form.get('password')?.invalid">
-      <span *ngIf="form.get('password')?.errors?.['required']">
-        La contraseña es obligatoria.
+    <div class="error-box">
+      <span *ngIf="form.get('password')?.touched && form.get('password')?.invalid">
+        <span *ngIf="form.get('password')?.errors?.['required']">
+          La contraseña es obligatoria.
+        </span>
+        <span *ngIf="form.get('password')?.errors?.['minlength']">
+          Debe tener al menos 6 caracteres.
+        </span>
+        <span *ngIf="form.get('password')?.errors?.['maxlength']">
+          Máximo 30 caracteres permitidos.
+        </span>
+        <span *ngIf="form.get('password')?.errors?.['pattern']">
+          Debe incluir una mayúscula, una minúscula y un número.
+        </span>
       </span>
-      <span *ngIf="form.get('password')?.errors?.['minlength']">
-        Debe tener al menos 6 caracteres.
-      </span>
-      <span *ngIf="form.get('password')?.errors?.['maxlength']">
-        Máximo 30 caracteres permitidos.
-      </span>
-      <span *ngIf="form.get('password')?.errors?.['pattern']">
-        Debe incluir una mayúscula, una minúscula y un número.
-      </span>
-    </span>
+    </div>
   </div>
-</div>
 
+  <!-- Campo: Roles -->
+  <div class="field-group">
+    <select
+      class="select select-bordered text-black w-full"
+      formControlName="roles"
+    >
+      <option value="" disabled selected>Seleccione un tipo de usuario</option>
+      <option value="user">Usuario</option>
+      <option value="admin">Administrador</option>
+      <option value="super-user">Super Usuario</option>
+    </select>
 
-<!-- Campo: Roles -->
-<div class="field-group">
-  <select
-    class="select select-bordered text-black w-full"
-    formControlName="roles"
-  >
-    <option value="" disabled selected>Seleccione un tipo de usuario</option>
-    <option value="user">Usuario</option>
-    <option value="admin">Administrador</option>
-    <option value="super-user">Super Usuario</option>
-  </select>
-
-  <div class="error-box"></div>
-</div>
-
-
-<!-- Campo: Código Cliente -->
-<div class="field-group">
-  <input
-    formControlName="cust_code"
-    type="text"
-    class="input text-black input-bordered w-full"
-    placeholder="Código de cliente"
-    maxlength="13"
-    required
-    inputmode="numeric"
-    (input)="onCustCodeInput($event)"
-  />
-
-  <div class="error-box">
-    <span *ngIf="form.get('cust_code')?.touched && form.get('cust_code')?.invalid">
-      <span *ngIf="form.get('cust_code')?.errors?.['required']">
-        El código de cliente es obligatorio.
-      </span>
-      <span *ngIf="form.get('cust_code')?.errors?.['maxlength']">
-        Máximo 13 caracteres permitidos.
-      </span>
-    </span>
+    <div class="error-box"></div>
   </div>
-</div>
+
+  <!-- Campo: cust_code (solo usuarios normales & admin) -->
+  <div class="field-group" *ngIf="form.get('cust_code')?.enabled">
+      <input
+      formControlName="cust_code"
+      type="text"
+      class="input text-black input-bordered w-full"
+      placeholder="Código de cliente"
+      maxlength="13"
+      required
+      inputmode="numeric"
+      (input)="onCustCodeInput($event)"
+      (blur)="checkCustCode()"
+    />
+
+    <!-- Nombre del cliente -->
+    <span class="ml-2 text-gray-700 font-medium" *ngIf="customerName">
+      {{ customerName }}
+    </span>
+
+    <div class="error-box">
+      <span *ngIf="form.get('cust_code')?.touched && form.get('cust_code')?.invalid">
+        <span *ngIf="form.get('cust_code')?.errors?.['required']">
+          El código de cliente es obligatorio.
+        </span>
+        <span *ngIf="form.get('cust_code')?.errors?.['maxlength']">
+          Máximo 13 caracteres permitidos.
+        </span>
+         <span *ngIf="form.get('cust_code')?.errors?.['notFound']">
+          Cliente no existe
+        </span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Campo: cust_codes (solo super-user) -->
+  <div class="field-group" *ngIf="form.get('cust_codes')?.enabled">
+
+    <label class="font-semibold mb-1 block">Agregar Clientes</label>
+
+    <div class="flex gap-2 items-start">
+
+      <!-- Input -->
+      <input
+        formControlName="custCodeInput"
+        type="text"
+        class="input input-bordered text-black flex-1"
+        placeholder="Código de cliente"
+        minlength="9"
+        maxlength="12"
+      />
+
+      <!-- Error box -->
+      <div class="error-box w-full">
+        <span *ngIf="form.get('custCodeInput')?.touched && form.get('custCodeInput')?.invalid">
+
+          <span *ngIf="form.get('custCodeInput')?.errors?.['minlength']">
+            Debe tener al menos 8 caracteres.
+          </span>
+
+          <span *ngIf="form.get('custCodeInput')?.errors?.['maxlength']">
+            Máximo 12 caracteres permitidos.
+          </span>
+
+        </span>
+      </div>
+
+      <!-- Botón agregar -->
+      <button
+        type="button"
+        class="btn btn-outline"
+        (click)="addCustCode()"
+      >
+        Agregar
+      </button>
+    </div>
+
+    <!-- Chips -->
+    <div class="flex flex-wrap gap-2 mt-3">
+      <span
+        *ngFor="let code of form.get('cust_codes')?.value"
+        class="bg-blue-600 text-white px-3 py-1 rounded-full flex items-center gap-2"
+      >
+        {{ code }}
+        <button
+          type="button"
+          class="text-white font-bold hover:text-red-300"
+          (click)="removeCustCode(code)"
+        >
+          ✕
+        </button>
+      </span>
+    </div>
+
+  </div>
 
   <!-- BOTONES ABAJO DEL FORMULARIO -->
   <div class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-4 mt-6">
@@ -144,8 +211,8 @@
     </button>
 
     <!-- CANCELAR -->
-    <a 
-      routerLink="/admin/users" 
+    <a
+      routerLink="/admin/users"
       class="btn btn-secondary flex-1"
     >
       Cancelar

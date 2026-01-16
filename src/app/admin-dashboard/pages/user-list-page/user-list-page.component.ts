@@ -4,6 +4,7 @@ import { UsersTableComponent } from '@dashboard/users/components/users-table.com
 import { RouterModule } from '@angular/router';
 import { UserService } from '@dashboard/users/services/user.service';
 import { User } from '@shared/interfaces/user.interface';
+import { AuthService } from '@auth/services/auth.service';
 
 @Component({
   selector: 'app-user-list-page',
@@ -14,6 +15,7 @@ import { User } from '@shared/interfaces/user.interface';
 export class UserListPageComponent implements OnInit {
 
   private userService = inject(UserService);
+  private authService = inject(AuthService);
 
   users: User[] = [];
 
@@ -32,9 +34,10 @@ export class UserListPageComponent implements OnInit {
 
   loadUsers(page: number = 1) {
     this.loading = true;
-
+    const user = this.authService.user();
     this.userService.getPaginatedUsers(page, this.limit).subscribe({
       next: (resp) => {
+        console.log(resp);        
         this.users = resp.data;
         this.totalUsers = resp.totalItems;
         this.page = resp.page;
