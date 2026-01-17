@@ -5,19 +5,18 @@ import { tap, catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment.development';
 
 export interface OrderDetail {
-  orderCode: string;
-  cantidadRespaldo: number;
-  cantidadUtilizada: number;
+  ordenCompra: string;
+  respaldado: number;
+  utilizado: number;
   saldo: number;
 }
-
 export interface ProductReport {
-  prodCode: string;
-  prodDescr: string;
+  codigo: string;
+  producto: string;
   totalRespaldado: number;
-  totalUtilizada: number;
+  totalUtilizado: number;
   saldo: number;
-  orders: OrderDetail[];
+  ordenes: OrderDetail[];
 }
 
 @Injectable({ providedIn: 'root' })

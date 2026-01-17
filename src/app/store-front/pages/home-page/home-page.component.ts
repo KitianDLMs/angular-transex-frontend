@@ -1,15 +1,23 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import { AuthService } from '@auth/services/auth.service';
 import { CustService } from '@dashboard/cust/services/cust.service';
 import { ProjService } from '@shared/services/proj.service';
-import { ProdReportService, ProductReport, OrderDetail } from '@shared/services/prod-report.service';
+import {
+  ProdReportService,
+  ProductReport,
+  OrderDetail
+} from '@shared/services/prod-report.service';
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule, // ngIf, ngFor
+    FormsModule   // ngModel
+  ],
   templateUrl: './home-page.component.html',
 })
 export class HomePageComponent implements OnInit {
@@ -23,26 +31,26 @@ export class HomePageComponent implements OnInit {
   userCustCode: string | null = null;
   customerName: string | null = null;
   customerAddress: string | null = null;
-  userProjects: string[] = [];
+
   products: ProductReport[] = [];
 
-  selectedProject: string = '';
+  selectedProject = '';
   projectOptions: { proj_code: string; proj_name: string }[] = [];
 
   page = 1;
   limit = 10;
   totalPages = 1;
-  currentYear = new Date().getFullYear();
-
   loading = false;
+
   expandedGroup: string | null = null;
   today = new Date();
+  currentYear = new Date().getFullYear();
 
   ngOnInit() {
     this.currentUser = this.authService.user();
-    if (!this.currentUser) return;
+    if (!this.currentUser) return;    
 
-    this.userCustCode = this.currentUser.cust_code ?? null;
+    this.userCustCode = this.currentUser.cust_code;
     if (!this.userCustCode) return;
 
     this.loadCustomer();
@@ -51,107 +59,90 @@ export class HomePageComponent implements OnInit {
   }
 
   loadCustomer() {
-    if (!this.userCustCode) return;
-    this.custService.getCustByCode(this.userCustCode).subscribe(c => {
+    this.custService.getCustByCode(this.userCustCode!).subscribe(c => {
       this.customerName = c.name;
       this.customerAddress = c.addr_line_1 ?? null;
     });
   }
 
-  loadProjects(): void {
-    if (!this.userCustCode) return;
+  loadProjects() {
+    const allowedProjects = this.currentUser?.projects ?? [];
 
-    const allowedProjects = this.authService.user()?.projects || [];
+    this.projService.getByCust(this.userCustCode!).subscribe(projects => {
+      const map = new Map<string, { proj_code: string; proj_name: string }>();
 
-    this.projService.getByCust(this.userCustCode).subscribe({
-      next: (projects) => {
-        const map = new Map<string, { proj_code: string; proj_name: string }>();
+      projects.forEach(p => {
+        if (!p.projcode || !p.projname) return;
 
-        projects.forEach(p => {
-          if (!p.projcode || !p.projname) return;
-          const code = p.projcode.trim();
-          const name = p.projname.trim();
-          if (!allowedProjects.includes(code)) return;
+        const code = p.projcode.trim();
+        const name = p.projname.trim();
 
-          if (!map.has(code)) {
-            map.set(code, { proj_code: code, proj_name: name });
-          } else if (name.length > map.get(code)!.proj_name.length) {
-            map.set(code, { proj_code: code, proj_name: name });
-          }
-        });
+        if (!allowedProjects.includes(code)) return;
 
-        this.projectOptions = Array.from(map.values());
-      },
-      error: err => {
-        console.error('Error cargando obras:', err);
-        this.projectOptions = [];
-      }
+        if (!map.has(code)) {
+          map.set(code, { proj_code: code, proj_name: name });
+        }
+      });
+
+      this.projectOptions = Array.from(map.values());
     });
   }
 
   loadProducts() {
-    if (!this.userCustCode) return;
-
     this.loading = true;
     this.expandedGroup = null;
 
-    const filters: any = { 
+    const filters: any = {
       custCode: this.userCustCode,
       page: this.page,
       limit: this.limit,
     };
-    if (this.selectedProject) filters.projCode = this.selectedProject;
 
-    this.prodReportService.getReport(filters).subscribe({      
-      next: (resp) => {
-        console.log(filters);        
-        const data = (resp.data ?? []).map((p: any) => {
-          const orders: OrderDetail[] = (p.orders ?? []).map((o: any) => {
-            const cantidadRespaldo = Number(o.cantidadRespaldo ?? 0);
-            const cantidadUtilizada = Number(o.cantidadUtilizada ?? 0);
-            const saldo = cantidadRespaldo - cantidadUtilizada;
-            return { ...o, cantidadRespaldo, cantidadUtilizada, saldo };
-          });
+    if (this.selectedProject) {
+      filters.projCode = this.selectedProject;
+    }
 
-          // Agrupamos por orden de compra
-          const groupedOrders: OrderDetail[] = [];
-          orders.forEach(o => {
-            const existing = groupedOrders.find(go => go.orderCode === o.orderCode);
+    this.prodReportService.getReport(filters).subscribe({
+      next: resp => {
+        // 🟢 Transformamos los datos para agrupar las ordenes por OC
+        const map: Record<string, ProductReport> = {};
+
+        (resp.data as ProductReport[]).forEach(p => {
+          if (!map[p.codigo]) {
+            map[p.codigo] = {
+              ...p,
+              ordenes: []
+            };
+          }
+
+          // Agrupar por OC
+          p.ordenes.forEach(o => {
+            const existing = map[p.codigo].ordenes.find(x => x.ordenCompra === o.ordenCompra);
             if (existing) {
-              existing.cantidadRespaldo += o.cantidadRespaldo;
-              existing.cantidadUtilizada += o.cantidadUtilizada;
-              existing.saldo += o.saldo;
+              existing.respaldado += o.respaldado;
+              existing.utilizado += o.utilizado;
+              existing.saldo = existing.respaldado - existing.utilizado;
             } else {
-              groupedOrders.push({ ...o });
+              map[p.codigo].ordenes.push({ ...o });
             }
           });
 
-          // Totales del producto
-          const totalRespaldado = groupedOrders.reduce((sum, o) => sum + o.cantidadRespaldo, 0);
-          const totalUtilizada = groupedOrders.reduce((sum, o) => sum + o.cantidadUtilizada, 0);
-          const saldo = totalRespaldado - totalUtilizada;
-
-          return {
-            prodCode: p.prodCode,
-            prodDescr: p.prodDescr,
-            totalRespaldado,
-            totalUtilizada,
-            saldo,
-            orders: groupedOrders
-          } as ProductReport;
+          // Recalcular totales del producto
+          map[p.codigo].totalRespaldado = map[p.codigo].ordenes.reduce((sum, x) => sum + x.respaldado, 0);
+          map[p.codigo].totalUtilizado = map[p.codigo].ordenes.reduce((sum, x) => sum + x.utilizado, 0);
+          map[p.codigo].saldo = map[p.codigo].totalRespaldado - map[p.codigo].totalUtilizado;
         });
 
-        this.products = data;
-        this.page = resp.page ?? this.page;
-        this.limit = resp.limit ?? this.limit;
-        this.totalPages = resp.totalPages ?? Math.ceil((resp.total ?? 0) / this.limit);
+        this.products = Object.values(map);
+        this.page = Number(resp.page);
+        this.totalPages = Number(resp.totalPages);
         this.loading = false;
       },
-      error: (err) => {
-        console.error("Error cargando productos:", err);
+      error: err => {
+        console.error(err);
         this.products = [];
         this.loading = false;
-      }
+      },
     });
   }
 

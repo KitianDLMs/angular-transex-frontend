@@ -56,7 +56,9 @@
   </div>
 
   <!-- TABLA PRODUCTOS -->
-  <div *ngIf="!loading && products.length > 0" class="overflow-x-auto mt-6 bg-white rounded-lg shadow animate__animated animate__fadeIn">
+  <div *ngIf="!loading && products.length > 0"
+      class="overflow-x-auto mt-6 bg-white rounded-lg shadow animate__animated animate__fadeIn">
+
     <table class="min-w-full text-sm">
       <thead class="bg-cyan-700 text-white">
         <tr>
@@ -68,38 +70,38 @@
           <th class="p-3 text-left">Saldo</th>
         </tr>
       </thead>
+
       <tbody>
         <ng-container *ngFor="let p of products">
+
+          <!-- FILA PRODUCTO -->
           <tr class="border-t bg-white hover:bg-cyan-50 cursor-pointer font-semibold"
-              (click)="toggleGroup(p.prodCode)">
-            <!-- <td class="p-3">{{ p.prodDescr }}</td> -->
-            <td class="p-3 max-w-xs whitespace-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-              {{ p.prodDescr }}
-            </td>
-            <td class="p-3">{{ p.prodCode }}</td>
+              (click)="toggleGroup(p.codigo)">
+            <td class="p-3">{{ p.producto }}</td>
+            <td class="p-3">{{ p.codigo }}</td>
             <td class="p-3">—</td>
             <td class="p-3">{{ p.totalRespaldado }}</td>
-            <td class="p-3">{{ p.totalUtilizada }}</td>
+            <td class="p-3">{{ p.totalUtilizado }}</td>
             <td class="p-3">{{ p.saldo }}</td>
           </tr>
 
-          <ng-container *ngIf="expandedGroup === p.prodCode">
-            <tr *ngFor="let o of p.orders" class="bg-gray-100 text-sm">
-              <!-- <td class="p-3 pl-8">↳ {{ p.prodDescr }}</td> -->
-              <td class="p-3 pl-8 max-w-xs whitespace-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-                ↳ {{ p.prodDescr }}
-              </td>
-              <td class="p-3">{{ p.prodCode }}</td>
-              <td class="p-3">OC/{{ o.orderCode }}</td>
-              <td class="p-3">{{ o.cantidadRespaldo }}</td>
-              <td class="p-3">{{ o.cantidadUtilizada }}</td>
+          <!-- DETALLE ORDENES -->
+          <ng-container *ngIf="expandedGroup === p.codigo">
+            <tr *ngFor="let o of p.ordenes" class="bg-gray-100 text-sm">
+              <td class="p-3 pl-8">↳</td>
+              <td class="p-3">{{ p.codigo }}</td>
+              <td class="p-3">OC/{{ o.ordenCompra }}</td>
+              <td class="p-3">{{ o.respaldado }}</td>
+              <td class="p-3">{{ o.utilizado }}</td>
               <td class="p-3">{{ o.saldo }}</td>
             </tr>
           </ng-container>
+
         </ng-container>
       </tbody>
     </table>
   </div>
+
 
   <!-- SIN PRODUCTOS -->
   <div *ngIf="!loading && products.length === 0"
