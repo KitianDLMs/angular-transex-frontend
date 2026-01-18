@@ -15,8 +15,8 @@ import {
   selector: 'app-home-page',
   standalone: true,
   imports: [
-    CommonModule, // ngIf, ngFor
-    FormsModule   // ngModel
+    CommonModule,
+    FormsModule  
   ],
   templateUrl: './home-page.component.html',
 })
@@ -104,7 +104,6 @@ export class HomePageComponent implements OnInit {
 
     this.prodReportService.getReport(filters).subscribe({
       next: resp => {
-        // 🟢 Transformamos los datos para agrupar las ordenes por OC
         const map: Record<string, ProductReport> = {};
 
         (resp.data as ProductReport[]).forEach(p => {
@@ -115,7 +114,6 @@ export class HomePageComponent implements OnInit {
             };
           }
 
-          // Agrupar por OC
           p.ordenes.forEach(o => {
             const existing = map[p.codigo].ordenes.find(x => x.ordenCompra === o.ordenCompra);
             if (existing) {
@@ -127,7 +125,6 @@ export class HomePageComponent implements OnInit {
             }
           });
 
-          // Recalcular totales del producto
           map[p.codigo].totalRespaldado = map[p.codigo].ordenes.reduce((sum, x) => sum + x.respaldado, 0);
           map[p.codigo].totalUtilizado = map[p.codigo].ordenes.reduce((sum, x) => sum + x.utilizado, 0);
           map[p.codigo].saldo = map[p.codigo].totalRespaldado - map[p.codigo].totalUtilizado;

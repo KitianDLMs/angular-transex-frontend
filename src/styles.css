@@ -16,16 +16,3 @@ body {
   background-color: #f2f6f8;
 }
 
-
-/* OCULTAR COMPLETAMENTE los chips dentro del input */
-.multiselect-dropdown .dropdown-btn .selected-item,
-.multiselect-dropdown .dropdown-btn .selected-item-container {
-    display: none !important;
-}
-
-/* Ajustar el input para que no deje espacio */
-.multiselect-dropdown .dropdown-btn {
-    display: flex !important;
-    align-items: center !important;
-    flex-wrap: nowrap !important;
-}

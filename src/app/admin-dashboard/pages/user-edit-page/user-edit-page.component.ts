@@ -1,7 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
+
 import { UserService } from '@dashboard/users/services/user.service';
 import { ProjService } from '@shared/services/proj.service';
 import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
@@ -9,8 +16,15 @@ import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
 @Component({
   selector: 'app-user-edit-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, NgMultiSelectDropDownModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterLink,
+    NgMultiSelectDropDownModule
+  ],
   templateUrl: './user-edit-page.component.html',
+  encapsulation: ViewEncapsulation.None
 })
 export class UserEditPageComponent implements OnInit {
 
@@ -19,9 +33,9 @@ export class UserEditPageComponent implements OnInit {
   error = '';
   userId!: string;
   customerName = '';
-  projects: any[] = [];          // proyectos completos
-  dropdownSettings: any;         // settings del dropdown
-
+  projects: any[] = [];
+  dropdownSettings: any;
+  
   constructor(
     private route: ActivatedRoute,
     private fb: FormBuilder,
@@ -29,40 +43,50 @@ export class UserEditPageComponent implements OnInit {
     private projService: ProjService,
     private router: Router
   ) {}
-
+  
   ngOnInit(): void {
-    // Inicializar settings del dropdown
+    
+    // 🔹 Configuración correcta del dropdown
     this.dropdownSettings = {
       singleSelection: false,
-      idField: 'projcode',  // debe coincidir con los objetos de projects
+      idField: 'projcode',
       textField: 'projname',
       selectAllText: 'Seleccionar todos',
       unSelectAllText: 'Deseleccionar todos',
-      itemsShowLimit: 3,
-      allowSearchFilter: true
+      itemsShowLimit: 30,
+      allowSearchFilter: true,
+      enableCheckAll: true,
+      badgeShowLimit: 6
     };
-
-    // Inicializar form
+    
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{1,15}$/;
+    // 🔹 Formulario
     this.form = this.fb.group({
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       roles: ['', Validators.required],
       cust_code: [{ value: '', disabled: true }],
-      projects: [null]
+      projects: [[]],
+      password: [
+        '',
+        [
+          Validators.maxLength(15),
+          Validators.pattern(passwordRegex)
+        ]
+      ]
     });
 
     this.userId = this.route.snapshot.paramMap.get('id')!;
     this.loadUser();
   }
 
-  loadUser() {
+  loadUser(): void {
     this.loading = true;
 
     this.userService.getUserById(this.userId).subscribe({
       next: (user) => {
         this.loading = false;
 
-        // Asignar valores al form
         this.form.patchValue({
           fullName: user.fullName,
           email: user.email,
@@ -73,35 +97,44 @@ export class UserEditPageComponent implements OnInit {
         this.customerName = user.cust?.name ?? user.cust_code ?? 'Sin cliente';
 
         const userProjectCodes: string[] = Array.isArray(user.projects)
-          ? user.projects.map(p => typeof p === 'string' ? p : p.proj_code)
+          ? user.projects.map((p: any) =>
+              typeof p === 'string' ? p : p.proj_code
+            )
           : [];
 
-        // Cargar proyectos del cliente
-        if (user.cust_code) {
-          this.projService.getByCust(user.cust_code).subscribe({
-            next: (projects: any[]) => {
-              // Convertir nombres a objeto consistente
-              const allProjects = (projects || []).map(p => ({
+        if (!user.cust_code) return;
+
+        this.projService.getByCust(user.cust_code).subscribe({
+          next: (projects: any[]) => {
+
+            // 🔥 NORMALIZACIÓN CLAVE (quita el proj_code del texto)
+            const allProjects = (projects || []).map(p => {
+              const rawName = p.projname ?? p.proj_name ?? '';
+
+              return {
                 projcode: p.projcode ?? p.proj_code,
-                projname: p.projname ?? p.proj_name
-              }));
+                projname: rawName.includes('|')
+                  ? rawName.split('|').slice(1).join('|').trim()
+                  : rawName
+              };
+            });
 
-              // Separar seleccionados y no seleccionados
-              const selected = allProjects.filter(p => userProjectCodes.includes(p.projcode));
-              const notSelected = allProjects.filter(p => !userProjectCodes.includes(p.projcode));
+            const selected = allProjects.filter(p =>
+              userProjectCodes.includes(p.projcode)
+            );
 
-              // 🔹 Orden final: seleccionados arriba
-              this.projects = [...selected, ...notSelected];
+            const notSelected = allProjects.filter(p =>
+              !userProjectCodes.includes(p.projcode)
+            );
 
-              // Asignar proyectos seleccionados al formControl
-              this.form.get('projects')!.setValue(selected);
-            },
-            error: () => {
-              console.error("Error cargando proyectos del cliente");
-              this.projects = [];
-            }
-          });
-        }
+            this.projects = [...selected, ...notSelected];
+            this.form.get('projects')!.setValue(selected);
+          },
+          error: () => {
+            this.projects = [];
+            console.error('Error cargando proyectos del cliente');
+          }
+        });
       },
       error: () => {
         this.loading = false;
@@ -110,17 +143,23 @@ export class UserEditPageComponent implements OnInit {
     });
   }
 
-  save() {
+  save(): void {
     if (this.form.invalid) return;
 
     const formValue = this.form.value;
 
-    const updateData = {
+    const updateData: any = {
       fullName: formValue.fullName,
       email: formValue.email,
       roles: formValue.roles.split(',').map((r: string) => r.trim()),
-      projects: formValue.projects ? formValue.projects.map((p: any) => p.projcode) : []
+      projects: formValue.projects
+        ? formValue.projects.map((p: any) => p.projcode)
+        : []
     };
+
+    if (formValue.password && formValue.password.trim().length > 0) {
+      updateData.password = formValue.password;
+    }
 
     this.userService.updateUser(this.userId, updateData).subscribe({
       next: () => {

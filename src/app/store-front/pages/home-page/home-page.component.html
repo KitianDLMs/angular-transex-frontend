@@ -7,10 +7,8 @@
 
 <div class="p-4 bg-gray-50">
 
-  <!-- FILTROS -->
   <div class="bg-white shadow-md rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-center">
     <div class="text-gray-600 text-center sm:text-left sm:mr-auto animate__animated animate__fadeIn">
-      <!-- Cliente -->
       <div class="font-semibold flex items-center justify-center sm:justify-start gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -21,7 +19,6 @@
         {{ customerName }}
       </div>
 
-      <!-- Dirección -->
       <div class="text-sm text-gray-500 flex items-center justify-center sm:justify-start gap-2 mt-1">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -33,7 +30,6 @@
       </div>
     </div>
 
-    <!-- SELECT PROYECTOS -->
     <select class="select select-bordered bg-gray-50 w-full sm:w-64"
             (change)="onSelectProject()"
             [(ngModel)]="selectedProject">
@@ -63,13 +59,11 @@
     </button>
   </div>
 
-  <!-- Cargando -->
   <div *ngIf="loading" class="flex flex-col items-center justify-center p-6 text-gray-500 gap-3 animate__animated animate__fadeIn">
     <img src="assets/images/logoHORMIGONES.png" alt="Cargando" class="h-8 w-8 animate-pulse" />
     <span>Cargando productos...</span>
   </div>
 
-  <!-- TABLA PRODUCTOS -->
   <div *ngIf="!loading && products.length > 0"
       class="overflow-x-auto mt-6 bg-white rounded-lg shadow animate__animated animate__fadeIn">
 
@@ -88,7 +82,6 @@
       <tbody>
         <ng-container *ngFor="let p of products">
 
-          <!-- FILA PRODUCTO -->
           <tr class="border-t bg-white hover:bg-cyan-50 cursor-pointer font-semibold"
               (click)="toggleGroup(p.codigo)">
             <td class="p-3">{{ p.producto }}</td>
@@ -99,7 +92,6 @@
             <td class="p-3">{{ p.saldo }}</td>
           </tr>
 
-          <!-- DETALLE ORDENES -->
           <ng-container *ngIf="expandedGroup === p.codigo">
             <tr *ngFor="let o of p.ordenes" class="bg-gray-100 text-sm">
               <td class="p-3 pl-8">↳</td>
@@ -117,7 +109,6 @@
   </div>
 
 
-  <!-- SIN PRODUCTOS -->
   <div *ngIf="!loading && products.length === 0"
        class="bg-white shadow-lg rounded-2xl mt-10 border border-gray-200 p-10 text-center text-gray-500 animate__animated animate__fadeIn">
     <div class="flex justify-center mb-4">
@@ -130,7 +121,6 @@
     <p class="text-sm">Cuando existan productos, los verás reflejados aquí.</p>
   </div>
 
-  <!-- PAGINACIÓN -->
   <div *ngIf="!loading && products.length > 0" class="flex items-center justify-between mt-6 px-4">
     <button class="btn bg-gray-200 text-gray-700 hover:bg-gray-300 px-4 py-2 rounded-lg disabled:opacity-50"
             (click)="prevPage()"
@@ -149,7 +139,6 @@
     </button>
   </div>
 
-  <!-- FOOTER -->
   <footer class="mt-28 bg-white border-t border-gray-200 px-4 py-10">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-6">
       <div class="space-y-3 text-[11px] sm:text-xs text-gray-500">

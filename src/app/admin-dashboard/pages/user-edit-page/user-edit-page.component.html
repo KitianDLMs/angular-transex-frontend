@@ -16,6 +16,21 @@
   </div>
 
   <div class="col-span-1 sm:col-span-2">
+  <label class="block mb-2 font-semibold">
+    Nueva contraseña
+    <span class="text-sm text-gray-500">(opcional)</span>
+  </label>
+
+    <input
+      type="password"
+      formControlName="password"
+      maxlength="15"
+      class="input input-bordered text-black w-full"
+      placeholder="Dejar vacío para no cambiar"
+    />
+  </div>
+
+  <div class="col-span-1 sm:col-span-2">
     <label class="block mb-2 font-semibold">Rol</label>
     <select class="select select-bordered text-black w-full" formControlName="roles">
       <option value="user">Usuario</option>
@@ -41,8 +56,8 @@
     </ng-multiselect-dropdown>
   </div>
 
-  <div class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-4 mt-6">
-    <button type="submit" class="btn btn-primary flex-1" [disabled]="form.invalid">
+  <div class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-4 mt-6 mb-6">
+    <button type="submit" class="btn btn-success flex-1" [disabled]="form.invalid">
       Guardar cambios
       <span class="loading loading-spinner loading-sm" *ngIf="loading"></span>
     </button>

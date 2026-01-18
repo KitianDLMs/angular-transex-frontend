@@ -1,22 +1,43 @@
-<div class="bg-slate-300 overflow-y-scroll w-screen h-screen antialiased text-slate-800 selection:bg-blue-600 selection:text-white">
-  <div class="flex flex-col relative w-screen">
+<div
+  class="bg-slate-300 w-screen h-screen antialiased text-slate-800 selection:bg-blue-600 selection:text-white overflow-hidden"
+>
+  <div
+    class="md:hidden flex items-center justify-between px-4 py-3 bg-gray-100 border-b border-gray-300"
+  >
+    <button class="btn btn-ghost text-xl" (click)="menuOpen = true">☰</button>
+    <span class="font-bold">Transex Administrador</span>
+  </div>
+
+  <div class="flex w-full h-[calc(100vh-56px)] md:h-screen">    
     <div
-      id="menu"
-      class="bg-gray-100 min-h-screen z-10 text-gray-800 w-64 fixed left-0 h-screen overflow-y-scroll border-r border-gray-300"
-    >
-      <div id="logo" class="my-4 px-6 text-center">
+      *ngIf="menuOpen"
+      class="fixed inset-0 bg-black/40 z-30 md:hidden"
+      (click)="menuOpen = false"
+    ></div>
+    
+    <aside
+      class="
+        bg-gray-100 text-gray-800 w-64 border-r border-gray-300
+        fixed md:sticky top-0
+        h-full md:h-screen
+        z-40 md:z-auto
+        transform transition-transform duration-300
+        -translate-x-full md:translate-x-0
+      "
+      [class.translate-x-0]="menuOpen"
+    >      
+      <div class="my-4 px-6 text-center">
         <img
           src="assets/images/logoHORMIGONES2.png"
           alt="Logo Hormigones"
           class="w-32 sm:w-40 md:w-48 mx-auto mb-2 cursor-pointer"
           routerLink="/store-front"
+          (click)="menuOpen = false"
         />
-
-        <p class="text-black text-cl">Transex Administrador</p>
+        <p class="text-black">Transex Administrador</p>
       </div>
-
-      <div id="profile" class="px-6 py-8 border-b border-slate-300 bg-slate-100 rounded-lg">
-
+      
+      <div class="px-6 py-6 border-b border-slate-300 bg-slate-100">
         <div class="flex items-center space-x-3">
           <div class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-300">
             <svg
@@ -36,84 +57,22 @@
           </div>
 
           <div>
-            <p class="text-slate-900 font-bold text-sm md:text-base leading-tight">
+            <p class="text-slate-900 font-bold text-sm md:text-base">
               {{ user()?.fullName }}
             </p>
             <p class="text-black text-xs">Administrador</p>
           </div>
         </div>
       </div>
-
-      <div id="nav" class="w-full px-6">
-        <!-- <a
-          routerLink="/admin/customer"
-          class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150"
-        >
-          <div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              class="w-6 h-6 text-white"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"
-              />
-            </svg>
-          </div>
-          <div class="flex flex-col">
-            <span class="text-lg font-bold leading-5 text-white"
-              >Dashboard</span
-            >
-            <span class="text-sm text-white/50 hidden md:block"
-              >Data Overview</span
-            >
-          </div>
-        </a> -->
-
-        
-        <!-- <a
-          routerLink="/admin/obras"
-          routerLinkActive="bg-gray-400"
-          class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150"
-        >
-          <div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              class="w-6 h-6"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"
-              />
-            </svg>
-          </div>
-          <div class="flex flex-col">
-            <span class="text-lg text-slate-300 font-bold leading-5"
-              >Obras</span
-            >
-            <span class="text-sm text-slate-500 hidden md:block"
-              >Listado de obras</span
-            >
-          </div>          
-        </a> -->                      
-        
-         <a
+      
+      <nav class="px-6">
+        <a
           routerLink="/admin/users"
-          routerLinkActive="bg-gray-400"
-          class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150"
+          routerLinkActive="bg-gray-300"
+          (click)="menuOpen = false"
+          class="flex items-center space-x-3 py-3 border-b border-slate-300 hover:bg-gray-200 transition"
         >
-          <div>
-            <svg
+          <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -127,51 +86,14 @@
                 d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"
               />
             </svg>
-          </div>
-          <div class="flex flex-col">
-            <span class="text-lg text-black font-bold leading-5"
-              >Usuarios</span
-            >
-            <span class="text-sm text-black hidden md:block"
-              >Listado de Usuarios</span
-            >
-          </div>          
-        </a>  
 
-
-        <!-- <a
-          routerLink="/admin/products"
-          routerLinkActive="bg-gray-400"
-          class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150"
-        >
           <div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              class="w-6 h-6"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"
-              />
-            </svg>
+            <p class="font-bold">Usuarios</p>
+            <p class="text-sm hidden md:block">Listado de Usuarios</p>
           </div>
-          <div class="flex flex-col">
-            <span class="text-lg text-slate-300 font-bold leading-5"
-              >Productos</span
-            >
-            <span class="text-sm text-slate-500 hidden md:block"
-              >Listado de productos</span
-            >
-          </div>          
-        </a> -->
-        <!-- Menu Item End -->
+        </a>
 
-        <div class="divider my-2"></div>
+        <div class="my-4 border-t border-slate-300"></div>
 
         <button
           class="btn btn-ghost text-accent w-full"
@@ -179,11 +101,12 @@
         >
           Cerrar sesión
         </button>
-      </div>
+      </nav>
+    </aside>    
+   <main class="flex-1 bg-slate-200 overflow-y-auto">
+    <div class="px-4 py-5">
+      <router-outlet></router-outlet>
     </div>
-  </div>
-
-  <div class="flex-1 ml-64 pt-5 px-5">
-    <router-outlet />
+  </main>
   </div>
 </div>
