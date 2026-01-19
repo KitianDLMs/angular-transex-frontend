@@ -122,7 +122,7 @@ export class HomePageComponent implements OnInit {
 
         // Convertimos el único OC a un array usando el formato del front
         const ordenDetalle = {
-          ordenCompra: p.ordenCompra,
+          ordencompra: p.ordencompra,
           respaldado: Number(p.respaldado),
           utilizado: Number(p.utilizado),
           saldo: Number(p.saldo),
@@ -130,7 +130,7 @@ export class HomePageComponent implements OnInit {
 
         // Buscamos si ya existe esa orden
         const existing = map[p.codigo].ordenes.find(
-          x => x.ordenCompra === ordenDetalle.ordenCompra
+          x => x.ordencompra === ordenDetalle.ordencompra
         );
 
         if (existing) {

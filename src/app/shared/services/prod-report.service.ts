@@ -5,7 +5,7 @@ import { tap, catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment.development';
 
 export interface OrderDetail {
-  ordenCompra: string | null;
+  ordencompra: string | null;
   respaldado: number;
   utilizado: number;
   saldo: number;
@@ -16,7 +16,7 @@ export interface ProductReport {
   respaldado: number;
   utilizado: number;
   saldo: number;
-  ordenCompra?: any; 
+  ordencompra?: any; 
   ordenes: OrderDetail[];
 }
 
