@@ -5,7 +5,7 @@ import { tap, catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment.development';
 
 export interface OrderDetail {
-  ordenCompra: string;
+  ordenCompra: string | null;
   respaldado: number;
   utilizado: number;
   saldo: number;
@@ -13,9 +13,10 @@ export interface OrderDetail {
 export interface ProductReport {
   codigo: string;
   producto: string;
-  totalRespaldado: number;
-  totalUtilizado: number;
+  respaldado: number;
+  utilizado: number;
   saldo: number;
+  ordenCompra?: any; 
   ordenes: OrderDetail[];
 }
 
@@ -51,9 +52,13 @@ export class ProdReportService {
     if (filters.dateFrom) params = params.set('dateFrom', filters.dateFrom);
     if (filters.dateTo) params = params.set('dateTo', filters.dateTo);
     if (filters.search) params = params.set('search', filters.search);
-
+    console.log(filters);    
     return this.http.get<any>(`${this.baseUrl}/product-report`, { params }).pipe(
-      tap((resp) => this.reportCache.set(key, resp)),
+      // tap((resp) => this.reportCache.set(key, resp)),
+      tap((resp) => {
+        console.log('Respuesta de la API:', resp); // <--- Aquí ves lo que llega
+        this.reportCache.set(key, resp);
+      }),
       catchError((err) => {
         console.error('Error fetching product report', err);
         return of({ page: 1, limit: 10, total: 0, totalPages: 1, data: [] });

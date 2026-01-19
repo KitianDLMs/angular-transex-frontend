@@ -107,29 +107,52 @@ export class HomePageComponent implements OnInit {
         const map: Record<string, ProductReport> = {};
 
         (resp.data as ProductReport[]).forEach(p => {
-          if (!map[p.codigo]) {
-            map[p.codigo] = {
-              ...p,
-              ordenes: []
-            };
-          }
 
-          p.ordenes.forEach(o => {
-            const existing = map[p.codigo].ordenes.find(x => x.ordenCompra === o.ordenCompra);
-            if (existing) {
-              existing.respaldado += o.respaldado;
-              existing.utilizado += o.utilizado;
-              existing.saldo = existing.respaldado - existing.utilizado;
-            } else {
-              map[p.codigo].ordenes.push({ ...o });
-            }
-          });
+        // Si no existe, lo creamos
+        if (!map[p.codigo]) {
+          map[p.codigo] = {
+            codigo: p.codigo,
+            producto: p.producto,
+            respaldado: 0,
+            utilizado: 0,
+            saldo: 0,
+            ordenes: []
+          };
+        }
 
-          map[p.codigo].totalRespaldado = map[p.codigo].ordenes.reduce((sum, x) => sum + x.respaldado, 0);
-          map[p.codigo].totalUtilizado = map[p.codigo].ordenes.reduce((sum, x) => sum + x.utilizado, 0);
-          map[p.codigo].saldo = map[p.codigo].totalRespaldado - map[p.codigo].totalUtilizado;
-        });
+        // Convertimos el único OC a un array usando el formato del front
+        const ordenDetalle = {
+          ordenCompra: p.ordenCompra,
+          respaldado: Number(p.respaldado),
+          utilizado: Number(p.utilizado),
+          saldo: Number(p.saldo),
+        };
 
+        // Buscamos si ya existe esa orden
+        const existing = map[p.codigo].ordenes.find(
+          x => x.ordenCompra === ordenDetalle.ordenCompra
+        );
+
+        if (existing) {
+          existing.respaldado += ordenDetalle.respaldado;
+          existing.utilizado += ordenDetalle.utilizado;
+          existing.saldo = existing.respaldado - existing.utilizado;
+        } else {
+          map[p.codigo].ordenes.push(ordenDetalle);
+        }
+
+        // Totales por producto
+        map[p.codigo].respaldado = map[p.codigo].ordenes
+          .reduce((sum, x) => sum + x.respaldado, 0);
+
+        map[p.codigo].utilizado = map[p.codigo].ordenes
+          .reduce((sum, x) => sum + x.utilizado, 0);
+
+        map[p.codigo].saldo =
+          map[p.codigo].respaldado -
+          map[p.codigo].utilizado;
+
+      });
         this.products = Object.values(map);
         this.page = Number(resp.page);
         this.totalPages = Number(resp.totalPages);
