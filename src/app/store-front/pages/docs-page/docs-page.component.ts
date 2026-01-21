@@ -50,22 +50,76 @@ export class DocsPageComponent implements OnInit {
   selectedProject: string = '';
   filterDocNumber: string | undefined;
 
+  userCustCodes: string[] = []; 
+  selectedCustCode: string | null = null;
+  customersData: { [code: string]: { name: string, addr: string } } = {};
+
+  onCustomerChange() {
+    if (!this.selectedCustCode) return;
+
+    const data = this.customersData[this.selectedCustCode];
+    if (data) {
+      this.customerName = data.name;
+      this.customerAddress = data.addr;
+    }
+
+    this.userCustCode = this.selectedCustCode;
+    this.loadProjectsByCustomer();
+    this.onSearch(true);
+  }
 
   ngOnInit(): void {
     const user = this.authService.user();
-    this.userCustCode = user?.cust_code ?? null;
+    if (!user) return;
 
-    if (!this.userCustCode) {
-      return;
+    this.userCustCodes = user?.cust_codes || [];
+
+    if (this.userCustCodes.length === 0) {
+      // Usuario final sin cust_codes
+      const singleCustCode = user?.cust_code || null;
+      if (singleCustCode) this.userCustCodes = [singleCustCode];
     }
 
-    this.custService.getCustByCode(this.userCustCode).subscribe(cust => {
-      this.customerName = cust.name ?? 'Sin nombre';
-      this.customerAddress = cust.addr_line_1 ?? 'Sin dirección';
-    });
+    // Seleccionamos el primer cust_code por defecto
+    this.selectedCustCode = this.userCustCodes[0] || null;
+    this.userCustCode = this.selectedCustCode;
 
-    this.loadProjectsByCustomer();
-    this.onSearch(true);
+    if (!this.selectedCustCode) return;
+
+    if (this.userCustCodes.length === 1) {
+      // Usuario normal: traemos datos directo
+      this.custService.getCustByCode(this.selectedCustCode).subscribe(cust => {
+        this.customersData[this.selectedCustCode!] = {
+          name: cust.name ?? 'Sin nombre',
+          addr: cust.addr_line_1 ?? 'Sin dirección'
+        };
+
+        this.customerName = cust.name ?? 'Sin nombre';
+        this.customerAddress = cust.addr_line_1 ?? 'Sin dirección';
+
+        this.loadProjectsByCustomer();
+        this.onSearch(true);
+      });
+    } else {
+      // Admin con varios cust_codes
+      forkJoin(this.userCustCodes.map(code => this.custService.getCustByCode(code)))
+        .subscribe(results => {
+          results.forEach((cust, i) => {
+            const code = this.userCustCodes[i];
+            this.customersData[code] = {
+              name: cust.name || 'Sin nombre',
+              addr: cust.addr_line_1 || 'Sin dirección'
+            };
+          });
+
+          const data = this.customersData[this.selectedCustCode!];
+          this.customerName = data.name;
+          this.customerAddress = data.addr;
+
+          this.loadProjectsByCustomer();
+          this.onSearch(true);
+        });
+    }
   }
 
   onDocNumberInput(value: string) {
@@ -100,8 +154,7 @@ export class DocsPageComponent implements OnInit {
         const map = new Map<string, { proj_code: string; proj_name: string }>();
 
         projects.forEach(p => {
-          if (!p.projcode || !p.projname) return;
-
+          if (!p.projcode || !p.projname) return;                 
           const code = p.projcode.trim();
           const name = p.projname.trim();
 

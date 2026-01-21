@@ -9,6 +9,8 @@ import {
   ProdReportService,
   ProductReport
 } from '@shared/services/prod-report.service';
+import { Cust } from '@dashboard/cust/interfaces/cust.interface';
+import { forkJoin, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-home-page',
@@ -44,15 +46,66 @@ export class HomePageComponent implements OnInit {
   expandedGroup: string | null = null;
   today = new Date();
   currentYear = new Date().getFullYear();
+  
+  userCustCodes: string[] = [];
+  selectedCustCode: string | null = null;
+  customersData: { [code: string]: { name: string; addr: string } } = {};
 
   ngOnInit() {
     this.currentUser = this.authService.user();
-    if (!this.currentUser) return;    
+    if (!this.currentUser) return;
 
-    this.userCustCode = this.currentUser.cust_code;
-    if (!this.userCustCode) return;
+    this.userCustCodes = this.currentUser.cust_codes || [];
 
-    this.loadCustomer();
+    if (this.userCustCodes.length <= 1) {
+      this.selectedCustCode = this.userCustCodes[0] || this.currentUser.cust_code;
+      this.userCustCode = this.selectedCustCode;
+
+      this.custService.getCustByCode(this.userCustCode!).subscribe(cust => {
+        this.customersData[this.userCustCode!] = {
+          name: cust.name || 'Sin nombre',
+          addr: cust.addr_line_1 || 'Sin dirección'
+        };
+        this.loadCustomerData(this.userCustCode!);
+      });
+    } else {
+      this.selectedCustCode = this.userCustCodes[0];
+      this.userCustCode = this.selectedCustCode;
+
+      const observables = this.userCustCodes.map(code =>
+        this.custService.getCustByCode(code)
+      );
+
+      forkJoin(observables).subscribe(results => {
+        results.forEach((cust, i) => {
+          const code = this.userCustCodes[i];
+          this.customersData[code] = {
+            name: cust.name || 'Sin nombre',
+            addr: cust.addr_line_1 || 'Sin dirección'
+          };
+        });
+
+        this.loadCustomerData(this.selectedCustCode!);
+      });
+    }
+  }
+
+  onCustomerChange() {
+    if (!this.selectedCustCode) return;
+    this.loadCustomerData(this.selectedCustCode);
+  }
+
+  loadCustomerData(custCode: string) {
+    this.userCustCode = custCode;
+
+    const data = this.customersData[custCode];
+    if (data) {
+      this.customerName = data.name;
+      this.customerAddress = data.addr;
+    } else {
+      this.loadCustomer(); // para usuario final con un solo cliente
+    }
+
     this.loadProjects();
     this.loadProducts();
   }
