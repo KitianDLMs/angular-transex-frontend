@@ -16,8 +16,7 @@
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M12 12a4 4 0 100-8 4 4 0 000 8z"/>
     </svg>
-
-    <!-- ✅ Select si hay más de un cliente -->
+    
     <ng-container *ngIf="userCustCodes.length > 1; else singleCustomer">
       <select [(ngModel)]="selectedCustCode" (change)="onCustomerChange()"
               class="select select-bordered bg-gray-50">
@@ -95,7 +94,10 @@
 
           <tr class="border-t bg-white hover:bg-cyan-50 cursor-pointer font-semibold"
               (click)="toggleGroup(p.codigo)">
-            <td class="p-3">{{ p.producto }}</td>
+            <td class="p-3 max-w-[160px] sm:max-w-none
+                overflow-x-auto
+                whitespace-nowrap
+                scrollbar-thin">{{ p.producto }}</td>
             <td class="p-3">{{ p.codigo }}</td>
             <td class="p-3">—</td>
             <td class="p-3">{{ p.respaldado }}</td>

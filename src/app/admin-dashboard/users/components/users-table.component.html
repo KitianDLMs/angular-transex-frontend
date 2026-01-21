@@ -12,10 +12,19 @@
 
     <tbody>
       <tr *ngFor="let u of users; trackBy: trackByUserId">
-        <td class="font-bold">{{ u.id }}</td>
+        <td class="font-bold max-w-[160px] sm:max-w-none
+                overflow-x-auto
+                whitespace-nowrap
+                scrollbar-thin">{{ u.id }}</td>
 
-        <td>{{ u.email }}</td>
-        <td>{{ u.fullName }}</td>
+        <td class="max-w-[160px] sm:max-w-none
+                overflow-x-auto
+                whitespace-nowrap
+                scrollbar-thin">{{ u.email }}</td>
+        <td class="max-w-[160px] sm:max-w-none
+                overflow-x-auto
+                whitespace-nowrap
+                scrollbar-thin">{{ u.fullName }}</td>
 
         <td>
           <span
