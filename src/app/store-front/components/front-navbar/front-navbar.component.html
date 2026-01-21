@@ -168,8 +168,9 @@
     @if (authService.authStatus() === 'authenticated') {
     <span class="text-sm text-black hidden md:inline">
       Bienvenido {{ authService.user()?.fullName }}
-    </span>
-   <div class="relative group">
+    </span>    
+    @if(!authService.isAdmin()) {
+    <div class="relative group">
       <button class="btn btn-circle btn-ghost">
         <i class="fa-solid fa-user"></i>
       </button>
@@ -182,7 +183,7 @@
         <p>{{ authService.user()?.fullName || 'Sin nombre' }}</p>
       </div>
     </div>
-
+    }
     <button
       class="btn btn-sm flex items-center gap-2
             bg-transparent text-gray-700 border border-gray-300
