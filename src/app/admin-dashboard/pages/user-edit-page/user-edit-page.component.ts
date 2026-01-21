@@ -1,6 +1,7 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import {
   FormBuilder,
   FormGroup,
@@ -9,9 +10,12 @@ import {
   Validators
 } from '@angular/forms';
 
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+
 import { UserService } from '@dashboard/users/services/user.service';
 import { ProjService } from '@shared/services/proj.service';
-import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
+import { CustService } from '@dashboard/cust/services/cust.service';
 
 @Component({
   selector: 'app-user-edit-page',
@@ -21,10 +25,10 @@ import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
     FormsModule,
     ReactiveFormsModule,
     RouterLink,
-    NgMultiSelectDropDownModule
+    MatSelectModule,
+    MatFormFieldModule
   ],
-  templateUrl: './user-edit-page.component.html',
-  encapsulation: ViewEncapsulation.None
+  templateUrl: './user-edit-page.component.html'
 })
 export class UserEditPageComponent implements OnInit {
 
@@ -32,143 +36,204 @@ export class UserEditPageComponent implements OnInit {
   loading = false;
   error = '';
   userId!: string;
+
   customerName = '';
-  projects: any[] = [];
-  dropdownSettings: any;
-  
+  custCodeNames: Record<string, string> = {};
+
+  projects: { code: string; name: string }[] = [];
+
   constructor(
     private route: ActivatedRoute,
     private fb: FormBuilder,
     private userService: UserService,
     private projService: ProjService,
+    private custService: CustService,
     private router: Router
   ) {}
-  
+
   ngOnInit(): void {
-    
-    // 🔹 Configuración correcta del dropdown
-    this.dropdownSettings = {
-      singleSelection: false,
-      idField: 'projcode',
-      textField: 'projname',
-      selectAllText: 'Seleccionar todos',
-      unSelectAllText: 'Deseleccionar todos',
-      itemsShowLimit: 30,
-      allowSearchFilter: true,
-      enableCheckAll: true,
-      badgeShowLimit: 6
-    };
-    
+
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{1,15}$/;
-    // 🔹 Formulario
+
     this.form = this.fb.group({
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       roles: ['', Validators.required],
+
       cust_code: [{ value: '', disabled: true }],
+      cust_codes: [{ value: [], disabled: true }],
+      custCodeInput: [{ value: '', disabled: true }],
+
       projects: [[]],
-      password: [
-        '',
-        [
-          Validators.maxLength(15),
-          Validators.pattern(passwordRegex)
-        ]
-      ]
+      password: ['', [Validators.maxLength(15), Validators.pattern(passwordRegex)]]
+    });
+
+    this.form.get('roles')?.valueChanges.subscribe(role =>
+      this.toggleCustCodesByRole(role)
+    );
+
+    // 🔥 CUANDO ADMIN AGREGA / QUITA CLIENTES
+    this.form.get('cust_codes')?.valueChanges.subscribe(codes => {
+      if (codes?.length) {
+        this.loadProjectsByCustCodes(codes, this.form.get('projects')?.value || []);
+      } else {
+        this.projects = [];
+        this.form.get('projects')?.setValue([]);
+      }
     });
 
     this.userId = this.route.snapshot.paramMap.get('id')!;
     this.loadUser();
   }
 
+  get sortedProjects() {
+    const selectedProjects = this.form.get('projects')?.value || [];
+    return this.projects.slice().sort((a, b) => {
+      const aSelected = selectedProjects.includes(a.code) ? 0 : 1;
+      const bSelected = selectedProjects.includes(b.code) ? 0 : 1;
+      return aSelected - bSelected;
+    });
+  }
+
   loadUser(): void {
     this.loading = true;
 
     this.userService.getUserById(this.userId).subscribe({
-      next: (user) => {
+      next: user => {
         this.loading = false;
+
+        const role = Array.isArray(user.roles) ? user.roles[0] : user.roles;
 
         this.form.patchValue({
           fullName: user.fullName,
           email: user.email,
-          roles: Array.isArray(user.roles) ? user.roles.join(',') : user.roles,
+          roles: role,
           cust_code: user.cust_code
         });
+        
+        this.customerName = user.cust?.name ?? '';
+        this.toggleCustCodesByRole(role);
+            
+        if (user.cust_codes?.length) {
+          this.form.get('cust_codes')?.setValue(user.cust_codes);
 
-        this.customerName = user.cust?.name ?? user.cust_code ?? 'Sin cliente';
-
-        const userProjectCodes: string[] = Array.isArray(user.projects)
-          ? user.projects.map((p: any) =>
-              typeof p === 'string' ? p : p.proj_code
-            )
-          : [];
-
-        if (!user.cust_code) return;
-
-        this.projService.getByCust(user.cust_code).subscribe({
-          next: (projects: any[]) => {
-
-            // 🔥 NORMALIZACIÓN CLAVE (quita el proj_code del texto)
-            const allProjects = (projects || []).map(p => {
-              const rawName = p.projname ?? p.proj_name ?? '';
-
-              return {
-                projcode: p.projcode ?? p.proj_code,
-                projname: rawName.includes('|')
-                  ? rawName.split('|').slice(1).join('|').trim()
-                  : rawName
-              };
+          user.cust_codes.forEach((code: string) => {
+            this.custService.getCustByCode(code).subscribe(cust => {
+              if (cust) this.custCodeNames[code] = cust.name;
             });
+          });
+        }
 
-            const selected = allProjects.filter(p =>
-              userProjectCodes.includes(p.projcode)
-            );
+        const selectedProjects =
+          user.projects?.map((p: any) =>
+            typeof p === 'string' ? p : p.proj_code
+          ) || [];
 
-            const notSelected = allProjects.filter(p =>
-              !userProjectCodes.includes(p.projcode)
-            );
+        if (role === 'user' && user.cust_code) {
+          this.loadProjectsBySingleCust(user.cust_code, selectedProjects);
+        }
 
-            this.projects = [...selected, ...notSelected];
-            this.form.get('projects')!.setValue(selected);
-          },
-          error: () => {
-            this.projects = [];
-            console.error('Error cargando proyectos del cliente');
-          }
-        });
-      },
-      error: () => {
-        this.loading = false;
-        this.error = 'Error cargando el usuario';
+        if ((role === 'admin' || role === 'super-user') && user.cust_codes?.length) {
+          this.loadProjectsByCustCodes(user.cust_codes, selectedProjects);
+        }
       }
     });
+  }
+
+  loadProjectsBySingleCust(custCode: string, selected: string[]) {
+    this.projService.getByCust(custCode).subscribe(projects => {
+      this.projects = projects.map(p => ({
+        code: p.projcode,
+        name: p.projname.split('|').pop()?.trim()
+      }));
+      this.form.get('projects')?.setValue(selected);
+    });
+  }
+
+  loadProjectsByCustCodes(codes: string[], selected: string[]) {
+    forkJoin(codes.map(code => this.projService.getByCust(code)))
+      .subscribe(results => {
+
+        const map = new Map<string, any>();
+
+        results.flat().forEach(p => {
+          map.set(p.projcode, {
+            code: p.projcode,
+            name: p.projname.split('|').pop()?.trim()
+          });
+        });
+
+        this.projects = Array.from(map.values());
+        this.form.get('projects')?.setValue(selected);
+      });
+  }
+
+  toggleCustCodesByRole(role: string) {
+    const one = this.form.get('cust_code');
+    const many = this.form.get('cust_codes');
+    const input = this.form.get('custCodeInput');
+
+    if (role === 'user') {
+      one?.enable();
+      many?.disable(); many?.reset();
+      input?.disable(); input?.reset();
+    } else {
+      many?.enable();
+      input?.enable();
+      one?.disable(); one?.reset();
+    }
+  }
+
+  checkCustCode() {
+    const code = this.form.get('cust_code')?.value?.trim();
+    if (!code) return;
+
+    this.custService.getCustByCode(code).subscribe(cust => {
+      this.customerName = cust?.name ?? '';
+    });
+  }
+
+  addCustCode() {
+    const code = this.form.get('custCodeInput')?.value?.trim();
+    if (!code) return;
+
+    const current = this.form.get('cust_codes')?.value || [];
+    if (current.includes(code)) return;
+
+    this.custService.getCustByCode(code).subscribe(cust => {
+      if (!cust) return;
+      this.custCodeNames[code] = cust.name;
+      this.form.get('cust_codes')?.setValue([...current, code]);
+      this.form.get('custCodeInput')?.reset();
+    });
+  }
+
+  removeCustCode(code: string) {
+    delete this.custCodeNames[code];
+    this.form.get('cust_codes')?.setValue(
+      this.form.get('cust_codes')?.value.filter((c: string) => c !== code)
+    );
   }
 
   save(): void {
     if (this.form.invalid) return;
 
-    const formValue = this.form.value;
+    const raw = this.form.getRawValue();
 
-    const updateData: any = {
-      fullName: formValue.fullName,
-      email: formValue.email,
-      roles: formValue.roles.split(',').map((r: string) => r.trim()),
-      projects: formValue.projects
-        ? formValue.projects.map((p: any) => p.projcode)
-        : []
+    const payload: any = {
+      fullName: raw.fullName,
+      email: raw.email,
+      roles: [raw.roles],
+      projects: raw.projects
     };
 
-    if (formValue.password && formValue.password.trim().length > 0) {
-      updateData.password = formValue.password;
-    }
+    if (raw.roles === 'user') payload.cust_code = raw.cust_code;
+    else payload.cust_codes = raw.cust_codes;
 
-    this.userService.updateUser(this.userId, updateData).subscribe({
-      next: () => {
-        alert('Usuario actualizado');
-        this.router.navigate(['/admin/users']);
-      },
-      error: () => {
-        this.error = 'Error actualizando el usuario';
-      }
+    if (raw.password) payload.password = raw.password;
+
+    this.userService.updateUser(this.userId, payload).subscribe({
+      next: () => this.router.navigate(['/admin/users'])
     });
   }
 }

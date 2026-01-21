@@ -1,0 +1,23 @@
+/* FIX ng-multiselect-dropdown con Tailwind / DaisyUI
+ng-multiselect-dropdown {
+  display: block !important;
+  width: 100%;
+}
+
+.multiselect-dropdown {
+  display: block !important;
+}
+
+.multiselect-dropdown .dropdown-btn {
+  display: flex !important;
+  align-items: center;
+  min-height: 42px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+.multiselect-dropdown .dropdown-list {
+  z-index: 9999 !important;
+} */

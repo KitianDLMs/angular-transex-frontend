@@ -7,8 +7,7 @@ import { CustService } from '@dashboard/cust/services/cust.service';
 import { ProjService } from '@shared/services/proj.service';
 import {
   ProdReportService,
-  ProductReport,
-  OrderDetail
+  ProductReport
 } from '@shared/services/prod-report.service';
 
 @Component({
@@ -108,7 +107,6 @@ export class HomePageComponent implements OnInit {
 
         (resp.data as ProductReport[]).forEach(p => {
 
-        // Si no existe, lo creamos
         if (!map[p.codigo]) {
           map[p.codigo] = {
             codigo: p.codigo,
@@ -120,7 +118,6 @@ export class HomePageComponent implements OnInit {
           };
         }
 
-        // Convertimos el único OC a un array usando el formato del front
         const ordenDetalle = {
           ordencompra: p.ordencompra,
           respaldado: Number(p.respaldado),
@@ -128,7 +125,6 @@ export class HomePageComponent implements OnInit {
           saldo: Number(p.saldo),
         };
 
-        // Buscamos si ya existe esa orden
         const existing = map[p.codigo].ordenes.find(
           x => x.ordencompra === ordenDetalle.ordencompra
         );
@@ -141,7 +137,6 @@ export class HomePageComponent implements OnInit {
           map[p.codigo].ordenes.push(ordenDetalle);
         }
 
-        // Totales por producto
         map[p.codigo].respaldado = map[p.codigo].ordenes
           .reduce((sum, x) => sum + x.respaldado, 0);
 

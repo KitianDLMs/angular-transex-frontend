@@ -52,11 +52,8 @@ export class ProdReportService {
     if (filters.dateFrom) params = params.set('dateFrom', filters.dateFrom);
     if (filters.dateTo) params = params.set('dateTo', filters.dateTo);
     if (filters.search) params = params.set('search', filters.search);
-    console.log(filters);    
     return this.http.get<any>(`${this.baseUrl}/product-report`, { params }).pipe(
-      // tap((resp) => this.reportCache.set(key, resp)),
       tap((resp) => {
-        console.log('Respuesta de la API:', resp); // <--- Aquí ves lo que llega
         this.reportCache.set(key, resp);
       }),
       catchError((err) => {

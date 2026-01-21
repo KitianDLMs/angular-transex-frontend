@@ -40,14 +40,14 @@ export class ProjService {
   }  
 
   getByCust(cust_code: string): Observable<any[]> {
-    const key = cust_code.trim();
-
+    const key = cust_code.trim();        
     if (this.projCache.has(key)) {
       return of(this.projCache.get(key)!);
-    }
-
+    }     
     return this.http.get<Proj[]>(`${this.baseUrl}/proj/by-cust/${key}`).pipe(
-      tap(list => this.projCache.set(key, list)),
+      tap(list => {
+        this.projCache.set(key, list)
+      }),
       catchError(err => {
         console.error('getByCust error', err);
         return of([]);
@@ -56,16 +56,12 @@ export class ProjService {
   }
 
   getOne(proj_code: string): Observable<Proj> {
-    console.log(this.baseUrl);
-    console.log(proj_code);
-    
     return this.http.get<Proj>(                       
       `${this.baseUrl}/proj/${proj_code}`
     );
   }
 
-  create(dto: Partial<Proj>): Observable<Proj> {
-    console.log('DTO que se enviará:', dto);
+  create(dto: Partial<Proj>): Observable<Proj> {    
     return this.http.post<Proj>(`${this.baseUrl}/proj`, dto, {
       headers: { 'Content-Type': 'application/json' }
     });
@@ -88,4 +84,11 @@ export class ProjService {
     this.projCache.delete(cust_code.trim());
     return this.getByCust(cust_code);
   }
+}
+
+export interface Project {
+  projcode?: string;
+  proj_code?: string;
+  projname?: string;
+  proj_name?: string;
 }

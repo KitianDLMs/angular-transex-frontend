@@ -52,14 +52,13 @@ export class OrdrPageComponent implements OnInit {
 
     if (!this.userCustCode) return;
 
-    // Cargar datos del cliente
     this.custService.getCustByCode(this.userCustCode).subscribe(cust => {
       this.customerName = cust.name;
       this.customerAddress = cust.addr_line_1 ?? null;
     });
 
     this.loadProjects();
-    this.loadOrders(); // ✅ Carga inicial de pedidos
+    this.loadOrders();
   }
 
   loadProjects() {

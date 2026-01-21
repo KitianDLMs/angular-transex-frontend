@@ -36,8 +36,7 @@ export class UserListPageComponent implements OnInit {
     this.loading = true;
     const user = this.authService.user();
     this.userService.getPaginatedUsers(page, this.limit).subscribe({
-      next: (resp) => {
-        console.log(resp);        
+      next: (resp) => {               
         this.users = resp.data;
         this.totalUsers = resp.totalItems;
         this.page = resp.page;

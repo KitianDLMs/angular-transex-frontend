@@ -1,68 +1,144 @@
 <h1 class="text-2xl font-bold mb-4">Editar Usuario</h1>
 
-<div *ngIf="loading">Cargando usuario...</div>
-<div *ngIf="error" class="text-red-600">{{ error }}</div>
+<form
+  [formGroup]="form"
+  (ngSubmit)="save()"
+  *ngIf="!loading"
+  class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+>
 
-<form [formGroup]="form" (ngSubmit)="save()" *ngIf="!loading" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-  <div class="col-span-1 sm:col-span-2">
-    <label class="block mb-2 font-semibold">Nombre completo</label>
-    <input formControlName="fullName" class="input input-bordered text-black w-full" />
+  <!-- NOMBRE -->
+  <div class="sm:col-span-2">
+    <label class="font-semibold">Nombre</label>
+    <input
+      formControlName="fullName"
+      class="input input-bordered w-full"
+    />
   </div>
 
-  <div class="col-span-1 sm:col-span-2">
-    <label class="block mb-2 font-semibold">Email</label>
-    <input formControlName="email" type="email" class="input input-bordered text-black w-full" />
+  <!-- EMAIL -->
+  <div class="sm:col-span-2">
+    <label class="font-semibold">Email</label>
+    <input
+      formControlName="email"
+      class="input input-bordered w-full"
+    />
   </div>
 
+  <!-- PASSWORD -->
   <div class="col-span-1 sm:col-span-2">
-  <label class="block mb-2 font-semibold">
-    Nueva contraseña
-    <span class="text-sm text-gray-500">(opcional)</span>
-  </label>
+    <label class="block mb-2 font-semibold">
+      Nueva contraseña
+      <span class="text-sm text-gray-500">(opcional)</span>
+    </label>
 
     <input
       type="password"
       formControlName="password"
       maxlength="15"
+      minlength="6"
       class="input input-bordered text-black w-full"
       placeholder="Dejar vacío para no cambiar"
     />
+
+    <p
+      *ngIf="
+        form.get('password')?.touched &&
+        form.get('password')?.invalid
+      "
+      class="text-red-600 text-sm mt-1"
+    >
+      La contraseña debe tener al menos una mayúscula y un número
+    </p>
   </div>
 
-  <div class="col-span-1 sm:col-span-2">
-    <label class="block mb-2 font-semibold">Rol</label>
-    <select class="select select-bordered text-black w-full" formControlName="roles">
+
+  <!-- ROL -->
+  <div class="sm:col-span-2">
+    <label class="font-semibold">Rol</label>
+    <select
+      formControlName="roles"
+      class="select select-bordered w-full"
+    >
       <option value="user">Usuario</option>
       <option value="admin">Administrador</option>
       <option value="super-user">Super Usuario</option>
     </select>
   </div>
 
-  <div class="col-span-1 sm:col-span-2">
-    <label class="block mb-2 font-semibold">Cliente asignado</label>
-    <input formControlName="cust_code" class="input input-bordered text-black w-full bg-gray-200" />
+  <!-- USER: CLIENTE ÚNICO -->
+  <div *ngIf="form.get('cust_code')?.enabled" class="sm:col-span-2">
+    <label class="font-semibold">Cliente</label>
+    <input
+      disable
+      formControlName="cust_code"
+      class="input input-bordered w-full"
+      (blur)="checkCustCode()"
+    />
+    <div class="text-sm text-gray-600">
+      {{ customerName }}
+    </div>
   </div>
 
-  <div class="col-span-1 sm:col-span-2" *ngIf="form && dropdownSettings">
-    <label class="block mb-2 font-semibold">Proyectos</label>
-    <ng-multiselect-dropdown
-      [settings]="dropdownSettings"
-      [data]="projects"               
-      [placeholder]="'Selecciona proyectos'"
-      formControlName="projects"
-      class="block w-full text-black"
-    >
-    </ng-multiselect-dropdown>
+  <!-- ADMIN / SUPER: CLIENTES MÚLTIPLES -->
+  <div *ngIf="form.get('cust_codes')?.enabled" class="sm:col-span-2">
+    <label class="font-semibold">Agregar Clientes</label>
+
+    <div class="flex gap-2">
+      <input
+        formControlName="custCodeInput"
+        class="input input-bordered flex-1"
+        placeholder="Código cliente"
+      />
+      <button
+        type="button"
+        class="btn btn-outline"
+        (click)="addCustCode()"
+      >
+        Agregar
+      </button>
+    </div>
+
+    <div class="flex flex-wrap gap-2 mt-3">
+      <span
+        *ngFor="let code of form.get('cust_codes')?.value"
+        class="bg-blue-600 text-white px-3 py-1 rounded-full"
+      >
+        {{ code }} – {{ custCodeNames[code] }}
+        <button
+          type="button"
+          class="ml-2"
+          (click)="removeCustCode(code)"
+        >
+          ✕
+        </button>
+      </span>
+    </div>
   </div>
 
-  <div class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-4 mt-6 mb-6">
-    <button type="submit" class="btn btn-success flex-1" [disabled]="form.invalid">
-      Guardar cambios
-      <span class="loading loading-spinner loading-sm" *ngIf="loading"></span>
+  <!-- 🔥 PROYECTOS (USER + ADMIN) -->
+  <div *ngIf="projects.length > 0" class="sm:col-span-2">
+    <mat-form-field appearance="fill" class="w-full mt-4">
+      <mat-label>Proyectos</mat-label>
+      <mat-select formControlName="projects" multiple>
+        <mat-option *ngFor="let p of sortedProjects" [value]="p.code">
+          {{ p.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- BOTONES -->
+  <div class="sm:col-span-2 flex gap-4 mt-6">
+    <button class="btn btn-success flex-1">
+      Guardar
     </button>
-
-    <a routerLink="/admin/users" class="btn btn-secondary flex-1">Cancelar</a>
+    <a
+      routerLink="/admin/users"
+      class="btn btn-secondary flex-1"
+    >
+      Cancelar
+    </a>
   </div>
 
 </form>
