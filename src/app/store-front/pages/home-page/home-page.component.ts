@@ -10,7 +10,7 @@ import {
   ProductReport
 } from '@shared/services/prod-report.service';
 import { Cust } from '@dashboard/cust/interfaces/cust.interface';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin, map, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-home-page',
@@ -56,9 +56,11 @@ export class HomePageComponent implements OnInit {
     if (!this.currentUser) return;
 
     this.userCustCodes = this.currentUser.cust_codes || [];
-
+    
     if (this.userCustCodes.length <= 1) {
-      this.selectedCustCode = this.userCustCodes[0] || this.currentUser.cust_code;
+      this.selectedCustCode =
+        this.userCustCodes[0] || this.currentUser.cust_code;
+
       this.userCustCode = this.selectedCustCode;
 
       this.custService.getCustByCode(this.userCustCode!).subscribe(cust => {
@@ -66,26 +68,37 @@ export class HomePageComponent implements OnInit {
           name: cust.name || 'Sin nombre',
           addr: cust.addr_line_1 || 'Sin dirección'
         };
+
         this.loadCustomerData(this.userCustCode!);
       });
-    } else {
-      this.selectedCustCode = this.userCustCodes[0];
-      this.userCustCode = this.selectedCustCode;
-
+    } 
+    else {
       const observables = this.userCustCodes.map(code =>
-        this.custService.getCustByCode(code)
-      );
-
-      forkJoin(observables).subscribe(results => {
-        results.forEach((cust, i) => {
-          const code = this.userCustCodes[i];
-          this.customersData[code] = {
+        this.custService.getCustByCode(code).pipe(
+          map(cust => ({
+            code,
             name: cust.name || 'Sin nombre',
             addr: cust.addr_line_1 || 'Sin dirección'
-          };
-        });
+          }))
+        )
+      );
 
-        this.loadCustomerData(this.selectedCustCode!);
+      forkJoin(observables).subscribe(customers => {        
+        customers.sort((a, b) =>
+          a.name.toUpperCase().localeCompare(b.name.toUpperCase())
+        );        
+        this.userCustCodes = customers.map(c => c.code);
+
+        customers.forEach(c => {
+          this.customersData[c.code] = {
+            name: c.name,
+            addr: c.addr
+          };
+        });        
+        this.selectedCustCode = this.userCustCodes[0];
+        this.userCustCode = this.selectedCustCode;
+
+        this.loadCustomerData(this.userCustCode!);
       });
     }
   }
@@ -103,7 +116,7 @@ export class HomePageComponent implements OnInit {
       this.customerName = data.name;
       this.customerAddress = data.addr;
     } else {
-      this.loadCustomer(); // para usuario final con un solo cliente
+      this.loadCustomer();
     }
 
     this.loadProjects();

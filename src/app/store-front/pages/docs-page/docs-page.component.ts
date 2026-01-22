@@ -71,48 +71,48 @@ export class DocsPageComponent implements OnInit {
   ngOnInit(): void {
     const user = this.authService.user();
     if (!user) return;
-
     this.userCustCodes = user?.cust_codes || [];
-
-    if (this.userCustCodes.length === 0) {
-      // Usuario final sin cust_codes
+    if (this.userCustCodes.length === 0) {      
       const singleCustCode = user?.cust_code || null;
       if (singleCustCode) this.userCustCodes = [singleCustCode];
-    }
-
-    // Seleccionamos el primer cust_code por defecto
+    }    
     this.selectedCustCode = this.userCustCodes[0] || null;
     this.userCustCode = this.selectedCustCode;
-
     if (!this.selectedCustCode) return;
-
-    if (this.userCustCodes.length === 1) {
-      // Usuario normal: traemos datos directo
+    if (this.userCustCodes.length === 1) {      
       this.custService.getCustByCode(this.selectedCustCode).subscribe(cust => {
         this.customersData[this.selectedCustCode!] = {
           name: cust.name ?? 'Sin nombre',
           addr: cust.addr_line_1 ?? 'Sin dirección'
         };
-
         this.customerName = cust.name ?? 'Sin nombre';
         this.customerAddress = cust.addr_line_1 ?? 'Sin dirección';
-
         this.loadProjectsByCustomer();
         this.onSearch(true);
       });
-    } else {
-      // Admin con varios cust_codes
+    } else {      
       forkJoin(this.userCustCodes.map(code => this.custService.getCustByCode(code)))
         .subscribe(results => {
-          results.forEach((cust, i) => {
+          const customers = results.map((cust, i) => {
             const code = this.userCustCodes[i];
+            const name = cust.name || 'Sin nombre';
             this.customersData[code] = {
-              name: cust.name || 'Sin nombre',
+              name,
               addr: cust.addr_line_1 || 'Sin dirección'
             };
+            return { code, name };
           });
 
-          const data = this.customersData[this.selectedCustCode!];
+          customers.sort((a, b) =>
+            a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
+          );
+
+          this.userCustCodes = customers.map(c => c.code);
+
+          this.selectedCustCode = this.userCustCodes[0];
+          this.userCustCode = this.selectedCustCode;
+
+          const data = this.customersData[this.selectedCustCode];
           this.customerName = data.name;
           this.customerAddress = data.addr;
 
@@ -147,7 +147,7 @@ export class DocsPageComponent implements OnInit {
     if (!this.userCustCode) return;
 
     const user = this.authService.user();
-    const allowedProjects = user?.projects || []; // Proyectos habilitados del usuario
+    const allowedProjects = user?.projects || [];
 
     this.projService.getByCust(this.userCustCode).subscribe({
       next: (projects) => {
@@ -158,7 +158,6 @@ export class DocsPageComponent implements OnInit {
           const code = p.projcode.trim();
           const name = p.projname.trim();
 
-          // Solo incluimos si está habilitado para el usuario
           if (!allowedProjects.includes(code)) return;
 
           if (!map.has(code)) {
@@ -166,9 +165,8 @@ export class DocsPageComponent implements OnInit {
           } else if (name.length > map.get(code)!.proj_name.length) {
             map.set(code, { proj_code: code, proj_name: name });
           }
-        });
-
-        this.projectOptions = Array.from(map.values());
+        });                
+        this.projectOptions = Array.from(map.values());        
       },
       error: err => {
         console.error('Error cargando obras:', err);
@@ -390,8 +388,7 @@ export class DocsPageComponent implements OnInit {
     });
   }
 
-  downloadAllFiltered() {
-    // ⚠️ Validamos filtros activos
+  downloadAllFiltered() {    
     const filtrosActivos = 
         this.selectedProject?.trim() ||
         this.filterDocNumber?.trim() ||
@@ -401,17 +398,15 @@ export class DocsPageComponent implements OnInit {
 
     if (filtrosActivos) {
       alert("⚠️ Para descargar TODOS los documentos debes limpiar los filtros.");
-      return; // 🔥 detenemos aquí
+      return;
     }
-
-    // --- si llega aquí, no hay filtros y puede continuar ---
+    
     if (!this.userCustCode) return;
 
     this.loadingDownload.set(true);
 
     const filters: any = { custCode: this.userCustCode.trim() };
-
-    // Solo incluir proyectos que el usuario tiene habilitados
+    
     if (this.userProjects?.length) {
       console.log(this.userProjects);      
       filters.projCodes = this.userProjects.map(p => p.trim());
