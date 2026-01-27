@@ -12,57 +12,43 @@
            flex flex-col sm:flex-row sm:items-center gap-4">
 
   <div class="text-gray-600 text-center sm:text-left sm:mr-auto animate__animated animate__fadeIn">    
-    <div class="font-semibold flex items-center justify-center sm:justify-start gap-2">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-4 w-4 text-cyan-600"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M5.121 17.804A9 9 0 1118.879 17.804
-            A4.5 4.5 0 0012 13.5
-            a4.5 4.5 0 00-6.879 4.304z"
-        />
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M12 12a4 4 0 100-8 4 4 0 000 8z"
-        />
+    <div *ngIf="authService.isAdmin()" class="text-sm text-gray-500 flex items-center justify-center sm:justify-start gap-2 mt-1 mb-1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3 -3 1.343-3 3 1.343 3 3 3z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19.5 11c0 7.5-7.5 11-7.5 11S4.5 18.5 4.5 11 a7.5 7.5 0 1115 0z"/>
       </svg>
-
-      {{ customerName }}
-    </div>    
-    <div class="text-sm text-gray-500 flex items-center justify-center sm:justify-start gap-2 mt-1">      
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-4 w-4 text-gray-400"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3
-            -3 1.343-3 3 1.343 3 3 3z"
-        />
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M19.5 11c0 7.5-7.5 11-7.5 11S4.5 18.5 4.5 11
-            a7.5 7.5 0 1115 0z"
-        />
+      {{ selectedCustCode ? customersData[selectedCustCode].addr_line_1 : customerAddress }}
+    </div>
+    <div class="font-semibold flex items-center justify-center sm:justify-start gap-2" [ngClass]="{ 'mb-6': authService.isAdmin()}">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M5.121 17.804A9 9 0 1118.879 17.804 A4.5 4.5 0 0012 13.5 a4.5 4.5 0 00-6.879 4.304z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 12a4 4 0 100-8 4 4 0 000 8z"/>
       </svg>
-
-      {{ customerAddress }}
+  
+      <ng-container *ngIf="userCustCodes.length > 1; else singleCustomer">
+        <select [(ngModel)]="selectedCustCode" (change)="onCustomerChange()"
+                class="select select-bordered bg-gray-50">
+          <option *ngFor="let code of sortedUserCustCodes" [value]="code">
+            {{ customersData[code].name || code }}
+          </option>
+        </select>
+      </ng-container>
+      <ng-template #singleCustomer>
+        <span>{{ customerName }}</span>
+      </ng-template>
+    </div>   
+    <div *ngIf="!authService.isAdmin()" class="text-sm text-gray-500 flex items-center justify-center sm:justify-start gap-2 mt-1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3 -3 1.343-3 3 1.343 3 3 3z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19.5 11c0 7.5-7.5 11-7.5 11S4.5 18.5 4.5 11 a7.5 7.5 0 1115 0z"/>
+      </svg>      
+      {{ customerAddress || 'Sin dirección' }}
     </div>
 
   </div>

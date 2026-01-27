@@ -42,7 +42,7 @@ export class OrdrPageComponent implements OnInit {
   expandedOrderCode: string | null = null;
   userCustCodes: string[] = [];
   selectedCustCode: string | null = null;
-  customersData: { [code: string]: { name: string; addr: string } } = {};
+  customersData: { [code: string]: { name: string; addr_line_1: string } } = {};  
 
   authService = inject(AuthService);
   custService = inject(CustService);
@@ -55,29 +55,96 @@ export class OrdrPageComponent implements OnInit {
 
   ngOnInit() {
     this.currentUser = this.authService.user();
-    if (this.currentUser.roles == 'admin') {
-      console.log(this.currentUser.projects);
-      console.log(this.currentUser.cust_codes );          
-    } else {
-      if (!this.currentUser) return;
-      this.loadOrders();
-      this.userCustCode = this.currentUser.cust_code ?? null;
-      this.userName = this.currentUser.fullName || 'Usuario';
-  
-      if (!this.userCustCode) return;
-  
-      this.custService.getCustByCode(this.userCustCode).subscribe(cust => {
-        this.customerName = cust.name;
-        this.customerAddress = cust.addr_line_1 ?? null;
+    if (!this.currentUser) return;
+    this.userCustCodes = this.currentUser.cust_codes || [];
+    if (this.userCustCodes.length <= 1) {
+      this.selectedCustCode = this.userCustCodes[0] || this.currentUser.cust_code;
+      this.userCustCode = this.selectedCustCode;
+      if (this.userCustCode) {
+        this.custService.getCustByCode(this.userCustCode).subscribe(cust => {
+          this.customerName = cust.name;
+          this.customerAddress = cust.addr_line_1 ?? null;
+          this.loadProjects();
+          this.loadOrders();
+        });
+      }
+    } 
+    else {
+      const observables = this.userCustCodes.map(code =>
+    this.custService.getCustByCode(code)
+  );
+
+    forkJoin(observables).subscribe(customers => {
+        const customerList = customers.map((cust, i) => {
+          const code = (this.userCustCodes[i] || '').trim();
+          return {
+            code,
+            name: cust.name || 'Sin nombre',
+            addr_line_1: cust.addr_line_1 || 'Sin dirección'
+          };
+        });
+        customerList.sort((a, b) => a.name.toUpperCase().localeCompare(b.name.toUpperCase()));
+        
+        this.userCustCodes = customerList.map(c => c.code);
+        customerList.forEach(c => {
+          this.customersData[c.code] = {
+            name: c.name,
+            addr_line_1: c.addr_line_1
+          };
+        });
+        this.selectedCustCode = (this.userCustCodes[0] || '').trim();
+        this.loadCustomerData(this.selectedCustCode);
       });
-  
-      this.loadProjects();
+
+
     }
   }
 
   toggleOrder(orderCode: string) {
     this.expandedOrderCode =
       this.expandedOrderCode === orderCode ? null : orderCode;
+  }
+
+  get sortedUserCustCodes(): string[] {
+    return [...this.userCustCodes].sort((a, b) => {      
+      const nameA = (this.customersData[a]?.name || a).toUpperCase();
+      const nameB = (this.customersData[b]?.name || b).toUpperCase();
+      console.log(nameA);
+      console.log(nameB);
+      return nameA.localeCompare(nameB);
+    });
+  }
+
+  onCustomerChange() {
+    if (!this.selectedCustCode) return;
+    this.loadCustomerData(this.selectedCustCode);
+  }
+
+  loadCustomerData(custCode: string) {
+    this.userCustCode = custCode;
+
+    const data = this.customersData[custCode];
+    if (data) {      
+      this.customerName = data.name;
+      this.customerAddress = data.addr_line_1 ?? null;
+    } else {      
+      this.loadCustomer(custCode);
+    }
+    
+    this.loadProjects();
+    this.loadOrders();
+  }
+
+  loadCustomer(custCode: string) {
+    this.custService.getCustByCode(custCode).subscribe(cust => {
+      this.customerName = cust.name;
+      this.customerAddress = cust.addr_line_1 ?? null;
+      
+      this.customersData[custCode] = {
+        name: cust.name || 'Sin nombre',
+        addr_line_1: cust.addr_line_1 || 'Sin dirección'
+      };
+    });
   }
 
   get filteredOrders(): any[] {
@@ -127,10 +194,9 @@ export class OrdrPageComponent implements OnInit {
 
     this.loading = true;
 
-    // Si no hay proyecto seleccionado -> todos los proyectos
     const proyectos = this.selectedProject ? [this.selectedProject] : this.projectOptions.map(p => p.proj_code);
-
-    // Si no hay proyectos -> vaciar pedidos
+    console.log(proyectos);    
+    
     if (!proyectos.length) {
       this.orders = [];
       this.loading = false;
@@ -141,8 +207,7 @@ export class OrdrPageComponent implements OnInit {
     );
 
     forkJoin(requests).subscribe({
-      next: (responses: any) => {
-        // Combinar todos los pedidos en un solo array
+      next: (responses: any) => {        
         this.orders = responses.flat();
         this.loading = false;
       },

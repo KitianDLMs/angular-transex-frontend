@@ -54,13 +54,9 @@ export class HomePageComponent implements OnInit {
   ngOnInit() {
     this.currentUser = this.authService.user();
     if (!this.currentUser) return;
-
     this.userCustCodes = this.currentUser.cust_codes || [];
-    
     if (this.userCustCodes.length <= 1) {
-      this.selectedCustCode =
-        this.userCustCodes[0] || this.currentUser.cust_code;
-
+      this.selectedCustCode = this.userCustCodes[0] || this.currentUser.cust_code;
       this.userCustCode = this.selectedCustCode;
 
       this.custService.getCustByCode(this.userCustCode!).subscribe(cust => {

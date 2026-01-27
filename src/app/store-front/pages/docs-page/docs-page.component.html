@@ -18,24 +18,19 @@
                     a4.5 4.5 0 00-6.879 4.304z"/>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 12a4 4 0 100-8 4 4 0 000 8z"/>
-          </svg>
-
-          <!-- ✅ Mostrar select solo si hay más de un cliente -->
+          </svg>          
           <ng-container *ngIf="userCustCodes.length > 1; else singleCustomer">
             <select [(ngModel)]="selectedCustCode" (change)="onCustomerChange()">
               <option *ngFor="let code of userCustCodes" [value]="code">
                 {{ customersData[code].name || code }}
               </option>
             </select>
-          </ng-container>
-
-          <!-- Template para usuario con un solo cliente -->
+          </ng-container>          
           <ng-template #singleCustomer>
             <span>{{ customerName }}</span>
           </ng-template>
         </div>
-
-        <!-- Dirección -->
+        
         <div class="text-sm text-gray-500 flex items-center justify-center gap-2 mt-1">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
