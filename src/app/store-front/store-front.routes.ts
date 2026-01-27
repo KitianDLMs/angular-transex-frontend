@@ -8,6 +8,8 @@ import { ProgramacionPageComponent } from './pages/programacion/programacion-pag
 import { OrdrPageComponent } from './pages/ordr-page/ordr-page.component';
 import { DocsPageComponent } from './pages/docs-page/docs-page.component';
 import { LaboratorioPageComponent } from './pages/laboratorio-page/laboratorio-page.component';
+import { PedidosActualesComponent } from './pages/pedidos-actuales/pedidos-actuales.component';
+import { PedidosFuturosComponent } from './pages/pedidos-futuros/pedidos-futuros.component';
 
 export const storeFrontRoutes: Routes = [
   {
@@ -17,6 +19,10 @@ export const storeFrontRoutes: Routes = [
       { path: '', component: OrdrPageComponent },
 
       { path: 'obras', component: ObraPageComponent },
+            
+      { path: 'pedidos-actuales', component: PedidosActualesComponent },
+      
+      { path: 'pedidos-futuros', component: PedidosFuturosComponent },
 
       { path: 'seguimiento', component: SeguimientoPageComponent },
 

@@ -1,0 +1,115 @@
+<header class="bg-cyan-700 text-white p-4 rounded-t-lg flex justify-between items-center shadow-sm">
+  <h1 class="text-xl font-semibold">Pedidos futuros</h1>
+  <span class="text-sm opacity-90">
+    Actualizado al {{ today | date:'dd/MM/yyyy' }}
+  </span>
+</header>
+
+<div class="px-4 py-6 space-y-6 max-w-md md:max-w-3xl lg:max-w-5xl mx-auto">
+
+  <!-- FECHA -->
+  <h2 class="text-lg md:text-xl font-bold text-gray-900">
+    Fecha: {{ selectedDate | date:'MM/dd/yyyy' }}
+  </h2>
+
+  <!-- LISTA -->
+  <div
+    *ngFor="let ord of orders"
+    class="bg-white rounded-xl shadow-sm border border-gray-200
+           p-4 md:p-6
+           text-center md:text-left"
+  >
+
+    <!-- CÓDIGO -->
+    <p class="text-xs md:text-sm text-gray-400 mb-1">
+      {{ ord.project_code }}
+    </p>
+
+    <!-- DIRECCIÓN -->
+    <p class="text-sm md:text-base font-medium text-gray-700 leading-tight">
+      {{ ord.project_address }}
+    </p>
+
+    <hr class="my-4" />
+
+    <!-- PRODUCTO -->
+    <p class="text-sm md:text-base text-gray-600 mb-4">
+      {{ ord.prod_descr }}
+    </p>
+
+    <!-- TABLA -->
+    <div
+      class="grid grid-cols-2 md:grid-cols-4
+             gap-y-2 gap-x-4
+             text-xs md:text-sm text-gray-500"
+    >
+
+      <div class="font-medium">Nro pedido</div>
+      <div class="font-medium">Hora inicio</div>
+      <div class="font-medium">Estado</div>
+      <div class="font-medium">Cant. programada</div>
+
+      <div class="text-gray-800 font-medium">
+        {{ ord.order_code }}
+      </div>
+      <div class="text-gray-800">
+        {{ ord.start_time | date:'HH:mm:ss' }}
+      </div>
+      <div class="text-gray-800">
+        {{ ord.estado }}
+      </div>
+      <div class="text-gray-800">
+        {{ ord.total }} M3
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+  <footer
+    class="mt-28 bg-white border-t border-gray-200
+          px-4 py-10">
+
+    <div
+      class="max-w-7xl mx-auto
+            flex flex-col md:flex-row
+            gap-6">
+      
+      <div class="space-y-3 text-[11px] sm:text-xs text-gray-500">
+
+        <p>
+          © {{ currentYear }} Hormigones Transex Ltda. — Todos los derechos reservados.    <br>
+        </p>
+
+        <div class="flex flex-col gap-1">
+          <a
+            href="mailto:contacto@example.com"
+            class="hover:text-cyan-700 transition">
+            <!-- contactoexample.com   -->
+          </a>
+
+          <a
+            href="tel:+56212345678"
+            class="hover:text-cyan-700 transition">
+            Rut 88.147.600-2
+          </a>
+
+          <span>
+            Av. Del Valle 850, Huechuraba
+          </span>
+        </div>
+
+      </div>
+
+      <!-- LOGO -->
+      <div class="flex justify-end mt-6 md:mt-0 md:ml-auto animate__animated animate__backInRight">
+        <img
+          src="assets/images/logoHORMIGONES2.png"
+          alt="Hormigones Transex"
+          class="h-8 sm:h-9 md:h-10 object-contain opacity-90" />
+      </div>
+
+    </div>
+  </footer>

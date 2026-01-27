@@ -67,18 +67,14 @@
 
   </div>
 
-    <select
-      class="select select-bordered bg-gray-50 w-full sm:w-64"
-      [(ngModel)]="selectedProject"
-      (change)="onSelectProject()">
-
+  <select class="select select-bordered bg-gray-50 w-full sm:w-64"
+            (change)="onSelectProject()"
+            [(ngModel)]="selectedProject">
       <option value="">Todas las obras</option>
-
-      <option *ngFor="let proj of projectOptions" [value]="proj.proj_code">
-        {{ proj.proj_code }} - {{ proj.proj_descr }}
+      <option *ngFor="let proj of projectOptions" [value]="proj.proj_code.trim()">
+        {{ proj.proj_code.trim() }} - {{ proj.proj_name.trim() }}
       </option>
     </select>
-
 
     <button
       class="btn bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg shadow-sm
@@ -192,43 +188,91 @@
           </th>
         </tr>
       </thead>
-
       <tbody>
-        <tr
-          *ngFor="let ord of orders"
-          class="border-t hover:bg-cyan-50 transition duration-150 ease-in-out cursor-pointer"
-          (click)="goToSeguimiento(ord)">
-          <td class="py-3 px-4">
-            <div
-              class="
-                max-w-[100px] sm:max-w-none
+        <ng-container *ngFor="let ord of orders">
+          <tr
+            class="border-t hover:bg-cyan-50 cursor-pointer"
+            (click)="toggleOrder(ord.order_code)">
+
+            <td class="p-3 max-w-[160px] sm:max-w-none
                 overflow-x-auto
                 whitespace-nowrap
-                scrollbar-thin
-              "
-            >
-              {{ ord.order_date | date:'dd-MM-yyyy' }}
-            </div>
-          </td>
-          <td class="py-3 px-4 font-semibold">{{ ord.order_code }}</td>
-          <td class="py-3 px-4">{{ ord.product_code }}</td>
-          <td class="py-3 px-4">
-            <div
-              class="
-                max-w-[180px] sm:max-w-none
+                scrollbar-thin">
+              {{ ord.order_Date | date:'dd-MM-yyyy' }}
+            </td>
+
+            <td class="py-3 px-4 font-semibold">
+              {{ ord.order_code }}
+            </td>
+
+            <td class="py-3 px-4">
+              {{ ord.prod_code.trim() }}
+            </td>
+
+            <td class="p-3 max-w-[160px] sm:max-w-none
                 overflow-x-auto
                 whitespace-nowrap
-                scrollbar-thin
-              "
-            >
-              {{ ord.product_desc }}
-            </div>
-          </td>
-          <td class="py-3 px-4">{{ ord.quantity }} m³</td>
-          <td class="py-3 px-4">{{ ord.start_time | date:'HH:mm' }}</td>
-          <td class="py-3 px-4">{{ ord.setup_time | date:'HH:mm' }}</td>
-          <td class="py-3 px-4">{{ ord.status }}</td>
-        </tr>
+                scrollbar-thin">
+              {{ ord.prod_descr }}
+            </td>
+
+            <td class="py-3 px-4">
+              {{ ord.load_size }} m³
+            </td>
+
+            <td class="py-3 px-4">
+              {{ ord.start_time | date:'HH:mm'  }}              
+            </td>
+
+            <td class="py-3 px-4">
+              {{ ord.truck_spacing_mins }}
+            </td>
+
+            <td class="p-3 max-w-[160px] sm:max-w-none
+                overflow-x-auto
+                whitespace-nowrap
+                scrollbar-thin">
+              {{ ord.estado }}
+            </td>
+          </tr>
+          <tr *ngIf="expandedOrderCode === ord.order_code">
+            <td colspan="8" class="bg-cyan-50 px-6 py-4">
+              <div class="flex flex-col sm:flex-row gap-3">
+                <ol class="space-y-1">
+                  <li style="cursor: pointer;">
+                    <a
+                      (click)="verPedidosActuales(ord, $event)"
+                      class="flex items-center gap-3 px-4 py-2 rounded-md
+                            text-sm text-gray-700
+                            hover:bg-gray-100 hover:text-cyan-700 transition">
+
+                      <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M8 7V3m8 4V3M3 11h18M5 19h14" />
+                      </svg>
+
+                      Ver pedidos actuales
+                    </a>
+                  </li>
+                  <li style="cursor: pointer;">
+                    <a                      
+                      (click)="verPedidosFuturos(ord, $event)"
+                      class="flex items-center gap-3 px-4 py-2 rounded-md
+                            text-sm text-gray-700
+                            hover:bg-gray-100 hover:text-cyan-700 transition">
+
+                      <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8v4l3 3" />
+                      </svg>
+                      Ver pedidos futuros
+                    </a>
+                  </li>
+                </ol>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
       </tbody>
     </table>
   </div>

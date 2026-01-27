@@ -347,7 +347,7 @@ export class DocsPageComponent implements OnInit {
 
         if (missing.length > 0) {
           const ok = confirm(
-            `⚠️ Algunas guías NO están en la carpeta:\n${missing.join(', ')}\n\n` +
+            `⚠️ Las siguientes guías NO están en la carpeta:\n${missing.join(', ')}\n\n` +
             `¿Deseas descargar solo las que sí existen?`
           );
 
@@ -432,7 +432,7 @@ export class DocsPageComponent implements OnInit {
 
             if (missing.length > 0) {
               const ok = confirm(
-                `⚠️ Algunas guías NO están en la carpeta:\n${missing.join(', ')}\n\n¿Deseas continuar descargando las que sí existen?`
+                `⚠️ Las siguientes guias:\n${missing.join(', ')}\n\n no se encuentran disponibles ¿deseas continuar descargando las que sí existen?`
               );
               if (!ok) {
                 this.loadingDownload.set(false);

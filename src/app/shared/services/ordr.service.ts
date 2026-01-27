@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Ordr } from 'src/app/ordr/interfaces/ordr.interface';
@@ -14,6 +14,36 @@ export class OrdrService {
 
   createOrdr(dto: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/ordr`, dto);
+  }
+
+  getPedidosPorProyecto(
+    projCode: string,
+    custCode: string
+  ) {
+    return this.http.get<any[]>(
+      `${this.baseUrl}/ordr/external/by-project`,
+      {
+        params: {
+          proj_code: projCode.trim(),
+          cust_code: custCode.trim(),
+        },
+      }
+    );
+  }
+
+  getPedidosPorCliente(custCode: string) {
+    if (!custCode) {
+      throw new Error('custCode es requerido');
+    }
+
+    return this.http.get<any[]>(
+      `${this.baseUrl}/ordr/external/by-customer`,
+      {
+        params: {
+          cust_code: custCode.trim(),
+        },
+      }
+    );
   }
 
   getAllOrdrs(): Observable<Ordr[]> {
@@ -89,8 +119,7 @@ export class OrdrService {
     });
   }
 
-  getOrdrByCustCode(cust_code: string): Observable<Ordr> {
-    console.log(cust_code);    
+  getOrdrByCustCode(cust_code: string): Observable<Ordr> {    
     return this.http.get<Ordr>(
       `${this.baseUrl}/ordr/${cust_code}`
     );

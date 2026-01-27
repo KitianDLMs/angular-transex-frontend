@@ -6,6 +6,7 @@ import { AuthService } from '@auth/services/auth.service';
 import { CustService } from '@dashboard/cust/services/cust.service';
 import { Router } from '@angular/router';
 import { ProjService } from '@shared/services/proj.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-ordr-page',
@@ -16,8 +17,8 @@ import { ProjService } from '@shared/services/proj.service';
 export class OrdrPageComponent implements OnInit {
 
   orders: any[] = [];
-  projectOptions: { proj_code: string; proj_descr: string }[] = [];
-  selectedProject: string = '';
+  projectOptions: { proj_code: string; proj_name: string }[] = [];
+  selectedProject = '';
 
   loading = false;
 
@@ -25,6 +26,10 @@ export class OrdrPageComponent implements OnInit {
   limit = 10;
   totalPages = 0;
   totalItems = 0;
+  activeProject: string | null = null;
+
+  currentUser: any = null;
+  viewMode: 'ACTUALES' | 'FUTUROS' = 'ACTUALES';
 
   today = new Date();
   currentYear = new Date().getFullYear();
@@ -34,6 +39,10 @@ export class OrdrPageComponent implements OnInit {
 
   userCustCode: string | null = null;
   userName: string | null = null;
+  expandedOrderCode: string | null = null;
+  userCustCodes: string[] = [];
+  selectedCustCode: string | null = null;
+  customersData: { [code: string]: { name: string; addr: string } } = {};
 
   authService = inject(AuthService);
   custService = inject(CustService);
@@ -45,44 +54,70 @@ export class OrdrPageComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const user = this.authService.user();
+    this.currentUser = this.authService.user();
+    if (this.currentUser.roles == 'admin') {
+      console.log(this.currentUser.projects);
+      console.log(this.currentUser.cust_codes );          
+    } else {
+      if (!this.currentUser) return;
+      this.loadOrders();
+      this.userCustCode = this.currentUser.cust_code ?? null;
+      this.userName = this.currentUser.fullName || 'Usuario';
+  
+      if (!this.userCustCode) return;
+  
+      this.custService.getCustByCode(this.userCustCode).subscribe(cust => {
+        this.customerName = cust.name;
+        this.customerAddress = cust.addr_line_1 ?? null;
+      });
+  
+      this.loadProjects();
+    }
+  }
 
-    this.userName = user?.fullName || 'Usuario';
-    this.userCustCode = user?.cust_code || null;
+  toggleOrder(orderCode: string) {
+    this.expandedOrderCode =
+      this.expandedOrderCode === orderCode ? null : orderCode;
+  }
 
-    if (!this.userCustCode) return;
+  get filteredOrders(): any[] {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    this.custService.getCustByCode(this.userCustCode).subscribe(cust => {
-      this.customerName = cust.name;
-      this.customerAddress = cust.addr_line_1 ?? null;
+    return this.orders.filter(ord => {
+      const orderDate = new Date(ord.order_Date);
+      orderDate.setHours(0, 0, 0, 0);
+
+      return this.viewMode === 'ACTUALES'
+        ? orderDate <= today
+        : orderDate > today;
     });
-
-    this.loadProjects();
-    this.loadOrders();
   }
 
   loadProjects() {
-    if (!this.userCustCode) return;
+    const allowedProjects = this.currentUser?.projects ?? [];
 
-    this.projService.getByCust(this.userCustCode).subscribe({
-      next: (res: any[]) => {
-        const map = new Map<string, { proj_code: string; proj_descr: string }>();
-        res.forEach(p => {
-          if (!p.proj_code || !p.proj_descr) return;
+    this.projService.getByCust(this.userCustCode!).subscribe(projects => {
+      const map = new Map<string, { proj_code: string; proj_name: string }>();
 
-          const code = p.proj_code.trim();
-          const descr = p.proj_descr.trim();
+      projects.forEach(p => {
+        if (!p.projcode || !p.projname) return;
 
-          if (!map.has(code) || descr.length > map.get(code)!.proj_descr.length) {
-            map.set(code, { proj_code: code, proj_descr: descr });
-          }
-        });
+        const code = p.projcode.trim();
+        const name = p.projname.trim();
 
-        this.projectOptions = Array.from(map.values());
-      },
-      error: err => {
-        console.error('Error cargando proyectos:', err);
-        this.projectOptions = [];
+        if (!allowedProjects.includes(code)) return;
+
+        if (!map.has(code)) {
+          map.set(code, { proj_code: code, proj_name: name });
+        }
+      });
+
+      this.projectOptions = Array.from(map.values());
+
+      if (this.projectOptions.length) {
+        this.activeProject = this.projectOptions[0].proj_code;
+        this.loadOrders();
       }
     });
   }
@@ -91,22 +126,56 @@ export class OrdrPageComponent implements OnInit {
     if (!this.userCustCode) return;
 
     this.loading = true;
-    
-    setTimeout(() => {    
-      this.loading = false;
-    }, 2000);
-  }
 
+    // Si no hay proyecto seleccionado -> todos los proyectos
+    const proyectos = this.selectedProject ? [this.selectedProject] : this.projectOptions.map(p => p.proj_code);
+
+    // Si no hay proyectos -> vaciar pedidos
+    if (!proyectos.length) {
+      this.orders = [];
+      this.loading = false;
+      return;
+    }
+    const requests = proyectos.map(proj =>
+      this.ordrService.getPedidosPorProyecto(proj, this.userCustCode!)
+    );
+
+    forkJoin(requests).subscribe({
+      next: (responses: any) => {
+        // Combinar todos los pedidos en un solo array
+        this.orders = responses.flat();
+        this.loading = false;
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.orders = [];
+        this.loading = false;
+      },
+    });
+  }
 
   onSelectProject() {
     this.page = 1;
-    this.loadOrders();
+
+    this.activeProject = this.selectedProject || null;
+
+    if (this.activeProject) {
+      this.loadOrders();
+    } else {
+      this.orders = [];
+    }
   }
 
   clearFilter() {
     this.selectedProject = '';
-    this.page = 1;
-    this.loadOrders();
+
+    if (this.projectOptions.length) {
+      this.activeProject = this.projectOptions[0].proj_code;
+      this.page = 1;
+      this.loadOrders();
+    } else {
+      this.orders = [];
+    }
   }
 
   nextPage() {
@@ -130,8 +199,23 @@ export class OrdrPageComponent implements OnInit {
     );
   }
 
-  /** ✅ Método para saber si no hay pedidos */
   get hasOrders(): boolean {
     return !this.loading && this.orders.length === 0;
+  }
+
+  verPedidosActuales(ord: any, event: Event) {
+    event.stopPropagation();
+    this.router.navigate(
+      ['/store-front/pedidos-actuales'],
+      { queryParams: { code: ord.order_code, mode: 'actuales' } }
+    );
+  }
+
+  verPedidosFuturos(ord: any, event: Event) {
+   event.stopPropagation();
+    this.router.navigate(
+      ['/store-front/pedidos-futuros'],
+      { queryParams: { code: ord.order_code, mode: 'futuros' } }
+    );
   }
 }
