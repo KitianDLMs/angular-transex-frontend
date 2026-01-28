@@ -5,54 +5,47 @@
   </span>
 </header>
 
-<div class="p-4 bg-gray-50">
-  
-  <div
-    class="bg-white shadow-md rounded-xl p-4 border border-gray-200
-           flex flex-col sm:flex-row sm:items-center gap-4">
-
-  <div class="text-gray-600 text-center sm:text-left sm:mr-auto animate__animated animate__fadeIn">    
-    <div *ngIf="authService.isAdmin()" class="text-sm text-gray-500 flex items-center justify-center sm:justify-start gap-2 mt-1 mb-1">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3 -3 1.343-3 3 1.343 3 3 3z"/>
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M19.5 11c0 7.5-7.5 11-7.5 11S4.5 18.5 4.5 11 a7.5 7.5 0 1115 0z"/>
-      </svg>
-      {{ selectedCustCode ? customersData[selectedCustCode].addr_line_1 : customerAddress }}
+<div class="p-4 bg-gray-50">  
+  <div class="bg-white shadow-md rounded-xl p-4 border border-gray-200 flex flex-col sm:flex-row sm:items-center gap-4">
+    <div class="text-gray-600 text-center sm:text-left sm:mr-auto animate__animated animate__fadeIn">    
+      <div *ngIf="authService.isAdmin()" class="text-sm text-gray-500 flex items-center justify-center sm:justify-start gap-2 mt-1 mb-1">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3 -3 1.343-3 3 1.343 3 3 3z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19.5 11c0 7.5-7.5 11-7.5 11S4.5 18.5 4.5 11 a7.5 7.5 0 1115 0z"/>
+        </svg>
+        {{ selectedCustCode ? customersData[selectedCustCode].addr_line_1 : customerAddress }}
+      </div>
+      <div class="font-semibold flex items-center justify-center sm:justify-start gap-2" [ngClass]="{ 'mb-6': authService.isAdmin()}">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M5.121 17.804A9 9 0 1118.879 17.804 A4.5 4.5 0 0012 13.5 a4.5 4.5 0 00-6.879 4.304z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 12a4 4 0 100-8 4 4 0 000 8z"/>
+        </svg>  
+        <ng-container *ngIf="userCustCodes.length > 1; else singleCustomer">
+          <select [(ngModel)]="selectedCustCode" (change)="onCustomerChange()"
+                  class="select select-bordered bg-gray-50">
+            <option *ngFor="let code of sortedUserCustCodes" [value]="code">
+              {{ customersData[code].name || code }}
+            </option>
+          </select>
+        </ng-container>
+        <ng-template #singleCustomer>
+          <span>{{ customerName }}</span>
+        </ng-template>
+      </div>   
+      <div *ngIf="!authService.isAdmin()" class="text-sm text-gray-500 flex items-center justify-center sm:justify-start gap-2 mt-1">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3 -3 1.343-3 3 1.343 3 3 3z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19.5 11c0 7.5-7.5 11-7.5 11S4.5 18.5 4.5 11 a7.5 7.5 0 1115 0z"/>
+        </svg>      
+        {{ customerAddress || 'Sin dirección' }}
+      </div>
     </div>
-    <div class="font-semibold flex items-center justify-center sm:justify-start gap-2" [ngClass]="{ 'mb-6': authService.isAdmin()}">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M5.121 17.804A9 9 0 1118.879 17.804 A4.5 4.5 0 0012 13.5 a4.5 4.5 0 00-6.879 4.304z"/>
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 12a4 4 0 100-8 4 4 0 000 8z"/>
-      </svg>
-  
-      <ng-container *ngIf="userCustCodes.length > 1; else singleCustomer">
-        <select [(ngModel)]="selectedCustCode" (change)="onCustomerChange()"
-                class="select select-bordered bg-gray-50">
-          <option *ngFor="let code of sortedUserCustCodes" [value]="code">
-            {{ customersData[code].name || code }}
-          </option>
-        </select>
-      </ng-container>
-      <ng-template #singleCustomer>
-        <span>{{ customerName }}</span>
-      </ng-template>
-    </div>   
-    <div *ngIf="!authService.isAdmin()" class="text-sm text-gray-500 flex items-center justify-center sm:justify-start gap-2 mt-1">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3 -3 1.343-3 3 1.343 3 3 3z"/>
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M19.5 11c0 7.5-7.5 11-7.5 11S4.5 18.5 4.5 11 a7.5 7.5 0 1115 0z"/>
-      </svg>      
-      {{ customerAddress || 'Sin dirección' }}
-    </div>
-
-  </div>
-
   <select class="select select-bordered bg-gray-50 w-full sm:w-64"
             (change)="onSelectProject()"
             [(ngModel)]="selectedProject">
@@ -61,7 +54,6 @@
         {{ proj.proj_code.trim() }} - {{ proj.proj_name.trim() }}
       </option>
     </select>
-
     <button
       class="btn bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg shadow-sm
              w-full sm:w-auto mt-2 sm:mt-0"
@@ -91,7 +83,6 @@
       alt="Cargando"
       class="h-8 w-8 animate-pulse"
     />
-
     <span>Cargando pedidos...</span>
   </div>
   }
@@ -314,51 +305,4 @@
       Cuando existan pedidos, los verás reflejados aquí.
     </p>
   </div>
-
-
-  <footer
-    class="mt-28 bg-white border-t border-gray-200
-          px-4 py-10">
-
-    <div
-      class="max-w-7xl mx-auto
-            flex flex-col md:flex-row
-            gap-6">
-      
-      <div class="space-y-3 text-[11px] sm:text-xs text-gray-500">
-
-        <p>
-          © {{ currentYear }} Hormigones Transex Ltda. — Todos los derechos reservados.    <br>
-        </p>
-
-        <div class="flex flex-col gap-1">
-          <a
-            href="mailto:contacto@example.com"
-            class="hover:text-cyan-700 transition">
-            <!-- contactoexample.com   -->
-          </a>
-
-          <a
-            href="tel:+56212345678"
-            class="hover:text-cyan-700 transition">
-            Rut 88.147.600-2
-          </a>
-
-          <span>
-            Av. Del Valle 850, Huechuraba
-          </span>
-        </div>
-
-      </div>
-
-      <!-- LOGO -->
-      <div class="flex justify-end mt-6 md:mt-0 md:ml-auto animate__animated animate__backInRight">
-        <img
-          src="assets/images/logoHORMIGONES2.png"
-          alt="Hormigones Transex"
-          class="h-8 sm:h-9 md:h-10 object-contain opacity-90" />
-      </div>
-
-    </div>
-  </footer>
 </div>

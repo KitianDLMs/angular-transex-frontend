@@ -8,7 +8,6 @@ import { environment } from 'src/environments/environment.development';
 @Injectable({ providedIn: 'root' })
 export class OrdrService {
   baseUrl = environment.baseUrl;
-  private ordrCache = new Map<string, Ordr[]>();
 
   constructor(private http: HttpClient) {}
 
@@ -16,6 +15,12 @@ export class OrdrService {
     return this.http.post(`${this.baseUrl}/ordr`, dto);
   }
 
+  getProgramaPorPedido(order_code: string, order_date: string): Observable<any[]> {
+    return this.http.get<any[]>(`http://localhost:3000/api/ordr/external/programa`, {
+      params: { order_code, order_date }
+    });
+  }
+  
   getPedidosPorProyecto(
     projCode: string,
     custCode: string

@@ -1,73 +1,183 @@
-<!-- Contenedor principal del mapa -->
-<div class="relative h-[calc(100vh-64px)]">
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="relative h-[calc(100vh-64px)] bg-gray-100">
 
-  <!-- Mapa -->
-  <div #map class="absolute top-0 left-0 h-full w-full"></div>
+  <!-- MAPA -->
+  <div #map class="absolute inset-0"></div>
 
-  <!-- Panel de marcadores -->
-  <section
-    class="absolute top-5 left-5 bg-white rounded-lg shadow-lg p-4 w-64 max-h-[80vh] overflow-y-auto"
+  <!-- HEADER SUPERIOR -->
+  <header
+    class="absolute top-0 left-0 right-0 z-10
+           bg-white/90 backdrop-blur
+           h-14 flex items-center px-4 shadow-sm"
   >
-    <h2 class="text-lg font-bold text-black mb-2">Marcadores</h2>
+    <button
+      class="text-cyan-700 font-medium mr-3"
+      (click)="goBack()"
+    >
+      ← Back
+    </button>
 
-    <div class="flex flex-col gap-2">
-      @for (marker of markers(); track marker.id) {
-        <div
-          class="form-control"
-          (click)="flyToMarker(marker.mapboxMarker.getLngLat())"
-          (dblclick)="deleteMarker(marker)"
-        >
-          <label class="label cursor-pointer">
-            <span class="label-text text-black text-xs"></span>
-            <input
-              type="radio"
-              name="radio-10"
-              class="radio"
-              [style]="{ backgroundColor: marker.mapboxMarker._color }"
-              checked="checked"
-            />
-          </label>
-        </div>
-      } @empty {
-        <div class="flex justify-center items-center bg-blue-100 rounded py-5">
-          <p class="text-xs text-secondary">No hay marcadores</p>
-        </div>
-      }
+    <h1 class="text-base font-semibold text-gray-900 mx-auto">
+      Detalle Pedido
+    </h1>
+  </header>
+
+  <!-- BOTTOM SHEET -->
+  <section
+    class="absolute bottom-0 left-0 right-0 z-20
+           bg-white rounded-t-2xl shadow-2xl
+           max-h-[65vh] overflow-y-auto"
+  >
+
+    <!-- HANDLE -->
+    <div class="flex justify-center py-2">
+      <div class="w-10 h-1.5 bg-gray-300 rounded-full"></div>
     </div>
-  </section>
 
-  <!-- Panel de control (zoom y coordenadas) -->
-  <section
-    id="controls"
-    class="absolute bottom-5 right-5 bg-white rounded-lg shadow-md p-4 w-56"
-  >
-    <h2 class="text-base font-bold text-black mb-1 flex justify-between items-center">
-      Zoom
-      <small class="text-gray-500 font-normal">{{
-        zoom() | number : '1.0-0'
-      }}</small>
-    </h2>
+    <!-- INFO PRINCIPAL -->
+    <div class="px-4 pb-4 space-y-3 text-sm">
 
-    <input
-      type="range"
-      min="1"
-      max="19"
-      [value]="zoom()"
-      class="range range-secondary"
-      (input)="zoom.set(+txtZoom.value)"
-      #txtZoom
-    />
+      <div class="flex justify-between">
+        <span class="text-gray-500">Pedido</span>
+        <span class="font-medium text-gray-900">
+          {{ programaPedido()[0].order_code }}
+        </span>
+      </div>
 
-    <h2 class="text-base font-bold text-black mb-1 mt-3">Coordenadas</h2>
-    <pre class="text-xs text-gray-500 font-normal">{{
-      {
-        lat: coordinates().lat | number: '1.4-4',
-        lng: coordinates().lng | number: '1.4-4'
-      } | json
-    }}</pre>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Estado</span>
+        <span class="font-medium text-gray-900">
+          {{ programaPedido()[0].estado }}
+        </span>
+      </div>
+
+      <div class="flex justify-between">
+        <span class="text-gray-500">Producto</span>
+        <span class="font-medium text-gray-900 text-right max-w-[60%]">
+          {{ programaPedido()[0].prod_descr || '—' }}
+        </span>
+      </div>
+
+      <div class="flex justify-between">
+        <span class="text-gray-500">Cantidad</span>
+        <span class="font-medium text-gray-900">
+          {{ programaPedido()[0].totalM3 }} m³
+        </span>
+      </div>
+    </div>
+
+    <hr />
+
+    <!-- SECCIONES -->
+    <div class="divide-y">
+
+      <!-- PROGRAMADO -->
+      <details class="group">
+        <summary class="flex justify-between items-center px-4 py-3 cursor-pointer">
+          <span class="font-medium text-gray-900">Programado</span>
+          <span class="transition group-open:rotate-180">⌄</span>
+        </summary>
+
+        <div class="px-4 pb-3 text-sm text-gray-600 space-y-2">
+          @for (ord of programaPedido(); track ord.order_code) {
+            <div class="flex justify-between">
+              <span>{{ ord.hora }}</span>
+              <span>{{ ord.load_size }} m³</span>
+            </div>
+          }
+        </div>
+      </details>
+
+      <!-- IMPRESO / CARGANDO -->
+      <details class="group">
+        <summary class="flex justify-between items-center px-4 py-3 cursor-pointer">
+          <span class="font-medium text-gray-900">Impreso / Cargando</span>
+          <span class="transition group-open:rotate-180">⌄</span>
+        </summary>
+
+        <div class="px-4 pb-3 text-sm text-gray-600">
+          Información disponible en planta
+        </div>
+      </details>
+
+      <!-- EN TRANSITO -->
+      <details class="group">
+        <summary class="flex justify-between items-center px-4 py-3 cursor-pointer">
+          <span class="font-medium text-gray-900">En tránsito</span>
+          <span class="transition group-open:rotate-180">⌄</span>
+        </summary>
+
+        <div class="px-4 pb-4 space-y-3">
+
+          <!-- PROGRESO CIRCULAR -->
+          <div class="flex justify-center">
+            <div class="relative w-28 h-28">
+              <svg viewBox="0 0 36 36" class="w-full h-full">
+                <path
+                  class="text-gray-200"
+                  stroke-width="3"
+                  stroke="currentColor"
+                  fill="none"
+                  d="M18 2.0845
+                     a 15.9155 15.9155 0 0 1 0 31.831
+                     a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <path
+                  class="text-cyan-600"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke="currentColor"
+                  fill="none"
+                  [attr.stroke-dasharray]="programaPedido()[0].percent + ', 100'"
+                  d="M18 2.0845
+                     a 15.9155 15.9155 0 0 1 0 31.831
+                     a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+              </svg>
+
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-xs">
+                <span class="font-semibold text-cyan-700">
+                  {{ programaPedido()[0].loadedM3 }} /
+                  {{ programaPedido()[0].totalM3 }} m³
+                </span>
+                <span class="text-gray-500">
+                  {{ programaPedido()[0].percent }}%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- BOTÓN -->
+          <button
+            *ngIf="programaPedido()[0].estado === 'EN TRANSITO'"
+            (click)="goToSeguimiento(programaPedido()[0].order_code)"
+            class="w-full border border-gray-300 rounded-lg py-2 text-sm
+                   text-gray-700 hover:bg-gray-50"
+          >
+            Ver seguimiento
+          </button>
+
+        </div>
+      </details>
+
+      <!-- EN OBRA -->
+      <details class="group">
+        <summary class="flex justify-between items-center px-4 py-3 cursor-pointer">
+          <span class="font-medium text-gray-900">En obra</span>
+          <span class="transition group-open:rotate-180">⌄</span>
+        </summary>
+      </details>
+
+      <!-- COMPLETADO -->
+      <details class="group">
+        <summary class="flex justify-between items-center px-4 py-3 cursor-pointer">
+          <span class="font-medium text-gray-900">Completado</span>
+          <span class="transition group-open:rotate-180">⌄</span>
+        </summary>
+      </details>
+
+    </div>
+
   </section>
 </div>
 
-<footer class="mt-10 text-xs text-gray-400 text-center">
-  © {{ currentYear }} TRANSEX CLIENT UI — Todos los derechos reservados.
-</footer>

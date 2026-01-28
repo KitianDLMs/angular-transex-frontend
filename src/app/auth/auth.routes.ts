@@ -11,6 +11,7 @@ export const authRoutes: Routes = [
       {
         path: 'login',
         component: LoginPageComponent,
+        data: { hideFooter: true }
       },
       {
         path: 'register',
