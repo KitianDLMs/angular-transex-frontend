@@ -16,7 +16,7 @@ export class OrdrService {
   }
 
   getProgramaPorPedido(order_code: string, order_date: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/api/ordr/external/programa`, {
+    return this.http.get<any[]>(`${this.baseUrl}/ordr/external/programa`, {
       params: { order_code, order_date }
     });
   }
