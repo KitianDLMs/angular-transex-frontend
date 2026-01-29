@@ -49,7 +49,8 @@ export class PedidosFuturosComponent implements OnInit {
       this.ordrService
         .getProgramaPorPedido(order_code, order_date)
         .subscribe({
-          next: (response: any[]) => {                               
+          next: (response: any[]) => {  
+            console.log(response);                                         
             this.orders = response;
             this.loading = false;
           },

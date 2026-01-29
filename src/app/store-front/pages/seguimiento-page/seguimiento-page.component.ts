@@ -57,6 +57,7 @@ export class SeguimientoPageComponent
   ======================= */
   divElement = viewChild<ElementRef>('map');
   map = signal<mapboxgl.Map | null>(null);
+  ord: any; 
 
   zoom = signal(10);
   coordinates = signal({ lng: -70.677771, lat: -33.466227 });
@@ -67,22 +68,29 @@ export class SeguimientoPageComponent
       this.map()!.setZoom(this.zoom());
     }
   });
-
-  /* =======================
-     DATA PEDIDO
-  ======================= */
   programaPedido = signal<ProgramaPedido[]>([]);
 
-  /* =======================
-     LIFECYCLE
-  ======================= */
-  ngOnInit() {
-    this.route.queryParams.subscribe((params) => {
-      const code = params['code'];
-      if (code) {
-        this.loadSeguimiento(code.trim());
-      }
-    });
+  ngOnInit(): void {
+
+    if (history.state && history.state.ord) {
+      this.ord = history.state.ord;
+      console.log(this.ord);      
+      const data: ProgramaPedido = {
+        order_code: this.ord.order_code,
+        estado: this.ord.estado ?? 'EN TRANSITO',
+        prod_descr: this.ord.prod_descr ?? '—',
+        totalM3: this.ord.totalM3 ?? this.ord.totalM3 ?? 0,
+        loadedM3: this.ord.loadedM3 ?? this.ord.load_size ?? 0,
+        percent: this.ord.percent ?? 0,
+        hora: this.ord.hora,
+        load_size: this.ord.load_size
+      };
+
+      this.programaPedido.set([data]);
+    }
+
+    const orderCode = this.route.snapshot.queryParamMap.get('code');
+    console.log('Order Code:', orderCode);
   }
 
   goBack() {

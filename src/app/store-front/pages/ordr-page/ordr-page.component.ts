@@ -266,7 +266,6 @@ export class OrdrPageComponent implements OnInit {
   }
 
   verPedidosActuales(ord: any, event: Event) {
-    console.log('ORD EN ORIGEN:', ord);
     event.stopPropagation();
 
     this.router.navigate(

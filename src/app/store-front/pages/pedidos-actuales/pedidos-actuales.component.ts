@@ -48,7 +48,8 @@ export class PedidosActualesComponent implements OnInit {
       this.ordrService
         .getProgramaPorPedido(order_code, order_date)
         .subscribe({
-          next: (response: any[]) => {                        
+          next: (response: any[]) => {        
+            console.log(response);                            
             const totalM3 = response.reduce(
               (sum, r) => sum + Number(r.load_size ?? 0),
               0
@@ -76,10 +77,19 @@ export class PedidosActualesComponent implements OnInit {
     });
   }
 
-  goToSeguimiento(order_code: string) {
+  goToSeguimiento(ord: any) {
+    const ordToSend = {
+      ...ord,
+      prod_descr: this.ordBase?.prod_descr ?? '—'
+    };
+    console.log('Navegando a Seguimiento con el objeto ord:', ord);
+    console.log('Navegando a Seguimiento con el objeto ord:', ordToSend);
     this.router.navigate(
       ['/store-front/seguimiento'],
-      { queryParams: { code: order_code } }
+      {
+        queryParams: { code: ord.order_code },
+        state: { ord: ordToSend }
+      }
     );
   }
 }
