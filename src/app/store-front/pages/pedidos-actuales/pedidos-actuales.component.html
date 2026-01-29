@@ -14,7 +14,7 @@
       class="h-8 w-auto animate-pulse opacity-80"
     />
     <span class="text-sm tracking-wide">
-      Cargando pedido…
+      Pedidos actuales…
     </span>
   </div>
 }
@@ -40,7 +40,10 @@
           <div>
             <h2 class="text-lg font-semibold text-gray-800">
               Pedido #{{ ord.order_code }}
-            </h2>
+            </h2>            
+            <p class="text-sm text-gray-500">
+              <b>{{ ordBase.prod_descr }}</b>               
+            </p>
             <p class="text-sm text-gray-500">
               Planta {{ ord.planta?.trim() }}
             </p>

@@ -1,55 +1,64 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, inject, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '@auth/services/auth.service';
+import { OrdrService } from '@shared/services/ordr.service';
 
 @Component({
-  selector: 'app-pedidos-actuales',
+  selector: 'app-pedidos-futuros',
   standalone: true,
   imports: [CommonModule, DatePipe],
   templateUrl: './pedidos-futuros.component.html',
+  providers: [DatePipe]
 })
 export class PedidosFuturosComponent implements OnInit {
 
-  projectName: string = '';
-  selectedDate: Date = new Date();
   orders: any[] = [];
   today = new Date();
-  currentYear = new Date().getFullYear();
+  currentUser: any = null;
+  loading = false;
+  selectedDate!: Date;
+  ordBase: any = null;
+
+  authService = inject(AuthService);
 
   constructor(
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute,
+    private ordrService: OrdrService,
+    private datePipe: DatePipe
   ) {}
 
   ngOnInit(): void {
-    // ⚠️ mock temporal para que el template funcione
-    this.orders = [
-      {
-        order_code: '5014',        
-        order_Date: '2026-01-26',
-        prod_descr: 'SHG30-90%-10 C/24 AC045 MS5.0',
-        load_size: 41,
-        delivered: 20,
-        start_time: '14:30',
-        estado: 'Normal',
-        percent: 48,
-        project_name: 'Estructuras - Tunel lo Ruiz',
-        project_address: 'Tunel lo Ruiz',
-        total: 8
-      },
-      {
-        order_code: '5016',
-        order_Date: '2026-01-26',
-        prod_descr: 'SHG30-90%-10 C/24 AC045 MS5.0',
-        load_size: 49,
-        delivered: 0,
-        start_time: '15:35',
-        estado: 'Por Confirmar',
-        percent: 0,
-        project_name: 'Estructuras - Tunel lo Ruiz',
-        project_address: 'Tunel lo Ruiz',
-        total: 5
-      }
-    ];
+    this.currentUser = this.authService.user();
+    this.ordBase = history.state?.ord ?? null;    
+    this.route.queryParams.subscribe(params => {
+      const rawCode = params['code'];
+      if (!rawCode) return;
+
+      const order_code = rawCode.trim();
+      
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+
+      const order_date = this.datePipe.transform(futureDate, 'yyyy-MM-dd');
+      if (!order_date) return;
+
+      this.loading = true;
+      this.orders = [];      
+      this.ordrService
+        .getProgramaPorPedido(order_code, order_date)
+        .subscribe({
+          next: (response: any[]) => {                               
+            this.orders = response;
+            this.loading = false;
+          },
+          error: err => {
+            console.error(err);
+            this.loading = false;
+          }
+        });
+    });
   }
 
   goToSeguimiento(ord: any) {

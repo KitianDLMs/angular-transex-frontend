@@ -109,8 +109,6 @@ export class OrdrPageComponent implements OnInit {
     return [...this.userCustCodes].sort((a, b) => {      
       const nameA = (this.customersData[a]?.name || a).toUpperCase();
       const nameB = (this.customersData[b]?.name || b).toUpperCase();
-      console.log(nameA);
-      console.log(nameB);
       return nameA.localeCompare(nameB);
     });
   }
@@ -195,7 +193,6 @@ export class OrdrPageComponent implements OnInit {
     this.loading = true;
 
     const proyectos = this.selectedProject ? [this.selectedProject] : this.projectOptions.map(p => p.proj_code);
-    console.log(proyectos);    
     
     if (!proyectos.length) {
       this.orders = [];
@@ -207,7 +204,7 @@ export class OrdrPageComponent implements OnInit {
     );
 
     forkJoin(requests).subscribe({
-      next: (responses: any) => {        
+      next: (responses: any) => {                    
         this.orders = responses.flat();
         this.loading = false;
       },
@@ -269,18 +266,27 @@ export class OrdrPageComponent implements OnInit {
   }
 
   verPedidosActuales(ord: any, event: Event) {
+    console.log('ORD EN ORIGEN:', ord);
     event.stopPropagation();
+
     this.router.navigate(
-      ['/store-front/pedidos-actuales'],
-      { queryParams: { code: ord.order_code, mode: 'actuales' } }
+      ['/store-front/pedidos-actuales'],      
+      {
+        queryParams: { code: ord.order_code, mode: 'actuales' },
+        state: { ord }   
+      } 
     );
   }
 
   verPedidosFuturos(ord: any, event: Event) {
+   console.log(ord);
    event.stopPropagation();
     this.router.navigate(
       ['/store-front/pedidos-futuros'],
-      { queryParams: { code: ord.order_code, mode: 'futuros' } }
+      {
+        queryParams: { code: ord.order_code, mode: 'actuales' },
+        state: { ord }   
+      } 
     );
   }
 }

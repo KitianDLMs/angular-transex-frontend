@@ -13,10 +13,11 @@ import { OrdrService } from '@shared/services/ordr.service';
 })
 export class PedidosActualesComponent implements OnInit {
 
-  programaPedido: any = null;
+  programaPedido: any[] = [];
   today = new Date();
   currentYear = new Date().getFullYear();
   currentUser: any = null;
+  ordBase: any = null;
 
   authService = inject(AuthService);
   loading = false;
@@ -30,9 +31,11 @@ export class PedidosActualesComponent implements OnInit {
 
   ngOnInit(): void {
     this.currentUser = this.authService.user();
+    
+    this.ordBase = history.state?.ord ?? null;    
 
     this.route.queryParams.subscribe(params => {
-      const rawCode = params['code'];
+      const rawCode = params['code'];          
       if (!rawCode) return;
 
       const order_code = rawCode.trim();
@@ -45,31 +48,24 @@ export class PedidosActualesComponent implements OnInit {
       this.ordrService
         .getProgramaPorPedido(order_code, order_date)
         .subscribe({
-          next: (response: any[]) => {
-
-            // 🔹 total m3 del pedido
+          next: (response: any[]) => {                        
             const totalM3 = response.reduce(
               (sum, r) => sum + Number(r.load_size ?? 0),
               0
-            );
-
-            // 🔹 m3 ya cargados (TERMINADO)
+            );            
             const loadedM3 = response
               .filter(r => r.estado === 'TERMINADO')
               .reduce((sum, r) => sum + Number(r.load_size ?? 0), 0);
 
             const percent = totalM3 > 0
               ? Math.round((loadedM3 / totalM3) * 100)
-              : 0;
-
-            // 🔥 inyectamos los valores en cada fila
-            this.programaPedido = response.map(ord => ({
+              : 0;            
+            this.programaPedido = response.map(ord => ({                          
               ...ord,
               loadedM3,
               totalM3,
               percent
-            }));
-
+            }));                        
             this.loading = false;
           },
           error: err => {
