@@ -17,7 +17,7 @@ export class OrdrService {
 
   getProgramaPorPedido(order_code: string, order_date: string): Observable<any[]> {
     // return this.http.get<any[]>(`http://localhost:3000/api/ordr/external/programa`, {
-    return this.http.get<any[]>(`$https://nest-transex-api.onrender.com/api/ordr/external/programa`, {
+    return this.http.get<any[]>(`https://nest-transex-api.onrender.com/api/ordr/external/programa`, {
       params: { order_code, order_date }
     });
   }
