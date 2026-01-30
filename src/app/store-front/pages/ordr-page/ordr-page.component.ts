@@ -270,7 +270,7 @@ export class OrdrPageComponent implements OnInit {
     this.router.navigate(
       ['/store-front/pedidos-actuales'],      
       {
-        queryParams: { code: ord.order_code, mode: 'actuales' },
+        queryParams: { code: ord.order_code.trim(), mode: 'actuales' },
         state: { ord }   
       } 
     );
@@ -281,7 +281,7 @@ export class OrdrPageComponent implements OnInit {
     this.router.navigate(
       ['/store-front/pedidos-futuros'],
       {
-        queryParams: { code: ord.order_code, mode: 'actuales' },
+        queryParams: { code: ord.order_code.trim(), mode: 'futuros' },
         state: { ord }   
       } 
     );
