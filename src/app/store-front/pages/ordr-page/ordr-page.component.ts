@@ -267,7 +267,6 @@ export class OrdrPageComponent implements OnInit {
 
   verPedidosActuales(ord: any, event: Event) {
     event.stopPropagation();
-
     this.router.navigate(
       ['/store-front/pedidos-actuales'],      
       {
@@ -278,7 +277,6 @@ export class OrdrPageComponent implements OnInit {
   }
 
   verPedidosFuturos(ord: any, event: Event) {
-   console.log(ord);
    event.stopPropagation();
     this.router.navigate(
       ['/store-front/pedidos-futuros'],
