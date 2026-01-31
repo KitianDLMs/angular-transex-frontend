@@ -21,6 +21,7 @@ interface Options {
 const emptyUser: User = {
   id: '',
   email: '',
+  rut: '',
   fullName: '',
   isActive: false,
   roles: [],

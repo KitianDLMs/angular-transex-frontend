@@ -18,4 +18,20 @@ export class UsersTableComponent {
   trackByUserId(_: number, user: User) {
     return user.id;
   }
+
+  getRoleBadgeClass(role: string): string {
+    switch (role) {
+      case 'user':
+        return 'bg-green-600';
+
+      case 'admin':
+        return 'bg-red-600';
+
+      case 'super-user':
+        return 'bg-yellow-500 text-black';
+
+      default:
+        return 'bg-gray-400';
+    }
+  }
 }

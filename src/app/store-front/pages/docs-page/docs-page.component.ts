@@ -7,7 +7,6 @@ import { AuthService } from '@auth/services/auth.service';
 import { CustService } from '@dashboard/cust/services/cust.service';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { OrdrService } from '@shared/services/ordr.service';
 import { ProjService } from '@shared/services/proj.service';
 import { forkJoin } from 'rxjs';
 
@@ -102,20 +101,15 @@ export class DocsPageComponent implements OnInit {
             };
             return { code, name };
           });
-
           customers.sort((a, b) =>
             a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
           );
-
           this.userCustCodes = customers.map(c => c.code);
-
           this.selectedCustCode = this.userCustCodes[0];
           this.userCustCode = this.selectedCustCode;
-
           const data = this.customersData[this.selectedCustCode];
           this.customerName = data.name;
           this.customerAddress = data.addr;
-
           this.loadProjectsByCustomer();
           this.onSearch(true);
         });

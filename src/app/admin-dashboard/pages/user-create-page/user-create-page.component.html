@@ -36,6 +36,32 @@
     </div>
   </div>
 
+  <!-- Campo: RUT -->
+<div class="field-group">
+  <input
+    formControlName="rut"
+    type="text"
+    class="input text-black input-bordered w-full"
+    placeholder="12345678-9"
+    (input)="onRutInput($event)"
+  />
+
+  <div class="error-box">
+      <span *ngIf="form.get('rut')?.touched && form.get('rut')?.invalid">
+
+        <span *ngIf="form.get('rut')?.errors?.['required']">
+          El RUT es obligatorio.
+        </span>
+
+        <span *ngIf="form.get('rut')?.errors?.['pattern']">
+          Formato de RUT inválido.
+        </span>
+
+      </span>
+    </div>
+  </div>
+
+
   <!-- Campo: Email -->
   <div class="field-group">
     <input

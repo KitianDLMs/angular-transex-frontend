@@ -187,7 +187,7 @@ export class OrdrPageComponent implements OnInit {
     });
   }
 
-  loadOrders() {
+  loadOrders() {        
     if (!this.userCustCode) return;
 
     this.loading = true;
@@ -201,11 +201,11 @@ export class OrdrPageComponent implements OnInit {
     }
     const requests = proyectos.map(proj =>
       this.ordrService.getPedidosPorProyecto(proj, this.userCustCode!)
-    );
-
+    );    
     forkJoin(requests).subscribe({
-      next: (responses: any) => {                    
+      next: (responses: any) => {     
         this.orders = responses.flat();
+        console.log('ordrs', this.orders);
         this.loading = false;
       },
       error: (err: any) => {

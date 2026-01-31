@@ -30,18 +30,6 @@
             <span>{{ customerName }}</span>
           </ng-template>
         </div>
-        
-        <div class="text-sm text-gray-500 flex items-center justify-center gap-2 mt-1">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3
-                    -3 1.343-3 3 1.343 3 3 3z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M19.5 11c0 7.5-7.5 11-7.5 11S4.5 18.5 4.5 11
-                    a7.5 7.5 0 1115 0z"/>
-          </svg>
-          {{ customersData[selectedCustCode!].addr! || customerAddress }}
-        </div>
       </div>
     </div>
   </div>

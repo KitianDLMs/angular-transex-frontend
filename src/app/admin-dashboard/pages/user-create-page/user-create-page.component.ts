@@ -10,11 +10,12 @@ import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { UserService } from '@dashboard/users/services/user.service';
 import { CustService } from '@dashboard/cust/services/cust.service';
+import { RutFormatDirective } from '@auth/pipes/rut-format.directive';
 
 @Component({
   selector: 'app-user-create-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, FormsModule, RutFormatDirective],
   templateUrl: './user-create-page.component.html',
   styleUrl: './user-create-page.component.css',
 })
@@ -43,6 +44,10 @@ export class UserCreatePageComponent implements OnInit {
         Validators.required,
         Validators.minLength(3),
         Validators.maxLength(30)
+      ]],
+      rut: ['', [
+        Validators.required,
+        Validators.pattern(/^\d{1,2}\.\d{3}\.\d{3}-[\dkK]$|^\d{7,8}-[\dkK]$/)
       ]],
       email: ['', [
         Validators.required,
@@ -166,6 +171,7 @@ export class UserCreatePageComponent implements OnInit {
 
     let payload: any = {
       fullName: raw.fullName,
+      rut: raw.rut,
       email: raw.email,
       password: raw.password,
       roles: [role],
@@ -185,4 +191,11 @@ export class UserCreatePageComponent implements OnInit {
     });
   }
 
+  onRutInput(event: any) {
+    const input = event.target;
+    input.value = input.value
+      .replace(/[^0-9kK-]/g, '')
+      .toUpperCase()
+      .slice(0, 10);
+  }  
 }

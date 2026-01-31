@@ -57,13 +57,21 @@ export class UserEditPageComponent implements OnInit {
 
     this.form = this.fb.group({
       fullName: ['', Validators.required],
+      rut: ['', [
+        Validators.required,
+        Validators.pattern(/^\d{1,2}\.\d{3}\.\d{3}-[\dkK]$|^\d{7,8}-[\dkK]$/)
+      ]],
       email: ['', [Validators.required, Validators.email]],
-      roles: ['', Validators.required],
-
-      cust_code: [{ value: '', disabled: true }],
-      cust_codes: [{ value: [], disabled: true }],
-      custCodeInput: [{ value: '', disabled: true }],
-
+      roles: ['', Validators.required],      
+      cust_code: [{ value: '', disabled: true }, [
+        Validators.required,
+        Validators.maxLength(13)
+      ]],
+      cust_codes: [[]],  
+      custCodeInput: [
+        '',
+        [Validators.required, Validators.maxLength(13)]
+      ],
       projects: [[]],
       password: ['', [Validators.maxLength(15), Validators.pattern(passwordRegex)]]
     });
@@ -89,6 +97,7 @@ export class UserEditPageComponent implements OnInit {
   get sortedProjects() {
     const selectedProjects = this.form.get('projects')?.value || [];
     return this.projects.slice().sort((a, b) => {
+      console.log(this.projects);    
       const aSelected = selectedProjects.includes(a.code) ? 0 : 1;
       const bSelected = selectedProjects.includes(b.code) ? 0 : 1;
       return aSelected - bSelected;
@@ -108,6 +117,7 @@ export class UserEditPageComponent implements OnInit {
           fullName: user.fullName,
           email: user.email,
           roles: role,
+          rut: user.rut,
           cust_code: user.cust_code
         });
         
@@ -185,11 +195,29 @@ export class UserEditPageComponent implements OnInit {
   }
 
   checkCustCode() {
-    const code = this.form.get('cust_code')?.value?.trim();
-    if (!code) return;
+    const control = this.form.get('cust_code');
+    const code = control?.value?.trim();
 
-    this.custService.getCustByCode(code).subscribe(cust => {
-      this.customerName = cust?.name ?? '';
+    if (!code) {
+      this.customerName = '';
+      control?.setErrors({ required: true });
+      return;
+    }
+
+    this.custService.getCustByCode(code).subscribe({
+      next: (cust) => {
+        if (cust) {
+          this.customerName = cust.name;          
+          control?.setErrors(null);
+        } else {
+          this.customerName = 'Cliente no encontrado';          
+          control?.setErrors({ notFound: true });
+        }
+      },
+      error: () => {
+        this.customerName = 'Error buscando cliente';
+        control?.setErrors({ notFound: true });
+      }
     });
   }
 
@@ -224,6 +252,7 @@ export class UserEditPageComponent implements OnInit {
       fullName: raw.fullName,
       email: raw.email,
       roles: [raw.roles],
+      rut: raw.rut,
       projects: raw.projects
     };
 
@@ -236,4 +265,40 @@ export class UserEditPageComponent implements OnInit {
       next: () => this.router.navigate(['/admin/users'])
     });
   }
+
+  onCustCodeInput(event: Event, controlName: 'cust_code' | 'custCodeInput' = 'cust_code') {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/[^0-9]/g, '');
+
+    this.form.get(controlName)?.setValue(value, { emitEvent: false });
+  }
+
+  onRutInput(event: any) {
+    const input = event.target;
+    input.value = input.value
+      .replace(/[^0-9kK-]/g, '')
+      .toUpperCase()
+      .slice(0, 10);
+  }
+
+  custCodeInputName: string | null = null;
+
+  checkCustCodeMultiple() {
+    const control = this.form.get('custCodeInput');
+    const code = control?.value;
+
+    if (!code || control?.invalid) return;
+
+    this.custService.getCustByCode(code).subscribe({
+      next: (customer) => {
+        this.custCodeInputName = customer.name;
+        control?.setErrors(null);
+      },
+      error: () => {
+        this.custCodeInputName = null;
+        control?.setErrors({ notFound: true });
+      }
+    });
+  }
+
 }

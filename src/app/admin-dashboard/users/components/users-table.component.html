@@ -2,7 +2,7 @@
   <table class="table w-full">
     <thead>
       <tr>
-        <th>ID</th>
+        <th>Rut</th>
         <th>Email</th>
         <th>Nombre</th>
         <th>Roles</th>
@@ -13,9 +13,9 @@
     <tbody>
       <tr *ngFor="let u of users; trackBy: trackByUserId">
         <td class="font-bold max-w-[160px] sm:max-w-none
-                overflow-x-auto
-                whitespace-nowrap
-                scrollbar-thin">{{ u.id }}</td>
+                  overflow-x-auto whitespace-nowrap scrollbar-thin">
+          {{ u.rut ?? 'Sin Rut' }}
+        </td>
 
         <td class="max-w-[160px] sm:max-w-none
                 overflow-x-auto
@@ -25,26 +25,29 @@
                 overflow-x-auto
                 whitespace-nowrap
                 scrollbar-thin">{{ u.fullName }}</td>
-
         <td>
-          <span
-            class="badge"
-            [ngClass]="{
-              'badge-success': u.roles.length,
-              'badge-error': !u.roles.length
-            }"
-          >
-            {{ u.roles.join(', ') || 'N/A' }}
-          </span>
-        </td>
+          <div class="flex flex-wrap gap-1">
+            <span
+              *ngFor="let role of u.roles"
+              class="badge text-white text-xs"
+              [ngClass]="getRoleBadgeClass(role)"
+            >
+              {{ role }}
+            </span>
 
+            <span *ngIf="!u.roles || u.roles.length === 0" class="text-sm text-gray-500">
+              N/A
+            </span>
+          </div>
+        </td>
         <td class="flex gap-2">
-          <a
+          <button
+            type="button"
+            class="btn btn-success btn-xs text-white"
             [routerLink]="['/admin/users', u.id]"
-            class="btn btn-ghost btn-xs text-accent"
           >
             Editar
-          </a>
+          </button>
         </td>
       </tr>    
     </tbody>

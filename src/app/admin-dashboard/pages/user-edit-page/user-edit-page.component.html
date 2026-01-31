@@ -7,58 +7,87 @@
   class="grid grid-cols-1 sm:grid-cols-2 gap-4"
 >
 
-  <!-- NOMBRE -->
-  <div class="sm:col-span-2">
-    <label class="font-semibold">Nombre</label>
+  <!-- Nombre Completo -->
+  <div class="field-group">
     <input
       formControlName="fullName"
-      class="input input-bordered w-full"
+      class="input text-black input-bordered w-full"
+      placeholder="Nombre completo"
     />
+
+    <div class="error-box">
+      <span *ngIf="form.get('fullName')?.touched && form.get('fullName')?.invalid">
+        <span *ngIf="form.get('fullName')?.errors?.['required']">
+          El nombre es obligatorio.
+        </span>
+      </span>
+    </div>
   </div>
 
-  <!-- EMAIL -->
-  <div class="sm:col-span-2">
-    <label class="font-semibold">Email</label>
+  <!-- RUT -->
+  <div class="field-group">
+    <input
+      formControlName="rut"
+      type="text"
+      class="input text-black input-bordered w-full"
+      placeholder="12345678-9"
+      (input)="onRutInput($event)"
+    />
+
+    <div class="error-box">
+      <span *ngIf="form.get('rut')?.touched && form.get('rut')?.invalid">
+        <span *ngIf="form.get('rut')?.errors?.['required']">
+          El RUT es obligatorio.
+        </span>
+        <span *ngIf="form.get('rut')?.errors?.['pattern']">
+          Formato de RUT inválido.
+        </span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Email -->
+  <div class="field-group">
     <input
       formControlName="email"
-      class="input input-bordered w-full"
+      type="email"
+      class="input text-black input-bordered w-full"
+      placeholder="Email"
     />
+
+    <div class="error-box">
+      <span *ngIf="form.get('email')?.touched && form.get('email')?.invalid">
+        <span *ngIf="form.get('email')?.errors?.['required']">
+          El email es obligatorio.
+        </span>
+        <span *ngIf="form.get('email')?.errors?.['email']">
+          Debe ingresar un correo válido.
+        </span>
+      </span>
+    </div>
   </div>
 
-  <!-- PASSWORD -->
-  <div class="col-span-1 sm:col-span-2">
-    <label class="block mb-2 font-semibold">
-      Nueva contraseña
-      <span class="text-sm text-gray-500">(opcional)</span>
-    </label>
-
+  <!-- Password -->
+  <div class="field-group">
     <input
       type="password"
       formControlName="password"
-      maxlength="15"
-      minlength="6"
-      class="input input-bordered text-black w-full"
-      placeholder="Dejar vacío para no cambiar"
+      class="input text-black input-bordered w-full"
+      placeholder="Nueva contraseña (opcional)"
     />
 
-    <p
-      *ngIf="
-        form.get('password')?.touched &&
-        form.get('password')?.invalid
-      "
-      class="text-red-600 text-sm mt-1"
-    >
-      La contraseña debe tener al menos una mayúscula y un número
-    </p>
+    <div class="error-box">
+      <span *ngIf="form.get('password')?.touched && form.get('password')?.invalid">
+        La contraseña debe tener al menos una mayúscula y un número.
+      </span>
+    </div>
   </div>
 
-
-  <!-- ROL -->
-  <div class="sm:col-span-2">
-    <label class="font-semibold">Rol</label>
+  <!-- Rol -->
+  <div class="field-group">
     <select
       formControlName="roles"
-      class="select select-bordered w-full"
+      class="select select-bordered text-black w-full"
     >
       <option value="user">Usuario</option>
       <option value="admin">Administrador</option>
@@ -66,73 +95,132 @@
     </select>
   </div>
 
-  <!-- USER: CLIENTE ÚNICO -->
-  <div *ngIf="form.get('cust_code')?.enabled" class="sm:col-span-2">
-    <label class="font-semibold">Cliente</label>
-    <input
-      disable
+  <!-- Cliente único -->
+  <div class="field-group" *ngIf="form.get('cust_code')?.enabled">
+      <input
       formControlName="cust_code"
-      class="input input-bordered w-full"
+      type="text"
+      class="input text-black input-bordered w-full"
+      placeholder="Código de cliente"
+      maxlength="13"
+      required
+      inputmode="numeric"
+      (input)="onCustCodeInput($event)"
       (blur)="checkCustCode()"
     />
-    <div class="text-sm text-gray-600">
+
+    <!-- Nombre del cliente -->
+    <span class="ml-2 text-gray-700 font-medium" *ngIf="customerName">
       {{ customerName }}
+    </span>
+
+    <div class="error-box">
+      <span *ngIf="form.get('cust_code')?.touched && form.get('cust_code')?.invalid">
+        <span *ngIf="form.get('cust_code')?.errors?.['required']">
+          El código de cliente es obligatorio.
+        </span>
+        <span *ngIf="form.get('cust_code')?.errors?.['maxlength']">
+          Máximo 13 caracteres permitidos.
+        </span>
+         <span *ngIf="form.get('cust_code')?.errors?.['notFound']">
+          Cliente no existe
+        </span>
+      </span>
     </div>
   </div>
 
-  <!-- ADMIN / SUPER: CLIENTES MÚLTIPLES -->
-  <div *ngIf="form.get('cust_codes')?.enabled" class="sm:col-span-2">
-    <label class="font-semibold">Agregar Clientes</label>
+  <!-- Clientes múltiples -->
+  <div class="field-group sm:col-span-2" *ngIf="form.get('cust_codes')?.enabled">
 
-    <div class="flex gap-2">
+    <label class="font-semibold mb-1 block">Agregar Clientes</label>
+
+    <div class="flex gap-2 items-start">
       <input
         formControlName="custCodeInput"
-        class="input input-bordered flex-1"
-        placeholder="Código cliente"
+        type="text"
+        class="input input-bordered text-black flex-1"
+        placeholder="Código de cliente"
+        maxlength="13"
+        required
+        inputmode="numeric"
+        (input)="onCustCodeInput($event, 'custCodeInput')"
+        (blur)="checkCustCodeMultiple()"
       />
+
       <button
         type="button"
         class="btn btn-outline"
         (click)="addCustCode()"
+        [disabled]="form.get('custCodeInput')?.invalid"
       >
         Agregar
       </button>
     </div>
 
+    <!-- Nombre del cliente -->
+    <span
+      class="ml-2 text-gray-700 font-medium"
+      *ngIf="custCodeInputName"
+    >
+      {{ custCodeInputName }}
+    </span>
+
+    <!-- Errores -->
+    <div class="error-box">
+      <span *ngIf="form.get('custCodeInput')?.touched && form.get('custCodeInput')?.invalid">
+        <span *ngIf="form.get('custCodeInput')?.errors?.['required']">
+          El código de cliente es obligatorio.
+        </span>
+        <span *ngIf="form.get('custCodeInput')?.errors?.['maxlength']">
+          Máximo 13 caracteres permitidos.
+        </span>
+        <span *ngIf="form.get('custCodeInput')?.errors?.['notFound']">
+          Cliente no existe
+        </span>
+        <span *ngIf="form.get('custCodeInput')?.errors?.['duplicate']">
+          El cliente ya fue agregado
+        </span>
+      </span>
+    </div>
+
+    <!-- Chips -->
     <div class="flex flex-wrap gap-2 mt-3">
       <span
         *ngFor="let code of form.get('cust_codes')?.value"
-        class="bg-blue-600 text-white px-3 py-1 rounded-full"
+        class="bg-blue-600 text-white px-3 py-1 rounded-full flex items-center gap-2"
       >
         {{ code }} – {{ custCodeNames[code] }}
         <button
           type="button"
-          class="ml-2"
+          class="text-white font-bold hover:text-red-300"
           (click)="removeCustCode(code)"
         >
           ✕
         </button>
       </span>
     </div>
+
   </div>
 
-  <!-- 🔥 PROYECTOS (USER + ADMIN) -->
+
+  <!-- Proyectos -->
   <div *ngIf="projects.length > 0" class="sm:col-span-2">
     <mat-form-field appearance="fill" class="w-full mt-4">
       <mat-label>Proyectos</mat-label>
       <mat-select formControlName="projects" multiple>
         <mat-option *ngFor="let p of sortedProjects" [value]="p.code">
-          {{ p.name }}
+          {{ p.code }} - {{ p.name }}
         </mat-option>
       </mat-select>
     </mat-form-field>
   </div>
 
-  <!-- BOTONES -->
-  <div class="sm:col-span-2 flex gap-4 mt-6">
-    <button class="btn btn-success flex-1">
+  <!-- Botones -->
+  <div class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-4 mt-6">
+    <button type="submit" class="btn btn-success flex-1">
       Guardar
     </button>
+
     <a
       routerLink="/admin/users"
       class="btn btn-secondary flex-1"

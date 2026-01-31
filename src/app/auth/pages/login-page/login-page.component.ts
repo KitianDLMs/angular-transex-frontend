@@ -2,12 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { RutFormatDirective } from '@auth/pipes/rut-format.directive';
 
 import { AuthService } from '@auth/services/auth.service';
 
 @Component({
   selector: 'app-login-page',
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, RutFormatDirective],
   templateUrl: './login-page.component.html',
 })
 export class LoginPageComponent {
@@ -22,28 +23,32 @@ export class LoginPageComponent {
   authService = inject(AuthService);
 
   loginForm = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
+    rut: ['', [Validators.required]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
   onSubmit() {
     this.loading.set(true);
-
+    console.log(this.loginForm.value);    
     if (this.loginForm.invalid) {
       this.hasError.set(true);
 
       setTimeout(() => {
         this.hasError.set(false);
-        this.loading.set(false);  // 🔹 desactiva loading si el form está malo
+        this.loading.set(false);
       }, 2000);
 
       return;
     }
 
-    const { email = '', password = '' } = this.loginForm.value;
+    const { rut = '', password = '' } = this.loginForm.value;
+    const cleanRut = rut!
+      .replace(/[^0-9kK]/g, '')
+      .toLowerCase();
 
-    this.authService.login(email!, password!).subscribe((isAuthenticated) => {
-      this.loading.set(false);   // 🔹 detén loading cuando la API responde
+    console.log('RUT limpio:', cleanRut);  
+    this.authService.login(cleanRut, password!).subscribe((isAuthenticated) => {
+      this.loading.set(false); 
 
       if (isAuthenticated) {
         this.router.navigateByUrl('/store-front');
@@ -56,10 +61,4 @@ export class LoginPageComponent {
       }, 2000);
     });
   }
-
-  // Check Authentication
-
-  // Registro
-
-  // Logout
 }
