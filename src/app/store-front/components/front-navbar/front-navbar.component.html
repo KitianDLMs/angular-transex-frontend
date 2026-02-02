@@ -180,11 +180,23 @@
       </button>
 
       <div
-        class="absolute right-0 mt-2 w-48 bg-gray-800 text-white text-sm
-              px-3 py-2 rounded-xl shadow-xl hidden
-              group-hover:block transition-all duration-200"
+        class="absolute right-0 mt-2 w-64 bg-gray-800 text-white text-sm
+              px-4 py-3 rounded-xl shadow-xl hidden
+              group-hover:block transition-all duration-200 z-50"
       >
-        <p>{{ authService.user()?.fullName || 'Sin nombre' }}</p>
+        <p class="font-semibold text-base mb-1">
+          {{ authService.user()?.fullName || 'Sin nombre' }}
+        </p>
+
+        <p class="text-xs text-gray-300">
+          <span class="font-medium text-gray-400">RUT:</span>
+          {{ authService.user()?.rut || '—' }}
+        </p>
+
+        <p class="text-xs text-gray-300 mt-1 break-all">
+          <span class="font-medium text-gray-400">Email:</span>
+          {{ authService.user()?.email || '—' }}
+        </p>
       </div>
     </div>
     }

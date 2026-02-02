@@ -5,271 +5,192 @@
   </span>
 </header>
 
-<div class="p-4 bg-gray-50">  
+<div class="p-4 bg-gray-50">
+
+  <!-- FILTROS -->
   <div class="bg-white shadow-md rounded-xl p-4 border border-gray-200 flex flex-col sm:flex-row sm:items-center gap-4">
-    <div class="text-gray-600 text-center sm:text-left sm:mr-auto animate__animated animate__fadeIn">        
-      <div class="font-semibold flex items-center justify-center sm:justify-start gap-2" [ngClass]="{ 'mb-3 mt-3': authService.isAdmin()}">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M5.121 17.804A9 9 0 1118.879 17.804 A4.5 4.5 0 0012 13.5 a4.5 4.5 0 00-6.879 4.304z"/>
+
+    <div class="text-gray-600 text-center sm:text-left sm:mr-auto">
+      <div class="font-semibold flex items-center justify-center sm:justify-start gap-2"
+           [ngClass]="{ 'mb-3 mt-3': authService.isAdmin()}">
+
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-600"
+             fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 12a4 4 0 100-8 4 4 0 000 8z"/>
-        </svg>  
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M5.121 17.804A9 9 0 1118.879 17.804"/>
+        </svg>
+
         <ng-container *ngIf="userCustCodes.length > 1; else singleCustomer">
-          <select [(ngModel)]="selectedCustCode" (change)="onCustomerChange()"
+          <select [(ngModel)]="selectedCustCode"
+                  (change)="onCustomerChange()"
                   class="select select-bordered bg-gray-50">
             <option *ngFor="let code of sortedUserCustCodes" [value]="code">
               {{ customersData[code].name || code }}
             </option>
           </select>
         </ng-container>
+
         <ng-template #singleCustomer>
           <span>{{ customerName }}</span>
         </ng-template>
-      </div>   
-      <div *ngIf="!authService.isAdmin()" class="text-sm text-gray-500 flex items-center justify-center sm:justify-start gap-2 mt-1">
-        <!-- <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3 -3 1.343-3 3 1.343 3 3 3z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M19.5 11c0 7.5-7.5 11-7.5 11S4.5 18.5 4.5 11 a7.5 7.5 0 1115 0z"/>
-        </svg>       -->
-        <!-- {{ customerAddress || 'Sin dirección' }} -->
       </div>
     </div>
-  <select class="select select-bordered bg-gray-50 w-full sm:w-64"
-            (change)="onSelectProject()"
-            [(ngModel)]="selectedProject">
+
+    <select class="select select-bordered bg-gray-50 w-full sm:w-64"
+            [(ngModel)]="selectedProject"
+            (change)="onSelectProject()">
       <option value="">Todas las obras</option>
-      <option *ngFor="let proj of projectOptions" [value]="proj.proj_code.trim()">
+      <option *ngFor="let proj of projectOptions"
+              [value]="proj.proj_code.trim()">
         {{ proj.proj_code.trim() }} - {{ proj.proj_name.trim() }}
       </option>
     </select>
+
     <button
-      class="btn bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg shadow-sm
-             w-full sm:w-auto mt-2 sm:mt-0"
+      class="btn bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg"
       (click)="clearFilter()">
-       <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 20l5-5m0 0l3 3m-3-3l6-6m3-3a2.828 2.828 0 10-4-4l4 4z"
-          />
-        </svg>
       Limpiar
     </button>
   </div>
 
-  @if (loading) {
-  <div class="flex flex-col items-center justify-center p-6 text-gray-500 gap-3 animate__animated animate__fadeIn">
-    <img
-      src="assets/images/logoHORMIGONES.png"
-      alt="Cargando"
-      class="h-8 w-8 animate-pulse"
-    />
+  <!-- LOADING -->
+  <div *ngIf="loading" class="flex flex-col items-center p-10 text-gray-500">
+    <img src="assets/images/logoHORMIGONES.png" class="h-8 w-8 animate-pulse" />
     <span>Cargando pedidos...</span>
   </div>
-  }
 
-  <div
-    *ngIf="!loading && orders.length > 0"
-    class="overflow-x-auto bg-white shadow-lg rounded-2xl mt-10 border border-gray-200 animate__animated animate__fadeIn">
+  <!-- SIN OBRA -->
+  <div *ngIf="!loading && !hasSelectedProject"
+       class="bg-white rounded-2xl mt-10 p-10 text-center text-gray-500 shadow">
+       <div class="flex justify-center mb-4">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-14 h-14 text-cyan-600"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="1.5">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M12 9v3.75m0 3h.008M10.29 3.86l-8.09 14.02A1.5 1.5 0 0 0 3.5 20.25h17a1.5 1.5 0 0 0 1.3-2.37L13.71 3.86a1.5 1.5 0 0 0-2.42 0Z" />
+      </svg>
+    </div>
+    <p class="text-lg font-semibold">Debes seleccionar una obra</p>
+    <p class="text-sm">Selecciona un proyecto para ver los pedidos</p>
+  </div>
 
-    <table class="min-w-full border-collapse text-sm text-gray-700">
-      <thead class="bg-cyan-700 text-white uppercase text-xs tracking-wide">
+  <!-- BOTONES ACTUALES / FUTUROS -->
+  <div *ngIf="!loading && hasSelectedProject"
+       class="flex justify-center gap-4 mt-8">
+    <button
+      class="px-6 py-2 rounded-lg font-medium"
+      [class.bg-cyan-700]="viewMode === 'ACTUALES'"
+      [class.text-white]="viewMode === 'ACTUALES'"
+      [class.bg-gray-200]="viewMode !== 'ACTUALES'"
+      (click)="selectViewMode('ACTUALES')">
+      Pedidos actuales
+    </button>
+
+    <button
+      class="px-6 py-2 rounded-lg font-medium"
+      [class.bg-cyan-700]="viewMode === 'FUTUROS'"
+      [class.text-white]="viewMode === 'FUTUROS'"
+      [class.bg-gray-200]="viewMode !== 'FUTUROS'"
+      (click)="selectViewMode('FUTUROS')">
+      Pedidos futuros
+    </button>
+  </div>
+
+  <!-- ===================== -->
+  <!-- CARDS - ACTUALES -->
+  <!-- ===================== -->
+  <div *ngIf="viewMode === 'ACTUALES' && filteredOrders.length"
+       class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10 animate__animated animate__fadeIn">
+
+       <!-- (click)="onOpenOrder(ord, $event)" -->
+    <div *ngFor="let ord of filteredOrders"
+         class="bg-white rounded-2xl shadow-lg border p-5
+                hover:shadow-xl transition cursor-pointer">
+
+      <div class="text-center mb-3">
+        <p class="text-sm text-gray-400 uppercase">
+          {{ ord.proj_name || selectedProject }}
+        </p>
+        <p class="text-xs text-gray-500">
+          Pedido #{{ ord.order_code }}
+        </p>
+      </div>
+
+      <div class="text-center mb-3">
+        <p class="font-semibold text-gray-700">
+          {{ ord.prod_code }} / {{ ord.prod_descr }}
+        </p>
+        <p class="text-xs text-gray-400">
+          Inicio {{ ord.start_time | date:'HH:mm' }}
+        </p>
+      </div>
+
+      <div class="flex justify-center my-4">
+        <app-progress-circle
+          [current]="ord.delivered_qty || ord.delv_qty"
+          [total]="ord.delv_qty">
+        </app-progress-circle>
+      </div>
+
+      <div class="flex justify-center">
+        <span class="px-3 py-1 text-xs rounded-full
+                     bg-green-100 text-green-700">
+          {{ ord.estado }}
+        </span>
+      </div>
+
+      <button
+        class="mt-4 w-full bg-red-500 hover:bg-red-600
+               text-white py-2 rounded-lg"
+               (click)="goToSeguimiento(ord, $event)">
+        Ver detalle
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================== -->
+  <!-- TABLA - FUTUROS -->
+  <!-- ===================== -->
+  <div *ngIf="viewMode === 'FUTUROS' && filteredOrders.length"
+       class="overflow-x-auto bg-white shadow-lg rounded-2xl mt-10 border">
+
+    <table class="min-w-full text-sm text-gray-700">
+      <thead class="bg-cyan-700 text-white text-xs">
         <tr>
-          <th class="py-3 px-4 text-left font-semibold">
-            <div
-              class="
-                max-w-[100px] sm:max-w-none
-                overflow-x-auto
-                whitespace-nowrap
-                scrollbar-thin
-              "
-            >
-              Fecha
-            </div>
-          </th>
-          <th class="py-3 px-4 text-left font-semibold">
-            <div
-              class="
-                max-w-[90px] sm:max-w-none
-                overflow-x-auto
-                whitespace-nowrap
-                scrollbar-thin
-              "
-            >
-              # Pedido
-            </div>
-          </th>
-          <th class="py-3 px-4 text-left font-semibold">
-            <div
-              class="
-                max-w-[140px] sm:max-w-none
-                overflow-x-auto
-                whitespace-nowrap
-                scrollbar-thin
-              "
-            >
-              Cod. Producto
-            </div>
-          </th>
-          <th class="py-3 px-4 text-left font-semibold">
-            <div
-              class="
-                max-w-[180px] sm:max-w-none
-                overflow-x-auto
-                whitespace-nowrap
-                scrollbar-thin
-              "
-            >
-              Hormigón
-            </div>
-          </th>
-          <th class="py-3 px-4 text-left font-semibold">
-            <div class="whitespace-nowrap">Cantidad</div>
-          </th>
-          <th class="py-3 px-4 text-left font-semibold">
-            <div
-              class="
-                max-w-[140px] sm:max-w-none
-                overflow-x-auto
-                whitespace-nowrap
-                scrollbar-thin
-              "
-            >
-              Hora de Inicio
-            </div>
-          </th>
-          <th class="py-3 px-4 text-left font-semibold">
-            <div class="whitespace-nowrap">Frecuencia</div>
-          </th>
-          <th class="py-3 px-4 text-left font-semibold">
-            <div class="whitespace-nowrap">Estado</div>
-          </th>
+          <th class="p-3">Fecha</th>
+          <th class="p-3">Pedido</th>
+          <th class="p-3">Producto</th>
+          <th class="p-3">Cantidad</th>
+          <th class="p-3">Hora</th>
+          <th class="p-3">Estado</th>
         </tr>
       </thead>
       <tbody>
-        <ng-container *ngFor="let ord of orders">
-          <tr
-            class="border-t hover:bg-cyan-50 cursor-pointer"
-            (click)="toggleOrder(ord.order_code)">
-
-            <td class="p-3 max-w-[160px] sm:max-w-none
-                overflow-x-auto
-                whitespace-nowrap
-                scrollbar-thin">
-              {{ ord.order_Date | date:'dd-MM-yyyy' }}
-            </td>
-
-            <td class="py-3 px-4 font-semibold">
-              {{ ord.order_code }}
-            </td>
-
-            <td class="py-3 px-4">
-              {{ ord.prod_code.trim() }}
-            </td>
-
-            <td class="p-3 max-w-[160px] sm:max-w-none
-                overflow-x-auto
-                whitespace-nowrap
-                scrollbar-thin">
-              {{ ord.prod_descr }}
-            </td>
-
-            <td class="py-3 px-4">
-              {{ ord.order_qty }} m³
-            </td>
-
-            <td class="py-3 px-4">
-              {{ ord.start_time | date:'HH:mm'  }}              
-            </td>
-
-            <td class="py-3 px-4">
-              {{ ord.truck_spacing_mins }}
-            </td>
-
-            <td class="p-3 max-w-[160px] sm:max-w-none
-                overflow-x-auto
-                whitespace-nowrap
-                scrollbar-thin">
-              {{ ord.estado }}
-            </td>
-          </tr>
-          <tr *ngIf="expandedOrderCode === ord.order_code">
-            <td colspan="8" class="bg-cyan-50 px-6 py-4">
-              <div class="flex flex-col sm:flex-row gap-3">
-                <ol class="space-y-1">
-                  <li style="cursor: pointer;">
-                    <a
-                      (click)="verPedidosActuales(ord, $event)"
-                      class="flex items-center gap-3 px-4 py-2 rounded-md
-                            text-sm text-gray-700
-                            hover:bg-gray-100 hover:text-cyan-700 transition">
-
-                      <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M8 7V3m8 4V3M3 11h18M5 19h14" />
-                      </svg>
-
-                      Ver pedidos actuales
-                    </a>
-                  </li>
-                  <li style="cursor: pointer;">
-                    <a                      
-                      (click)="verPedidosFuturos(ord, $event)"
-                      class="flex items-center gap-3 px-4 py-2 rounded-md
-                            text-sm text-gray-700
-                            hover:bg-gray-100 hover:text-cyan-700 transition">
-
-                      <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 8v4l3 3" />
-                      </svg>
-                      Ver pedidos futuros
-                    </a>
-                  </li>
-                </ol>
-              </div>
-            </td>
-          </tr>
-        </ng-container>
+        <tr *ngFor="let ord of filteredOrders"
+            (click)="onOpenOrder(ord, $event)"
+            class="border-t hover:bg-cyan-50 cursor-pointer">
+          <td class="p-3">{{ ord.order_Date | date:'dd-MM-yyyy' }}</td>
+          <td class="p-3 font-semibold">{{ ord.order_code }}</td>
+          <td class="p-3">{{ ord.prod_descr }}</td>
+          <td class="p-3">{{ ord.delv_qty }} m³</td>
+          <td class="p-3">{{ ord.start_time | date:'HH:mm' }}</td>
+          <td class="p-3">{{ ord.estado }}</td>
+        </tr>
       </tbody>
     </table>
   </div>
-  
-  <div
-    *ngIf="!loading && totalPages > 1"
-    class="flex items-center justify-between mt-6 px-4">
-    
-    <button
-      class="btn bg-gray-200 text-gray-700 hover:bg-gray-300 px-4 py-2 rounded-lg disabled:opacity-50"
-      (click)="prevPage()"
-      [disabled]="page === 1">
-      ← Anterior
-    </button>
-    
-    <div class="text-sm text-gray-600">
-      Página <strong>{{ page }}</strong> de <strong>{{ totalPages }}</strong>
-    </div>
-    
-    <button
-      class="btn bg-cyan-700 text-white hover:bg-cyan-800 px-4 py-2 rounded-lg disabled:opacity-50"
-      (click)="nextPage()"
-      [disabled]="page === totalPages">
-      Siguiente →
-    </button>
-  </div>
 
+  <!-- SIN PEDIDOS -->
   <div
-    *ngIf="!loading && orders.length === 0"
+    *ngIf="!loading && hasSelectedProject && viewMode && filteredOrders.length === 0"
     class="bg-white shadow-lg rounded-2xl mt-10 border border-gray-200
           p-10 text-center text-gray-500 animate__animated animate__fadeIn">
 

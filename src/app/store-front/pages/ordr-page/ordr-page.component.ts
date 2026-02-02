@@ -7,36 +7,31 @@ import { CustService } from '@dashboard/cust/services/cust.service';
 import { Router } from '@angular/router';
 import { ProjService } from '@shared/services/proj.service';
 import { forkJoin } from 'rxjs';
+import { ProgressCircleComponent } from '@shared/progress-circle/progress-circle.component';
 
 @Component({
   selector: 'app-ordr-page',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule],
+  imports: [CommonModule, DatePipe, FormsModule, ProgressCircleComponent],
   templateUrl: './ordr-page.component.html',
 })
 export class OrdrPageComponent implements OnInit {
 
   orders: any[] = [];
   projectOptions: { proj_code: string; proj_name: string }[] = [];
-  selectedProject = '';
-
   loading = false;
-
   page = 1;
   limit = 10;
   totalPages = 0;
   totalItems = 0;
   activeProject: string | null = null;
-
-  currentUser: any = null;
-  viewMode: 'ACTUALES' | 'FUTUROS' = 'ACTUALES';
-
+  currentUser: any = null;  
+  viewMode: 'ACTUALES' | 'FUTUROS' | null = null;
+  selectedProject = '';
   today = new Date();
   currentYear = new Date().getFullYear();
-
   customerName: string | null = null;
   customerAddress: string | null = null;
-
   userCustCode: string | null = null;
   userName: string | null = null;
   expandedOrderCode: string | null = null;
@@ -100,6 +95,18 @@ export class OrdrPageComponent implements OnInit {
     }
   }
 
+  get mustSelectProject(): boolean {
+    return !this.selectedProject;
+  }
+
+  get showViewButtons(): boolean {
+    return !!this.selectedProject && this.viewMode === null;
+  }
+
+  get showTable(): boolean {
+    return !!this.selectedProject && !!this.viewMode && this.orders.length > 0;
+  }
+
   toggleOrder(orderCode: string) {
     this.expandedOrderCode =
       this.expandedOrderCode === orderCode ? null : orderCode;
@@ -144,21 +151,7 @@ export class OrdrPageComponent implements OnInit {
       };
     });
   }
-
-  get filteredOrders(): any[] {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    return this.orders.filter(ord => {
-      const orderDate = new Date(ord.order_Date);
-      orderDate.setHours(0, 0, 0, 0);
-
-      return this.viewMode === 'ACTUALES'
-        ? orderDate <= today
-        : orderDate > today;
-    });
-  }
-
+  
   loadProjects() {
     const allowedProjects = this.currentUser?.projects ?? [];
 
@@ -187,44 +180,46 @@ export class OrdrPageComponent implements OnInit {
     });
   }
 
-  loadOrders() {        
-    if (!this.userCustCode) return;
-
-    this.loading = true;
-
-    const proyectos = this.selectedProject ? [this.selectedProject] : this.projectOptions.map(p => p.proj_code);
-    
-    if (!proyectos.length) {
+  loadOrders() {
+    if (!this.userCustCode || !this.selectedProject) {
       this.orders = [];
       this.loading = false;
       return;
     }
-    const requests = proyectos.map(proj =>
-      this.ordrService.getPedidosPorProyecto(proj, this.userCustCode!)
-    );    
+
+    this.loading = true;
+
+    const requests = [
+      this.ordrService.getPedidosPorProyecto(
+        this.selectedProject,
+        this.userCustCode
+      )
+    ];
+
     forkJoin(requests).subscribe({
-      next: (responses: any) => {     
+      next: (responses: any[]) => {
         this.orders = responses.flat();
-        console.log('ordrs', this.orders);
         this.loading = false;
       },
-      error: (err: any) => {
-        console.error(err);
+      error: () => {
         this.orders = [];
         this.loading = false;
-      },
+      }
     });
   }
 
   onSelectProject() {
     this.page = 1;
+    this.loadOrders();
+  }
 
-    this.activeProject = this.selectedProject || null;
 
-    if (this.activeProject) {
-      this.loadOrders();
-    } else {
-      this.orders = [];
+  selectViewMode(mode: 'ACTUALES' | 'FUTUROS') {
+    this.viewMode = mode;
+    this.page = 1;
+    if (mode === 'ACTUALES') {
+      console.log('Pedidos actuales seleccionados');
+      console.log(this.filteredOrders);
     }
   }
 
@@ -254,10 +249,26 @@ export class OrdrPageComponent implements OnInit {
     }
   }
 
-  goToSeguimiento(ord: any) {
+  goToSeguimiento(ord: any, event: Event) {
+    event.stopPropagation();
+
     this.router.navigate(
       ['/store-front/seguimiento'],
-      { queryParams: { code: ord.order_code } }
+      {
+        queryParams: {
+          code: ord.order_code
+        },
+        state: {
+          ord,
+          returnContext: {
+            selectedCustCode: this.selectedCustCode,
+            selectedProject: this.selectedProject,
+            viewMode: this.viewMode,
+            page: this.page,
+            scrollY: window.scrollY
+          }
+        }
+      }
     );
   }
 
@@ -265,25 +276,73 @@ export class OrdrPageComponent implements OnInit {
     return !this.loading && this.orders.length === 0;
   }
 
+  getCurrentQty(ord: any): number {
+    return ord.delivered_qty ?? 0;
+  }
+  
   verPedidosActuales(ord: any, event: Event) {
     event.stopPropagation();
     this.router.navigate(
-      ['/store-front/pedidos-actuales'],      
+      ['/store-front/pedidos-actuales'],
       {
-        queryParams: { code: ord.order_code.trim(), mode: 'actuales' },
-        state: { ord }   
-      } 
+        queryParams: {
+          code: ord.order_code.trim(),
+          date: ord.order_Date,
+          mode: 'actuales'
+        },
+        state: { ord }
+      }
     );
   }
 
   verPedidosFuturos(ord: any, event: Event) {
-   event.stopPropagation();
+    event.stopPropagation();
     this.router.navigate(
       ['/store-front/pedidos-futuros'],
       {
-        queryParams: { code: ord.order_code.trim(), mode: 'futuros' },
-        state: { ord }   
-      } 
+        queryParams: {
+          code: ord.order_code.trim(),
+          date: ord.order_Date,
+          mode: 'futuros'
+        },
+        state: { ord }
+      }
     );
+  }
+
+  get hasSelectedProject(): boolean {    
+    return !!this.selectedProject;
+  }
+  
+  get filteredOrders(): any[] {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return this.orders.filter(ord => {
+      const orderDate = new Date(ord.order_Date);
+      orderDate.setHours(0, 0, 0, 0);
+
+      return this.viewMode === 'ACTUALES'
+        ? orderDate <= today
+        : orderDate > today;
+    });
+  }
+
+  onOpenOrder(ord: any, event: Event) {
+    console.log(ord);
+    console.log('onOpenOrder');    
+    event.stopPropagation();
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const orderDate = new Date(ord.order_Date);
+    orderDate.setHours(0, 0, 0, 0);
+
+    if (orderDate <= today) {
+      this.verPedidosActuales(ord, event);
+    } else {
+      this.verPedidosFuturos(ord, event);
+    }
   }
 }

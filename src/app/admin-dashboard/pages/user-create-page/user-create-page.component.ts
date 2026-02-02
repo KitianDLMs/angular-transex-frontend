@@ -10,12 +10,11 @@ import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { UserService } from '@dashboard/users/services/user.service';
 import { CustService } from '@dashboard/cust/services/cust.service';
-import { RutFormatDirective } from '@auth/pipes/rut-format.directive';
 
 @Component({
   selector: 'app-user-create-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, FormsModule, RutFormatDirective],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, FormsModule],
   templateUrl: './user-create-page.component.html',
   styleUrl: './user-create-page.component.css',
 })

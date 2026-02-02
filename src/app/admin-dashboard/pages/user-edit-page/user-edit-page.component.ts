@@ -70,7 +70,7 @@ export class UserEditPageComponent implements OnInit {
       cust_codes: [[]],  
       custCodeInput: [
         '',
-        [Validators.required, Validators.maxLength(13)]
+        [Validators.maxLength(13)]
       ],
       projects: [[]],
       password: ['', [Validators.maxLength(15), Validators.pattern(passwordRegex)]]
@@ -80,7 +80,6 @@ export class UserEditPageComponent implements OnInit {
       this.toggleCustCodesByRole(role)
     );
 
-    // 🔥 CUANDO ADMIN AGREGA / QUITA CLIENTES
     this.form.get('cust_codes')?.valueChanges.subscribe(codes => {
       if (codes?.length) {
         this.loadProjectsByCustCodes(codes, this.form.get('projects')?.value || []);
@@ -96,8 +95,7 @@ export class UserEditPageComponent implements OnInit {
 
   get sortedProjects() {
     const selectedProjects = this.form.get('projects')?.value || [];
-    return this.projects.slice().sort((a, b) => {
-      console.log(this.projects);    
+    return this.projects.slice().sort((a, b) => {      
       const aSelected = selectedProjects.includes(a.code) ? 0 : 1;
       const bSelected = selectedProjects.includes(b.code) ? 0 : 1;
       return aSelected - bSelected;
@@ -117,7 +115,7 @@ export class UserEditPageComponent implements OnInit {
           fullName: user.fullName,
           email: user.email,
           roles: role,
-          rut: user.rut,
+          rut: this.formatRut(user.rut!),
           cust_code: user.cust_code
         });
         
@@ -148,7 +146,7 @@ export class UserEditPageComponent implements OnInit {
         }
       }
     });
-  }
+  }  
 
   loadProjectsBySingleCust(custCode: string, selected: string[]) {
     this.projService.getByCust(custCode).subscribe(projects => {
@@ -179,17 +177,23 @@ export class UserEditPageComponent implements OnInit {
   }
 
   toggleCustCodesByRole(role: string) {
-    const one = this.form.get('cust_code');
-    const many = this.form.get('cust_codes');
-    const input = this.form.get('custCodeInput');
+  const one = this.form.get('cust_code');
+  const many = this.form.get('cust_codes');
+  const input = this.form.get('custCodeInput');
 
-    if (role === 'user') {
+  if (role === 'user') {
       one?.enable();
+
       many?.disable(); many?.reset();
+      input?.clearValidators();
       input?.disable(); input?.reset();
     } else {
       many?.enable();
+
       input?.enable();
+      input?.clearValidators();
+      input?.updateValueAndValidity();
+
       one?.disable(); one?.reset();
     }
   }
@@ -254,13 +258,12 @@ export class UserEditPageComponent implements OnInit {
       roles: [raw.roles],
       rut: raw.rut,
       projects: raw.projects
-    };
-
+    };    
     if (raw.roles === 'user') payload.cust_code = raw.cust_code;
     else payload.cust_codes = raw.cust_codes;
 
     if (raw.password) payload.password = raw.password;
-
+  
     this.userService.updateUser(this.userId, payload).subscribe({
       next: () => this.router.navigate(['/admin/users'])
     });
@@ -301,4 +304,17 @@ export class UserEditPageComponent implements OnInit {
     });
   }
 
+  formatRut(rut: string): string {
+    if (!rut) return '';
+
+    const clean = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+    const body = clean.slice(0, -1);
+    const dv = clean.slice(-1);
+
+    if (body.length <= 7) {
+      return `${body}-${dv}`;
+    }
+
+    return body.replace(/^(\d{1,2})(\d{3})(\d{3})$/, '$1.$2.$3') + `-${dv}`;
+  }
 }

@@ -29,7 +29,6 @@ export class LoginPageComponent {
 
   onSubmit() {
     this.loading.set(true);
-    console.log(this.loginForm.value);    
     if (this.loginForm.invalid) {
       this.hasError.set(true);
 
@@ -46,7 +45,6 @@ export class LoginPageComponent {
       .replace(/[^0-9kK]/g, '')
       .toLowerCase();
 
-    console.log('RUT limpio:', cleanRut);  
     this.authService.login(cleanRut, password!).subscribe((isAuthenticated) => {
       this.loading.set(false); 
 

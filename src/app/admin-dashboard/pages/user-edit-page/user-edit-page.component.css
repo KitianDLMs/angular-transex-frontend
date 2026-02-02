@@ -1,23 +1,20 @@
-/* FIX ng-multiselect-dropdown con Tailwind / DaisyUI
-ng-multiselect-dropdown {
-  display: block !important;
-  width: 100%;
+.field-group {
+  display: flex;
+  flex-direction: column;
 }
 
-.multiselect-dropdown {
-  display: block !important;
-}
-
-.multiselect-dropdown .dropdown-btn {
-  display: flex !important;
+.error-box {
+  height: 20px; /* <- fija, evita que se mueva */
+  font-size: 0.8rem;
+  color: #b91c1c; /* rojo lindo */
+  padding-left: 4px;
+  display: flex;
   align-items: center;
-  min-height: 42px;
-  background: white;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  padding: 0.5rem;
 }
 
-.multiselect-dropdown .dropdown-list {
-  z-index: 9999 !important;
-} */
+.error-box span {
+  background: #fee2e2;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+}

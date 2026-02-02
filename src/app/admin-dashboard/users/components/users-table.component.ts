@@ -22,16 +22,16 @@ export class UsersTableComponent {
   getRoleBadgeClass(role: string): string {
     switch (role) {
       case 'user':
-        return 'bg-green-600';
+        return 'text-green-600';
 
       case 'admin':
-        return 'bg-red-600';
+        return 'text-red-600';
 
       case 'super-user':
-        return 'bg-yellow-500 text-black';
+        return 'text-yellow-500 text-black';
 
       default:
-        return 'bg-gray-400';
+        return 'text-gray-400';
     }
   }
 }

@@ -30,16 +30,20 @@ export class PedidosActualesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    console.log('PedidosActualesComponent');    
     this.currentUser = this.authService.user();
     
     this.ordBase = history.state?.ord ?? null;    
 
     this.route.queryParams.subscribe(params => {
-      const rawCode = params['code'];          
-      if (!rawCode) return;
+      const rawCode = params['code'];
+      const rawDate = params['date'];
+
+      if (!rawCode || !rawDate) return;
 
       const order_code = rawCode.trim();
-      const order_date = this.datePipe.transform(this.today, 'yyyy-MM-dd');
+      const order_date = this.datePipe.transform(rawDate, 'yyyy-MM-dd');
+
       if (!order_date) return;
 
       this.loading = true;
@@ -48,25 +52,27 @@ export class PedidosActualesComponent implements OnInit {
       this.ordrService
         .getProgramaPorPedido(order_code, order_date)
         .subscribe({
-          next: (response: any[]) => {        
-            console.log(response);                            
+          next: (response: any[]) => {
             const totalM3 = response.reduce(
               (sum, r) => sum + Number(r.load_size ?? 0),
               0
-            );            
+            );
+
             const loadedM3 = response
               .filter(r => r.estado === 'TERMINADO')
               .reduce((sum, r) => sum + Number(r.load_size ?? 0), 0);
 
             const percent = totalM3 > 0
               ? Math.round((loadedM3 / totalM3) * 100)
-              : 0;            
-            this.programaPedido = response.map(ord => ({                          
+              : 0;
+
+            this.programaPedido = response.map(ord => ({
               ...ord,
               loadedM3,
               totalM3,
               percent
-            }));                        
+            }));
+
             this.loading = false;
           },
           error: err => {

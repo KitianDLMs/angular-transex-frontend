@@ -29,10 +29,13 @@
           <div class="flex flex-wrap gap-1">
             <span
               *ngFor="let role of u.roles"
-              class="badge text-white text-xs"
+              class="text-black max-w-[160px] sm:max-w-none
+                overflow-x-auto
+                whitespace-nowrap
+                scrollbar-thin"
               [ngClass]="getRoleBadgeClass(role)"
             >
-              {{ role }}
+              <b>{{ role }}</b>              
             </span>
 
             <span *ngIf="!u.roles || u.roles.length === 0" class="text-sm text-gray-500">

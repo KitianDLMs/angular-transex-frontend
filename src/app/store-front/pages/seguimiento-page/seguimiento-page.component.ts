@@ -11,6 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import mapboxgl, { LngLatLike } from 'mapbox-gl';
 import { CommonModule, DecimalPipe, JsonPipe } from '@angular/common';
 import { environment } from '../../../../environments/environment';
+import { Location } from '@angular/common';
 
 mapboxgl.accessToken = environment.mapboxKey;
 
@@ -29,7 +30,7 @@ interface ProgramaPedido {
   totalM3: number;
   loadedM3: number;
   percent: number;
-  hora?: string;
+  hora?: string;  
   load_size?: number;
 }
 
@@ -47,7 +48,8 @@ export class SeguimientoPageComponent
 {
   constructor(
     private route: ActivatedRoute,
-    private router: Router,    
+    private router: Router,  
+    private location: Location  
   ) {}
 
   currentYear = new Date().getFullYear();
@@ -68,22 +70,23 @@ export class SeguimientoPageComponent
       this.map()!.setZoom(this.zoom());
     }
   });
-  programaPedido = signal<ProgramaPedido[]>([]);
+  programaPedido = signal<ProgramaPedido[]>([]);  
 
   ngOnInit(): void {
-
     if (history.state && history.state.ord) {
       this.ord = history.state.ord;
-      console.log(this.ord);      
+
       const data: ProgramaPedido = {
         order_code: this.ord.order_code,
-        estado: this.ord.estado ?? 'EN TRANSITO',
+        estado: this.ord.estado,
         prod_descr: this.ord.prod_descr ?? '—',
-        totalM3: this.ord.totalM3 ?? this.ord.totalM3 ?? 0,
-        loadedM3: this.ord.loadedM3 ?? this.ord.load_size ?? 0,
-        percent: this.ord.percent ?? 0,
-        hora: this.ord.hora,
-        load_size: this.ord.load_size
+        totalM3: this.ord.totalM3 ?? this.ord.order_qty ?? 0,
+        loadedM3: this.ord.delv_qty ?? this.ord.load_size ?? 0,
+        percent: this.ord.order_qty
+          ? Math.round((this.ord.delv_qty / this.ord.order_qty) * 100)
+          : 0,
+        hora: this.ord.start_time,
+        load_size: this.ord.load_size,
       };
 
       this.programaPedido.set([data]);
@@ -94,7 +97,7 @@ export class SeguimientoPageComponent
   }
 
   goBack() {
-    this.router.navigate(['/store-front']);
+    this.location.back();
   }
 
   async ngAfterViewInit() {
@@ -123,15 +126,82 @@ export class SeguimientoPageComponent
         this.zoom.set(map.getZoom());
       });
 
-      map.on('moveend', () => {
-        const center = map.getCenter();
-        this.coordinates.set(center);
-      });
+      // map.on('moveend', () => {
+      //   const center = map.getCenter();
+      //   this.coordinates.set(center);
+      // });
 
       map.addControl(new mapboxgl.NavigationControl());
       map.addControl(new mapboxgl.FullscreenControl());
       map.addControl(new mapboxgl.ScaleControl());
+
+      // 🔥 AQUÍ agregamos el marcador
+      if (this.ord?.latitud && this.ord?.longitud) {
+        this.addMarker(
+          Number(this.ord.latitud),
+          Number(this.ord.longitud)
+        );
+      }
     });
+  }
+
+  addMarker(lat: number, lng: number) {
+    if (!this.map()) return;
+
+    const el = document.createElement('div');
+
+    el.style.backgroundImage = `url('assets/images/obra.png')`;
+    el.style.width = '40px';
+    el.style.height = '40px';
+    el.style.backgroundSize = 'contain';
+    el.style.backgroundRepeat = 'no-repeat';
+    el.style.cursor = 'pointer';
+
+    const marker = new mapboxgl.Marker({
+      element: el,
+      anchor: 'bottom',
+    })
+      .setLngLat([lng, lat])
+      .addTo(this.map()!);
+
+    this.markers.update(m => [
+      ...m,
+      { id: 'pedido', mapboxMarker: marker },
+    ]);
+
+    this.map()!.flyTo({
+      center: [lng, lat],
+      // zoom: 14,
+    });
+  }
+
+  get estadoActual(): string {
+    const estadoBackend = this.programaPedido()[0]?.estado;
+    return this.getEstadoUI(estadoBackend);
+  }
+
+  getEstadoUI(estadoBackend: string): string {
+    const estado = estadoBackend?.trim().toUpperCase();
+
+    switch (estado) {
+      case 'POR CONFIRMAR':
+        return 'PROGRAMADO';
+
+      case 'CARGANDO':
+        return 'CARGANDO';
+
+      case 'EN TRANSITO':
+        return 'EN TRANSITO';
+
+      case 'EN OBRA':
+        return 'EN OBRA';
+
+      case 'NORMAL':
+        return 'COMPLETADO';
+
+      default:
+        return 'DESCONOCIDO';
+    }
   }
 
   flyToMarker(lngLat: LngLatLike) {
