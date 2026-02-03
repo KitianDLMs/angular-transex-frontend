@@ -211,6 +211,13 @@ export class OrdrPageComponent implements OnInit {
 pedidos.forEach(o => {
           const code = o.order_code?.trim();
           if (!code) return;
+          pedidos.forEach(o => {
+  console.log(
+    'order:', o.order_code,
+    'start_time:', o.start_time,
+    'detalle:', o.detalles || o
+  );
+});
 
           if (!pedidosUnicos.has(code)) {
             pedidosUnicos.set(code, {

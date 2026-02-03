@@ -1,4 +1,4 @@
-<!-- BACKDROP -->
+<!-- OVERLAY -->
 <div
   class="fixed inset-0 bg-black/40 z-40"
   (click)="onClose()">
@@ -6,17 +6,13 @@
 
 <!-- MAPA + SHEET -->
 <div class="fixed inset-0 z-50">
-
+  
   <!-- MAPA -->
   <div #map class="absolute inset-0"></div>
 
   <!-- SHEET -->
   <section
-    class="absolute bottom-0 left-0 right-0
-           bg-white rounded-t-2xl
-           shadow-2xl
-           max-h-[65vh]
-           overflow-y-auto">
+    class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl max-h-[65vh] overflow-y-auto">
 
     <!-- HANDLE -->
     <div class="flex justify-center py-2">
@@ -25,7 +21,6 @@
 
     <!-- INFO PRINCIPAL -->
     <div class="px-4 pb-4 space-y-3 text-sm">
-
       <div class="flex justify-between">
         <span class="text-gray-500">Pedido</span>
         <span class="font-medium">{{ ord.order_code }}</span>
@@ -33,9 +28,7 @@
 
       <div class="flex justify-between">
         <span class="text-gray-500">Estado</span>
-        <span class="font-medium">
-          {{ estadoActual }}
-        </span>
+        <span class="font-medium">{{ estadoActual }}</span>
       </div>
 
       <div class="flex justify-between">
@@ -47,66 +40,61 @@
 
       <div class="flex justify-between">
         <span class="text-gray-500">Cantidad</span>
-        <span class="font-medium">
-          {{ ord.order_qty }} m³
-        </span>
+        <span class="font-medium">{{ ord.order_qty }} m³</span>
       </div>
     </div>
 
     <hr />
 
-    <!-- PROGRAMADO -->
-    <details *ngIf="estadoActual === 'PROGRAMADO'" open>
-      <summary class="px-4 py-3 font-medium cursor-pointer">
-        Programado
-      </summary>
+    <div class="p-4 space-y-6">
 
-      <table class="w-full text-xs border">
-        <tr class="bg-gray-100">
-          <th class="border p-1">Planta</th>
-          <th class="border p-1">Cantidad</th>
-          <th class="border p-1">Estado</th>
-        </tr>
-        <tr>
-          <td class="border p-1">{{ ord.plant_code }}</td>
-          <td class="border p-1">{{ ord.order_qty }}</td>
-          <td class="border p-1">PROGRAMADO</td>
-        </tr>
-      </table>
-    </details>
+      <!-- ================= -->
+      <!-- EN TRÁNSITO -->
+      <!-- ================= -->
+      <ng-container *ngIf="filasEnTransito.length">
+        <h3 class="font-semibold text-gray-700">En tránsito</h3>
 
-    <!-- EN TRANSITO -->
-    <details *ngIf="estadoActual === 'EN TRANSITO'" open>
-      <summary class="px-4 py-3 font-medium cursor-pointer">
-        En tránsito
-      </summary>
+        <table class="w-full text-sm border">
+          <tr class="bg-gray-100">
+            <th class="p-2">Guía</th>
+            <th class="p-2">Camión</th>
+            <th class="p-2">Cantidad</th>
+            <th class="p-2">Hora en obra</th>
+          </tr>
 
-      <div class="p-4 text-center text-cyan-600 font-medium">
-        🚚 Camión en ruta
-      </div>
-    </details>
+          <tr *ngFor="let d of filasEnTransito">
+            <td class="p-2">{{ d.guia }}</td>
+            <td class="p-2">{{ d.camion }}</td>
+            <td class="p-2">{{ d.cantidad }}</td>
+            <td class="p-2">{{ d.hora_obra }}</td>
+          </tr>
+        </table>
+      </ng-container>
 
-    <!-- EN OBRA -->
-    <details *ngIf="estadoActual === 'EN OBRA'" open>
-      <summary class="px-4 py-3 font-medium cursor-pointer">
-        En obra
-      </summary>
+      <!-- ================= -->
+      <!-- COMPLETADO -->
+      <!-- ================= -->
+      <ng-container *ngIf="filasCompletadas.length">
+        <h3 class="font-semibold text-gray-700">Completado</h3>
 
-      <div class="p-4 text-orange-600 font-medium">
-        Descargando en obra
-      </div>
-    </details>
+        <table class="w-full text-sm border">
+          <tr class="bg-gray-100">
+            <th class="p-2">Guía</th>
+            <th class="p-2">Camión</th>
+            <th class="p-2">Cantidad</th>
+            <th class="p-2">Terminado</th>
+          </tr>
 
-    <!-- COMPLETADO -->
-    <details *ngIf="estadoActual === 'COMPLETADO'" open>
-      <summary class="px-4 py-3 font-medium cursor-pointer">
-        Completado
-      </summary>
+          <tr *ngFor="let d of filasCompletadas">
+            <td class="p-2">{{ d.guia }}</td>
+            <td class="p-2">{{ d.camion }}</td>
+            <td class="p-2">{{ d.cantidad }}</td>
+            <td class="p-2">{{ d.hora_fin }}</td>
+          </tr>
+        </table>
+      </ng-container>
 
-      <div class="p-4 text-green-600 font-medium">
-        Pedido completado ✔
-      </div>
-    </details>
+    </div>
 
     <div class="p-4">
       <button

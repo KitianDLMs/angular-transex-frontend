@@ -129,7 +129,7 @@
           {{ ord.prod_code.trim() }} / {{ ord.prod_descr.trim() }}
         </p>
         <p class="text-xs text-gray-400">
-          Inicio {{ ord.start_time | date:'HH:mm' }}
+          Inicio {{ ord.start_time || 'Hora por confirmar' }}
         </p>
       </div>
 
@@ -199,7 +199,7 @@
           <td class="p-3 font-semibold">{{ ord.order_code }}</td>
           <td class="p-3">{{ ord.prod_descr }}</td>
           <td class="p-3">{{ ord.delv_qty }} m³</td>
-          <td class="p-3">{{ ord.start_time | date:'HH:mm' }}</td>
+          <td class="p-3">{{ ord.start_time || '-' }}</td>
           <td class="p-3">{{ ord.estado }}</td>
         </tr>
       </tbody>

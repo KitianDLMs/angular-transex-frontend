@@ -2,15 +2,16 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
-  Input,
-  Output,
   EventEmitter,
+  Input,
   OnInit,
+  Output,
   signal,
   viewChild,
 } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
-import mapboxgl, { LngLatLike } from 'mapbox-gl';
+import mapboxgl from 'mapbox-gl';
 import { environment } from 'src/environments/environment.development';
 
 mapboxgl.accessToken = environment.mapboxKey;
@@ -32,24 +33,32 @@ export class SeguimientoOverlayComponent
 
   programaPedido = signal<any[]>([]);
 
-  ngOnInit() {
-    if (!this.ord) return;
+  programado: any[] = [];
+  enTransito: any[] = [];
+  completado: any[] = [];
 
-    this.programaPedido.set([
-      {
-        order_code: this.ord.order_code,
-        estado: this.ord.estado,
-        prod_descr: this.ord.prod_descr ?? '—',
-        load_size: this.ord.load_size ?? this.ord.order_qty,
-        hora: this.ord.start_time,
-      },
-    ]);
+  ngOnInit() {
+    if (!this.ord?.detalles) return;
+
+    console.log(this.ord);
+
+    this.programado = this.ord.detalles.filter(
+      (d: any) => d.estado === 'PROGRAMADO'
+    );
+
+    this.enTransito = this.ord.detalles.filter(
+      (d: any) => d.estado === 'EN_TRANSITO'
+    );
+
+    this.completado = this.ord.detalles.filter(
+      (d: any) => d.estado === 'COMPLETADO'
+    );
   }
 
   async ngAfterViewInit() {
     if (!this.divElement()?.nativeElement) return;
 
-    await new Promise(r => setTimeout(r, 50));
+    await new Promise((r) => setTimeout(r, 50));
 
     const map = new mapboxgl.Map({
       container: this.divElement()!.nativeElement,
@@ -79,18 +88,23 @@ export class SeguimientoOverlayComponent
     if (!this.map()) return;
 
     const el = document.createElement('div');
-    el.style.backgroundImage = `url('assets/images/obra.png')`;
+    el.style.backgroundImage = "url('assets/images/obra.png')";
     el.style.width = '40px';
     el.style.height = '40px';
     el.style.backgroundSize = 'contain';
 
-    new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+    new mapboxgl.Marker({
+      element: el,
+      anchor: 'bottom',
+    })
       .setLngLat([lng, lat])
       .addTo(this.map()!);
   }
 
   get estadoActual(): string {
-    const estado = this.programaPedido()[0]?.estado?.trim()?.toUpperCase();
+    const estado = this.programaPedido()[0]?.estado
+      ?.trim()
+      ?.toUpperCase();
 
     switch (estado) {
       case 'POR CONFIRMAR':
@@ -106,6 +120,42 @@ export class SeguimientoOverlayComponent
       default:
         return 'DESCONOCIDO';
     }
+  }
+
+  get filasCompletadas() {
+    if (this.ord?.estado?.trim().toUpperCase() !== 'NORMAL') {
+      return [];
+    }
+
+    return (this.ord.start_times || []).map(
+      (hora: string) => ({
+        guia: '—',
+        camion: '—',
+        cantidad: this.ord.load_size,
+        hora_fin: hora,
+      })
+    );
+  }
+
+  get filasEnTransito() {
+    const estado = this.ord?.estado?.trim().toUpperCase();
+    if (estado === 'NORMAL') return [];
+
+    const ultimaHora =
+      this.ord?.start_times?.[
+        this.ord.start_times.length - 1
+      ];
+
+    if (!ultimaHora) return [];
+
+    return [
+      {
+        guia: '—',
+        camion: '—',
+        cantidad: this.ord.load_size,
+        hora_obra: ultimaHora,
+      },
+    ];
   }
 
   onClose() {
