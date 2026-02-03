@@ -1,21 +1,36 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { OrdrService } from '@shared/services/ordr.service';
 import { AuthService } from '@auth/services/auth.service';
 import { CustService } from '@dashboard/cust/services/cust.service';
 import { Router } from '@angular/router';
 import { ProjService } from '@shared/services/proj.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, map } from 'rxjs';
 import { ProgressCircleComponent } from '@shared/progress-circle/progress-circle.component';
+import mapboxgl from 'mapbox-gl';
+import { SeguimientoOverlayComponent } from 'src/app/seguimiento-sheet/seguimiento-sheet.component';
 
 @Component({
   selector: 'app-ordr-page',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, ProgressCircleComponent],
+  imports: [CommonModule, DatePipe, FormsModule, ProgressCircleComponent, SeguimientoOverlayComponent],
   templateUrl: './ordr-page.component.html',
 })
 export class OrdrPageComponent implements OnInit {
+
+  map!: mapboxgl.Map;
+
+  @ViewChild('map') mapEl!: ElementRef;
+
+  ngAfterViewInit() {
+    this.map = new mapboxgl.Map({
+      container: this.mapEl.nativeElement,
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [-70.65, -33.45], // default
+      zoom: 12
+    });
+  }
 
   orders: any[] = [];
   projectOptions: { proj_code: string; proj_name: string }[] = [];
@@ -25,7 +40,7 @@ export class OrdrPageComponent implements OnInit {
   totalPages = 0;
   totalItems = 0;
   activeProject: string | null = null;
-  currentUser: any = null;  
+  currentUser: any = null;
   viewMode: 'ACTUALES' | 'FUTUROS' | null = null;
   selectedProject = '';
   today = new Date();
@@ -37,7 +52,9 @@ export class OrdrPageComponent implements OnInit {
   expandedOrderCode: string | null = null;
   userCustCodes: string[] = [];
   selectedCustCode: string | null = null;
-  customersData: { [code: string]: { name: string; addr_line_1: string } } = {};  
+  customersData: { [code: string]: { name: string; addr_line_1: string } } = {};
+  showSeguimiento = false;
+  ordenSeleccionada: any = null;
 
   authService = inject(AuthService);
   custService = inject(CustService);
@@ -51,7 +68,9 @@ export class OrdrPageComponent implements OnInit {
   ngOnInit() {
     this.currentUser = this.authService.user();
     if (!this.currentUser) return;
+
     this.userCustCodes = this.currentUser.cust_codes || [];
+
     if (this.userCustCodes.length <= 1) {
       this.selectedCustCode = this.userCustCodes[0] || this.currentUser.cust_code;
       this.userCustCode = this.selectedCustCode;
@@ -63,13 +82,12 @@ export class OrdrPageComponent implements OnInit {
           this.loadOrders();
         });
       }
-    } 
-    else {
+    } else {
       const observables = this.userCustCodes.map(code =>
-    this.custService.getCustByCode(code)
-  );
+        this.custService.getCustByCode(code)
+      );
 
-    forkJoin(observables).subscribe(customers => {
+      forkJoin(observables).subscribe(customers => {
         const customerList = customers.map((cust, i) => {
           const code = (this.userCustCodes[i] || '').trim();
           return {
@@ -78,42 +96,28 @@ export class OrdrPageComponent implements OnInit {
             addr_line_1: cust.addr_line_1 || 'Sin dirección'
           };
         });
-        customerList.sort((a, b) => a.name.toUpperCase().localeCompare(b.name.toUpperCase()));
-        
+
+        customerList.sort((a, b) =>
+          a.name.toUpperCase().localeCompare(b.name.toUpperCase())
+        );
+
         this.userCustCodes = customerList.map(c => c.code);
+
         customerList.forEach(c => {
           this.customersData[c.code] = {
             name: c.name,
             addr_line_1: c.addr_line_1
           };
         });
+
         this.selectedCustCode = (this.userCustCodes[0] || '').trim();
         this.loadCustomerData(this.selectedCustCode);
       });
-
-
     }
   }
 
-  get mustSelectProject(): boolean {
-    return !this.selectedProject;
-  }
-
-  get showViewButtons(): boolean {
-    return !!this.selectedProject && this.viewMode === null;
-  }
-
-  get showTable(): boolean {
-    return !!this.selectedProject && !!this.viewMode && this.orders.length > 0;
-  }
-
-  toggleOrder(orderCode: string) {
-    this.expandedOrderCode =
-      this.expandedOrderCode === orderCode ? null : orderCode;
-  }
-
   get sortedUserCustCodes(): string[] {
-    return [...this.userCustCodes].sort((a, b) => {      
+    return [...this.userCustCodes].sort((a, b) => {
       const nameA = (this.customersData[a]?.name || a).toUpperCase();
       const nameB = (this.customersData[b]?.name || b).toUpperCase();
       return nameA.localeCompare(nameB);
@@ -129,13 +133,13 @@ export class OrdrPageComponent implements OnInit {
     this.userCustCode = custCode;
 
     const data = this.customersData[custCode];
-    if (data) {      
+    if (data) {
       this.customerName = data.name;
       this.customerAddress = data.addr_line_1 ?? null;
-    } else {      
+    } else {
       this.loadCustomer(custCode);
     }
-    
+
     this.loadProjects();
     this.loadOrders();
   }
@@ -144,14 +148,14 @@ export class OrdrPageComponent implements OnInit {
     this.custService.getCustByCode(custCode).subscribe(cust => {
       this.customerName = cust.name;
       this.customerAddress = cust.addr_line_1 ?? null;
-      
+
       this.customersData[custCode] = {
         name: cust.name || 'Sin nombre',
         addr_line_1: cust.addr_line_1 || 'Sin dirección'
       };
     });
   }
-  
+
   loadProjects() {
     const allowedProjects = this.currentUser?.projects ?? [];
 
@@ -189,17 +193,68 @@ export class OrdrPageComponent implements OnInit {
 
     this.loading = true;
 
-    const requests = [
-      this.ordrService.getPedidosPorProyecto(
-        this.selectedProject,
-        this.userCustCode
-      )
-    ];
+    let pedidos$;
 
-    forkJoin(requests).subscribe({
-      next: (responses: any[]) => {
-        this.orders = responses.flat();
-        this.loading = false;
+    if (this.viewMode === 'FUTUROS') {
+      console.log('f');    
+      pedidos$ = this.ordrService.getFutureOrders(this.userCustCode, this.selectedProject);
+    } else {
+      console.log('a');      
+      pedidos$ = this.ordrService.getPedidosPorProyecto(this.selectedProject, this.userCustCode);
+    }
+
+    pedidos$.subscribe({
+      next: (pedidos: any[]) => {
+        console.log(pedidos);        
+        const pedidosUnicos = new Map<string, any>();
+
+pedidos.forEach(o => {
+          const code = o.order_code?.trim();
+          if (!code) return;
+
+          if (!pedidosUnicos.has(code)) {
+            pedidosUnicos.set(code, {
+              ...o,
+              order_code: code,
+              order_qty: Number(o.order_qty) || 0,
+              detalles: [],        
+              ejecutado: 0,
+              porcentaje: 0,
+            });
+          }
+
+          pedidosUnicos.get(code).detalles.push(o); 
+        });
+        const ordersArray = Array.from(pedidosUnicos.values());
+
+        const avances$ = ordersArray.map(ord =>
+          this.ordrService
+            .getAvancePedido(ord.order_code, ord.order_Date)
+            .pipe(
+              map(av => ({
+                ...ord,
+                ejecutado: av.ejecutado || 0,
+                porcentaje:
+                  ord.order_qty > 0
+                    ? Math.round((av.ejecutado / ord.order_qty) * 100)
+                    : 0,
+                descargaConfirmada: (av.ejecutado || 0) > 0
+              }))
+            )
+        );
+
+        forkJoin(avances$).subscribe({
+          next: ordersConAvance => {
+            this.orders = ordersConAvance;
+            console.log('ORDERS CON AVANCE REAL:', this.orders);
+            this.loading = false;
+          },
+          error: err => {
+            console.error('Error obteniendo avance:', err);
+            this.orders = ordersArray;
+            this.loading = false;
+          }
+        });
       },
       error: () => {
         this.orders = [];
@@ -213,19 +268,38 @@ export class OrdrPageComponent implements OnInit {
     this.loadOrders();
   }
 
-
   selectViewMode(mode: 'ACTUALES' | 'FUTUROS') {
     this.viewMode = mode;
     this.page = 1;
-    if (mode === 'ACTUALES') {
-      console.log('Pedidos actuales seleccionados');
-      console.log(this.filteredOrders);
+    // this.loadOrders(); 
+  }
+
+  private getOrderDateTime(ord: any): Date | null {
+    if (!ord?.order_Date) {
+      return null;
     }
+
+    const date = new Date(ord.order_Date);
+
+    if (isNaN(date.getTime())) {
+      return null;
+    }    
+    let hh = 0, mm = 0;
+    if (ord.start_time && ord.start_time.includes(':')) {
+      const parts = ord.start_time.split(':').map(Number);
+      if (!isNaN(parts[0]) && !isNaN(parts[1])) {
+        hh = parts[0];
+        mm = parts[1];
+      }
+    }
+
+    date.setHours(hh, mm, 0, 0);
+
+    return date;
   }
 
   clearFilter() {
     this.selectedProject = '';
-
     if (this.projectOptions.length) {
       this.activeProject = this.projectOptions[0].proj_code;
       this.page = 1;
@@ -235,102 +309,38 @@ export class OrdrPageComponent implements OnInit {
     }
   }
 
-  nextPage() {
-    if (this.page < this.totalPages) {
-      this.page++;
-      this.loadOrders();
-    }
-  }
-
-  prevPage() {
-    if (this.page > 1) {
-      this.page--;
-      this.loadOrders();
-    }
-  }
-
   goToSeguimiento(ord: any, event: Event) {
     event.stopPropagation();
+    this.ordenSeleccionada = ord;
+    this.showSeguimiento = true;
 
-    this.router.navigate(
-      ['/store-front/seguimiento'],
-      {
-        queryParams: {
-          code: ord.order_code
-        },
-        state: {
-          ord,
-          returnContext: {
-            selectedCustCode: this.selectedCustCode,
-            selectedProject: this.selectedProject,
-            viewMode: this.viewMode,
-            page: this.page,
-            scrollY: window.scrollY
-          }
-        }
-      }
-    );
+    // opcional: centrar mapa
+    this.map.flyTo({
+      center: [ord.longitud, ord.latitud],
+      zoom: 9
+    });
   }
 
-  get hasOrders(): boolean {
-    return !this.loading && this.orders.length === 0;
-  }
-
-  getCurrentQty(ord: any): number {
-    return ord.delivered_qty ?? 0;
-  }
-  
-  verPedidosActuales(ord: any, event: Event) {
-    event.stopPropagation();
-    this.router.navigate(
-      ['/store-front/pedidos-actuales'],
-      {
-        queryParams: {
-          code: ord.order_code.trim(),
-          date: ord.order_Date,
-          mode: 'actuales'
-        },
-        state: { ord }
-      }
-    );
-  }
-
-  verPedidosFuturos(ord: any, event: Event) {
-    event.stopPropagation();
-    this.router.navigate(
-      ['/store-front/pedidos-futuros'],
-      {
-        queryParams: {
-          code: ord.order_code.trim(),
-          date: ord.order_Date,
-          mode: 'futuros'
-        },
-        state: { ord }
-      }
-    );
-  }
-
-  get hasSelectedProject(): boolean {    
+  get hasSelectedProject(): boolean {
     return !!this.selectedProject;
   }
-  
+
   get filteredOrders(): any[] {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
 
     return this.orders.filter(ord => {
-      const orderDate = new Date(ord.order_Date);
-      orderDate.setHours(0, 0, 0, 0);
+      const orderDateTime = this.getOrderDateTime(ord);
+      if (!orderDateTime) return false;
 
-      return this.viewMode === 'ACTUALES'
-        ? orderDate <= today
-        : orderDate > today;
+      if (this.viewMode === 'FUTUROS') {
+        return orderDateTime.getTime() > new Date().getTime();
+      }
+
+      return orderDateTime.getTime() <= new Date().getTime();
     });
   }
 
   onOpenOrder(ord: any, event: Event) {
-    console.log(ord);
-    console.log('onOpenOrder');    
     event.stopPropagation();
 
     const today = new Date();
@@ -340,9 +350,15 @@ export class OrdrPageComponent implements OnInit {
     orderDate.setHours(0, 0, 0, 0);
 
     if (orderDate <= today) {
-      this.verPedidosActuales(ord, event);
+      this.router.navigate(
+        ['/store-front/pedidos-actuales'],
+        { queryParams: { code: ord.order_code, date: ord.order_Date } }
+      );
     } else {
-      this.verPedidosFuturos(ord, event);
+      this.router.navigate(
+        ['/store-front/pedidos-futuros'],
+        { queryParams: { code: ord.order_code, date: ord.order_Date } }
+      );
     }
   }
 }

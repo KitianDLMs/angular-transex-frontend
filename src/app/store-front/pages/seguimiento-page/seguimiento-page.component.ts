@@ -109,7 +109,7 @@ export class SeguimientoPageComponent
       container: this.divElement()!.nativeElement,
       style: 'mapbox://styles/mapbox/streets-v12',
       center: [-70.677771, -33.466227],
-      zoom: 10,
+      zoom: 14,
     });
 
     this.mapListeners(map);

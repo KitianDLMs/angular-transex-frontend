@@ -120,24 +120,42 @@
           {{ ord.proj_name || selectedProject }}
         </p>
         <p class="text-xs text-gray-500">
-          Pedido #{{ ord.order_code }}
+          Pedido #{{ ord.order_code.trim() }}
         </p>
       </div>
 
       <div class="text-center mb-3">
         <p class="font-semibold text-gray-700">
-          {{ ord.prod_code }} / {{ ord.prod_descr }}
+          {{ ord.prod_code.trim() }} / {{ ord.prod_descr.trim() }}
         </p>
         <p class="text-xs text-gray-400">
           Inicio {{ ord.start_time | date:'HH:mm' }}
         </p>
       </div>
 
-      <div class="flex justify-center my-4">
-        <app-progress-circle
-          [current]="ord.delivered_qty || ord.delv_qty"
-          [total]="ord.delv_qty">
-        </app-progress-circle>
+      <div class="text-xs text-red-500 text-center">
+        DEBUG: {{ ord.delv_qty }} / {{ ord.order_qty }}
+      </div>
+
+
+      <div class="flex justify-center my-4">        
+      <app-progress-circle
+  [value]="ord.ejecutado"
+  [total]="ord.order_qty">
+</app-progress-circle>
+
+<!-- MENSAJE CLARO -->
+<p
+  *ngIf="!ord.descargaConfirmada"
+  class="text-xs text-gray-500 mt-1 text-center"
+>
+  Descarga pendiente de confirmación<br>
+  <span class="italic">
+    El avance se actualiza cuando las guías pasan a estado
+    <b>En Obra</b>
+  </span>
+</p>
+
       </div>
 
       <div class="flex justify-center">
@@ -218,3 +236,9 @@
     </p>
   </div>
 </div>
+
+<app-seguimiento-overlay
+  *ngIf="showSeguimiento"
+  [ord]="ordenSeleccionada"
+  (close)="showSeguimiento = false">
+</app-seguimiento-overlay>

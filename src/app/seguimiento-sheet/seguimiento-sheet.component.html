@@ -1,0 +1,120 @@
+<!-- BACKDROP -->
+<div
+  class="fixed inset-0 bg-black/40 z-40"
+  (click)="onClose()">
+</div>
+
+<!-- MAPA + SHEET -->
+<div class="fixed inset-0 z-50">
+
+  <!-- MAPA -->
+  <div #map class="absolute inset-0"></div>
+
+  <!-- SHEET -->
+  <section
+    class="absolute bottom-0 left-0 right-0
+           bg-white rounded-t-2xl
+           shadow-2xl
+           max-h-[65vh]
+           overflow-y-auto">
+
+    <!-- HANDLE -->
+    <div class="flex justify-center py-2">
+      <div class="w-10 h-1.5 bg-gray-300 rounded-full"></div>
+    </div>
+
+    <!-- INFO PRINCIPAL -->
+    <div class="px-4 pb-4 space-y-3 text-sm">
+
+      <div class="flex justify-between">
+        <span class="text-gray-500">Pedido</span>
+        <span class="font-medium">{{ ord.order_code }}</span>
+      </div>
+
+      <div class="flex justify-between">
+        <span class="text-gray-500">Estado</span>
+        <span class="font-medium">
+          {{ estadoActual }}
+        </span>
+      </div>
+
+      <div class="flex justify-between">
+        <span class="text-gray-500">Producto</span>
+        <span class="font-medium text-right max-w-[60%]">
+          {{ ord.prod_descr }}
+        </span>
+      </div>
+
+      <div class="flex justify-between">
+        <span class="text-gray-500">Cantidad</span>
+        <span class="font-medium">
+          {{ ord.order_qty }} m³
+        </span>
+      </div>
+    </div>
+
+    <hr />
+
+    <!-- PROGRAMADO -->
+    <details *ngIf="estadoActual === 'PROGRAMADO'" open>
+      <summary class="px-4 py-3 font-medium cursor-pointer">
+        Programado
+      </summary>
+
+      <table class="w-full text-xs border">
+        <tr class="bg-gray-100">
+          <th class="border p-1">Planta</th>
+          <th class="border p-1">Cantidad</th>
+          <th class="border p-1">Estado</th>
+        </tr>
+        <tr>
+          <td class="border p-1">{{ ord.plant_code }}</td>
+          <td class="border p-1">{{ ord.order_qty }}</td>
+          <td class="border p-1">PROGRAMADO</td>
+        </tr>
+      </table>
+    </details>
+
+    <!-- EN TRANSITO -->
+    <details *ngIf="estadoActual === 'EN TRANSITO'" open>
+      <summary class="px-4 py-3 font-medium cursor-pointer">
+        En tránsito
+      </summary>
+
+      <div class="p-4 text-center text-cyan-600 font-medium">
+        🚚 Camión en ruta
+      </div>
+    </details>
+
+    <!-- EN OBRA -->
+    <details *ngIf="estadoActual === 'EN OBRA'" open>
+      <summary class="px-4 py-3 font-medium cursor-pointer">
+        En obra
+      </summary>
+
+      <div class="p-4 text-orange-600 font-medium">
+        Descargando en obra
+      </div>
+    </details>
+
+    <!-- COMPLETADO -->
+    <details *ngIf="estadoActual === 'COMPLETADO'" open>
+      <summary class="px-4 py-3 font-medium cursor-pointer">
+        Completado
+      </summary>
+
+      <div class="p-4 text-green-600 font-medium">
+        Pedido completado ✔
+      </div>
+    </details>
+
+    <div class="p-4">
+      <button
+        class="w-full bg-cyan-700 text-white py-2 rounded-lg"
+        (click)="onClose()">
+        Cerrar
+      </button>
+    </div>
+
+  </section>
+</div>

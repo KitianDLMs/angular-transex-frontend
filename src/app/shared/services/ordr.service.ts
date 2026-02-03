@@ -15,6 +15,32 @@ export class OrdrService {
     return this.http.post(`${this.baseUrl}/ordr`, dto);
   }
 
+  getFutureOrders(custCode: string, projCode?: string) {
+    const params: any = { cust_code: custCode };
+    if (projCode) params.proj_code = projCode;
+
+    return this.http.get<any[]>(`${this.baseUrl}/ordr/future`, { params });
+  }
+
+  getAvancePedido(
+    order_code: string,
+    order_date: string
+  ): Observable<{
+    order_code: string;
+    ejecutado: number;
+    detalle: { estado: string; load_size: string }[];
+  }> {
+    return this.http.get<any>(
+      `${this.baseUrl}/ordr/external/avance-pedido`,
+      {
+        params: {
+          order_code: order_code.trim(),
+          order_date: order_date.trim(),
+        },
+      }
+    );
+  }
+
   getProgramaPorPedido(order_code: string, order_date: string): Observable<any[]> {
     // return this.http.get<any[]>(`http://localhost:3000/api/ordr/external/programa`, {
     return this.http.get<any[]>(`https://nest-transex-api.onrender.com/api/ordr/external/programa`, {
@@ -24,17 +50,16 @@ export class OrdrService {
   
   getPedidosPorProyecto(
     projCode: string,
-    custCode: string
+    custCode: string,
+    viewMode: 'ACTUALES' | 'FUTUROS' = 'ACTUALES'
   ) {
-    return this.http.get<any[]>(
-      `${this.baseUrl}/ordr/external/by-project`,
-      {
-        params: {
-          proj_code: projCode.trim(),
-          cust_code: custCode.trim(),
-        },
-      }
-    );
+    return this.http.get<any[]>(`${this.baseUrl}/ordr/external/by-project`, {
+      params: {
+        proj_code: projCode.trim(),
+        cust_code: custCode.trim(),
+        viewMode // <-- agregamos este query param
+      },
+    });
   }
 
   getPedidosPorCliente(custCode: string) {

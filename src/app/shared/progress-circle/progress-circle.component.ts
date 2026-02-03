@@ -34,7 +34,7 @@ import { CommonModule } from '@angular/common';
       <!-- Texto central -->
       <div class="absolute inset-0 flex flex-col items-center justify-center">
         <p class="text-sm font-semibold text-cyan-700">
-          {{ current }} / {{ total }} m³
+          {{ value }} / {{ total }} m³
         </p>
         <p class="text-xs text-gray-400">
           {{ percentage | number:'1.0-0' }}%
@@ -45,10 +45,10 @@ import { CommonModule } from '@angular/common';
 })
 export class ProgressCircleComponent {
 
-  @Input() current = 0;
+  @Input() value = 0;
   @Input() total = 0;
 
   get percentage(): number {
-    return this.total > 0 ? (this.current / this.total) * 100 : 0;
+    return this.total > 0 ? (this.value / this.total) * 100 : 0;
   }
 }
