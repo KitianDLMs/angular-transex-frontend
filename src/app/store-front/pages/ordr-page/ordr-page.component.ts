@@ -282,15 +282,14 @@ pedidos.forEach(o => {
   }
 
   private getOrderDateTime(ord: any): Date | null {
-    if (!ord?.order_Date) {
-      return null;
-    }
+    if (!ord?.order_Date) return null;
 
-    const date = new Date(ord.order_Date);
+    // Parsear order_Date
+    const dateParts = ord.order_Date.split('T')[0].split('-'); // ["2026", "02", "03"]
+    const year = Number(dateParts[0]);
+    const month = Number(dateParts[1]) - 1; // JS: 0-indexed
+    const day = Number(dateParts[2]);
 
-    if (isNaN(date.getTime())) {
-      return null;
-    }    
     let hh = 0, mm = 0;
     if (ord.start_time && ord.start_time.includes(':')) {
       const parts = ord.start_time.split(':').map(Number);
@@ -300,9 +299,9 @@ pedidos.forEach(o => {
       }
     }
 
-    date.setHours(hh, mm, 0, 0);
-
-    return date;
+    // Crear fecha exacta con hora
+    const orderDateTime = new Date(year, month, day, hh, mm, 0, 0);
+    return orderDateTime;
   }
 
   clearFilter() {

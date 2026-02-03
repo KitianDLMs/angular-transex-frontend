@@ -166,6 +166,7 @@
       </div>
 
       <button
+        *ngIf="viewMode === 'ACTUALES'"
         class="mt-4 w-full bg-red-500 hover:bg-red-600
                text-white py-2 rounded-lg"
                (click)="goToSeguimiento(ord, $event)">
@@ -175,35 +176,53 @@
   </div>
 
   <!-- ===================== -->
-  <!-- TABLA - FUTUROS -->
+  <!-- CARDS - FUTUROS -->
   <!-- ===================== -->
   <div *ngIf="viewMode === 'FUTUROS' && filteredOrders.length"
-       class="overflow-x-auto bg-white shadow-lg rounded-2xl mt-10 border">
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10 animate__animated animate__fadeIn">
 
-    <table class="min-w-full text-sm text-gray-700">
-      <thead class="bg-cyan-700 text-white text-xs">
-        <tr>
-          <th class="p-3">Fecha</th>
-          <th class="p-3">Pedido</th>
-          <th class="p-3">Producto</th>
-          <th class="p-3">Cantidad</th>
-          <th class="p-3">Hora</th>
-          <th class="p-3">Estado</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let ord of filteredOrders"
-            (click)="onOpenOrder(ord, $event)"
-            class="border-t hover:bg-cyan-50 cursor-pointer">
-          <td class="p-3">{{ ord.order_Date | date:'dd-MM-yyyy' }}</td>
-          <td class="p-3 font-semibold">{{ ord.order_code }}</td>
-          <td class="p-3">{{ ord.prod_descr }}</td>
-          <td class="p-3">{{ ord.delv_qty }} m³</td>
-          <td class="p-3">{{ ord.start_time || '-' }}</td>
-          <td class="p-3">{{ ord.estado }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div *ngFor="let ord of filteredOrders"
+        class="bg-white rounded-2xl shadow-lg border p-5
+                hover:shadow-xl transition cursor-pointer"
+        (click)="onOpenOrder(ord, $event)">
+
+      <div class="text-center mb-3">
+        <p class="text-sm text-gray-400 uppercase">
+          {{ ord.proj_name || selectedProject }}
+        </p>
+        <p class="text-xs text-gray-500">
+          Pedido #{{ ord.order_code.trim() }}
+        </p>
+      </div>
+
+      <div class="text-center mb-3">
+        <p class="font-semibold text-gray-700">
+          {{ ord.prod_code.trim() }} / {{ ord.prod_descr.trim() }}
+        </p>
+        <p class="text-xs text-gray-400">
+          Inicio {{ ord.start_time || 'Hora por confirmar' }}
+        </p>
+      </div>
+
+      <div class="text-xs text-red-500 text-center">
+        DEBUG: {{ ord.delv_qty }} / {{ ord.order_qty }}
+      </div>
+
+      <!-- No mostrar barra de progreso para FUTUROS -->
+      <!-- Solo info general -->
+      <div class="flex justify-center my-4">
+        <p class="text-xs text-gray-500 text-center italic">
+          Pedido programado
+        </p>
+      </div>
+
+      <div class="flex justify-center">
+        <span class="px-3 py-1 text-xs rounded-full
+                    bg-green-100 text-green-700">
+          {{ ord.estado }}
+        </span>
+      </div>
+    </div>
   </div>
 
   <!-- SIN PEDIDOS -->
