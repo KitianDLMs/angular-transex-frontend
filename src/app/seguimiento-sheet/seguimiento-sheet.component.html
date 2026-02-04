@@ -1,101 +1,171 @@
-<!-- OVERLAY -->
-<div
-  class="fixed inset-0 bg-black/40 z-40"
-  (click)="onClose()">
-</div>
+<!-- FONDO -->
+<div class="fixed inset-0 bg-black/40 z-40" (click)="onClose()"></div>
 
-<!-- MAPA + SHEET -->
-<div class="fixed inset-0 z-50">
-  
-  <!-- MAPA -->
-  <div #map class="absolute inset-0"></div>
+<!-- CONTENEDOR -->
+<div class="fixed inset-0 z-50 flex flex-col">
+  <!-- MAPA (compacto con márgenes laterales) -->
+  <div class="bg-gray-100 py-3">
+    <div class="mx-4 bg-white rounded-xl shadow-md overflow-hidden">
+      
+      <!-- Header mapa -->
+      <div class="px-4 py-2 text-sm font-semibold text-gray-700 border-b">
+        📍 Ubicación del pedido
+      </div>
 
-  <!-- SHEET -->
-  <section
-    class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl max-h-[65vh] overflow-y-auto">
+      <!-- Mapa -->
+      <div #map class="h-[170px] w-full"></div>
 
-    <!-- HANDLE -->
-    <div class="flex justify-center py-2">
-      <div class="w-10 h-1.5 bg-gray-300 rounded-full"></div>
     </div>
+  </div>
+  <!-- FICHA -->
+  <section class="bg-white flex-1 overflow-y-auto">
 
-    <!-- INFO PRINCIPAL -->
-    <div class="px-4 pb-4 space-y-3 text-sm">
-      <div class="flex justify-between">
+    <!-- INFO -->
+    <div class="p-4 text-sm border-b space-y-1">
+
+    <div class="grid grid-cols-[auto_1fr] gap-x-3">
         <span class="text-gray-500">Pedido</span>
-        <span class="font-medium">{{ ord.order_code }}</span>
-      </div>
+        <strong class="text-right">{{ ord.order_code }}</strong>
+    </div>
 
-      <div class="flex justify-between">
+    <div class="grid grid-cols-[auto_1fr] gap-x-3">
         <span class="text-gray-500">Estado</span>
-        <span class="font-medium">{{ estadoActual }}</span>
-      </div>
+        <strong class="text-right">Normal</strong>
+    </div>
 
-      <div class="flex justify-between">
+    <div class="grid grid-cols-[auto_1fr] gap-x-3">
         <span class="text-gray-500">Producto</span>
-        <span class="font-medium text-right max-w-[60%]">
-          {{ ord.prod_descr }}
-        </span>
-      </div>
+        <strong class="text-right">{{ ord.prod_descr }}</strong>
+    </div>
 
-      <div class="flex justify-between">
+    <div class="grid grid-cols-[auto_1fr] gap-x-3">
         <span class="text-gray-500">Cantidad</span>
-        <span class="font-medium">{{ ord.order_qty }} m³</span>
-      </div>
+        <strong class="text-right">{{ ord.order_qty }} m³</strong>
     </div>
-
-    <hr />
-
-    <div class="p-4 space-y-6">
-
-      <!-- ================= -->
-      <!-- EN TRÁNSITO -->
-      <!-- ================= -->
-      <ng-container *ngIf="filasEnTransito.length">
-        <h3 class="font-semibold text-gray-700">En tránsito</h3>
-
-        <table class="w-full text-sm border">
-          <tr class="bg-gray-100">
-            <th class="p-2">Guía</th>
-            <th class="p-2">Camión</th>
-            <th class="p-2">Cantidad</th>
-            <th class="p-2">Hora en obra</th>
-          </tr>
-
-          <tr *ngFor="let d of filasEnTransito">
-            <td class="p-2">{{ d.guia }}</td>
-            <td class="p-2">{{ d.camion }}</td>
-            <td class="p-2">{{ d.cantidad }}</td>
-            <td class="p-2">{{ d.hora_obra }}</td>
-          </tr>
-        </table>
-      </ng-container>
-
-      <!-- ================= -->
-      <!-- COMPLETADO -->
-      <!-- ================= -->
-      <ng-container *ngIf="filasCompletadas.length">
-        <h3 class="font-semibold text-gray-700">Completado</h3>
-
-        <table class="w-full text-sm border">
-          <tr class="bg-gray-100">
-            <th class="p-2">Guía</th>
-            <th class="p-2">Camión</th>
-            <th class="p-2">Cantidad</th>
-            <th class="p-2">Terminado</th>
-          </tr>
-
-          <tr *ngFor="let d of filasCompletadas">
-            <td class="p-2">{{ d.guia }}</td>
-            <td class="p-2">{{ d.camion }}</td>
-            <td class="p-2">{{ d.cantidad }}</td>
-            <td class="p-2">{{ d.hora_fin }}</td>
-          </tr>
-        </table>
-      </ng-container>
 
     </div>
 
+    <!-- ================= -->
+    <!-- PROGRAMADO -->
+    <!-- ================= -->
+    <div
+        class="p-4 bg-yellow-100 font-semibold cursor-pointer"
+        (click)="toggle('programado')">
+        Programado
+        <span class="float-right">{{ ord.order_qty }} m³</span>
+    </div>
+
+    <table *ngIf="accordion['programado']" class="w-full text-sm border-b">
+      <tr class="bg-gray-100">
+        <th class="p-2">Planta</th>
+        <th class="p-2">Cantidad</th>
+        <th class="p-2">Hora en Obra</th>
+      </tr>
+      <tr *ngFor="let h of ord.start_times">
+        <td class="p-2">{{ ord.plant_code }}</td>
+        <td class="p-2">{{ m3PorCamion }}</td>
+        <td class="p-2">{{ h }}</td>
+      </tr>
+    </table>
+
+    <!-- ================= -->
+    <!-- IMPRESO / CARGANDO -->
+    <!-- ================= -->
+    <div
+        class="p-4 bg-yellow-100 font-semibold cursor-pointer"
+        (click)="toggle('impreso')">
+        Impreso / Cargando
+        <span class="float-right">0 m³</span>
+    </div>
+
+    <table *ngIf="accordion['impreso']" class="w-full text-sm border-b text-center">
+      <tr class="bg-gray-100">
+        <th class="p-2">Guía</th>
+        <th class="p-2">Planta</th>
+        <th class="p-2">Cantidad</th>
+        <th class="p-2">Estado</th>
+      </tr>
+      <tr>
+        <td colspan="4" class="p-3 text-gray-400">
+          Sin registros
+        </td>
+      </tr>
+    </table>
+
+    <!-- ================= -->
+    <!-- EN TRÁNSITO -->
+    <!-- ================= -->
+    <div
+        class="p-4 bg-yellow-100 font-semibold cursor-pointer"
+        (click)="toggle('transito')">
+        En Tránsito
+        <span class="float-right">0 m³</span>
+    </div>
+
+    <table *ngIf="accordion['transito']" class="w-full text-sm border-b text-center">
+      <tr class="bg-gray-100">
+        <th class="p-2">Guía</th>
+        <th class="p-2">Camión</th>
+        <th class="p-2">Cantidad</th>
+        <th class="p-2">Hr. En Obra</th>
+      </tr>
+      <tr>
+        <td colspan="4" class="p-3 text-gray-400">
+          Sin registros
+        </td>
+      </tr>
+    </table>
+
+    <!-- ================= -->
+    <!-- EN OBRA -->
+    <!-- ================= -->
+    <div
+        class="p-4 bg-yellow-100 font-semibold cursor-pointer"
+        (click)="toggle('obra')">
+        En Obra
+        <span class="float-right">0 m³</span>
+    </div>
+
+    <table *ngIf="accordion['obra']" class="w-full text-sm border-b text-center">
+      <tr class="bg-gray-100">
+        <th class="p-2">Guía</th>
+        <th class="p-2">Camión</th>
+        <th class="p-2">Cantidad</th>
+        <th class="p-2">Hr. En Obra</th>
+      </tr>
+      <tr>
+        <td colspan="4" class="p-3 text-gray-400">
+          Sin registros
+        </td>
+      </tr>
+    </table>
+
+    <!-- ================= -->
+    <!-- COMPLETADO -->
+    <!-- ================= -->
+    <div
+        class="p-4 bg-yellow-100 font-semibold cursor-pointer"
+        (click)="toggle('completado')">
+        Completado
+        <span class="float-right">{{ m3Completado }} m³</span>
+    </div>
+
+    <table *ngIf="accordion['completado']" class="w-full text-sm text-center">
+      <tr class="bg-gray-100">
+        <th class="p-2">Guía</th>
+        <th class="p-2">Camión</th>
+        <th class="p-2">Cantidad</th>
+        <th class="p-2">Terminado</th>
+      </tr>
+      <tr *ngFor="let d of completado">
+        <td class="p-2">{{ d.guia }}</td>
+        <td class="p-2">{{ d.camion }}</td>
+        <td class="p-2">{{ d.cantidad }}</td>
+        <td class="p-2">{{ d.hora }}</td>
+      </tr>
+    </table>
+
+    <!-- BOTÓN -->
     <div class="p-4">
       <button
         class="w-full bg-cyan-700 text-white py-2 rounded-lg"

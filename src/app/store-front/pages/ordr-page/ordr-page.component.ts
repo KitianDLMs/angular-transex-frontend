@@ -10,11 +10,12 @@ import { forkJoin, map } from 'rxjs';
 import { ProgressCircleComponent } from '@shared/progress-circle/progress-circle.component';
 import mapboxgl from 'mapbox-gl';
 import { SeguimientoOverlayComponent } from 'src/app/seguimiento-sheet/seguimiento-sheet.component';
+import { HoraPipe } from '@products/pipes/hora.pipe';
 
 @Component({
   selector: 'app-ordr-page',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, ProgressCircleComponent, SeguimientoOverlayComponent],
+  imports: [CommonModule, DatePipe, FormsModule, ProgressCircleComponent, SeguimientoOverlayComponent, HoraPipe],
   templateUrl: './ordr-page.component.html',
 })
 export class OrdrPageComponent implements OnInit {
@@ -185,40 +186,36 @@ export class OrdrPageComponent implements OnInit {
   }
 
   loadOrders() {
-    if (!this.userCustCode || !this.selectedProject) {
-      this.orders = [];
-      this.loading = false;
-      return;
-    }
+        if (!this.userCustCode || !this.selectedProject) {
+          this.orders = [];
+          this.loading = false;
+          return;
+        }
 
-    this.loading = true;
+        this.loading = true;
 
-    let pedidos$;
+        let pedidos$;
 
-    if (this.viewMode === 'FUTUROS') {
-      console.log('f');    
-      pedidos$ = this.ordrService.getFutureOrders(this.userCustCode, this.selectedProject);
-    } else {
-      console.log('a');      
-      pedidos$ = this.ordrService.getPedidosPorProyecto(this.selectedProject, this.userCustCode);
-    }
-
-    pedidos$.subscribe({
-      next: (pedidos: any[]) => {
-        console.log(pedidos);        
-        const pedidosUnicos = new Map<string, any>();
-
-pedidos.forEach(o => {
-          const code = o.order_code?.trim();
-          if (!code) return;
-          pedidos.forEach(o => {
-  console.log(
-    'order:', o.order_code,
-    'start_time:', o.start_time,
-    'detalle:', o.detalles || o
-  );
-});
-
+        if (this.viewMode === 'FUTUROS') {      
+          pedidos$ = this.ordrService.getFutureOrders(this.userCustCode, this.selectedProject);
+        } else {      
+          pedidos$ = this.ordrService.getPedidosPorProyecto(this.selectedProject, this.userCustCode);
+        }
+        
+        pedidos$.subscribe({
+          next: (pedidos: any[]) => {            
+            const pedidosUnicos = new Map<string, any>();
+            pedidos.forEach(o => {
+          
+                  const code = o.order_code?.trim();
+                  if (!code) return;
+                  pedidos.forEach(o => {
+                console.log(
+                  'order:', o.order_code,
+                  'start_time:', o.start_time,
+                  'computed:', this.getOrderDateTime(o)?.toLocaleTimeString()
+                );
+            });
           if (!pedidosUnicos.has(code)) {
             pedidosUnicos.set(code, {
               ...o,
@@ -253,7 +250,6 @@ pedidos.forEach(o => {
         forkJoin(avances$).subscribe({
           next: ordersConAvance => {
             this.orders = ordersConAvance;
-            console.log('ORDERS CON AVANCE REAL:', this.orders);
             this.loading = false;
           },
           error: err => {
@@ -278,16 +274,15 @@ pedidos.forEach(o => {
   selectViewMode(mode: 'ACTUALES' | 'FUTUROS') {
     this.viewMode = mode;
     this.page = 1;
-    // this.loadOrders(); 
+    this.loadOrders(); 
   }
 
   private getOrderDateTime(ord: any): Date | null {
     if (!ord?.order_Date) return null;
 
-    // Parsear order_Date
-    const dateParts = ord.order_Date.split('T')[0].split('-'); // ["2026", "02", "03"]
+    const dateParts = ord.order_Date.split('T')[0].split('-');
     const year = Number(dateParts[0]);
-    const month = Number(dateParts[1]) - 1; // JS: 0-indexed
+    const month = Number(dateParts[1]) - 1;
     const day = Number(dateParts[2]);
 
     let hh = 0, mm = 0;
@@ -299,9 +294,7 @@ pedidos.forEach(o => {
       }
     }
 
-    // Crear fecha exacta con hora
-    const orderDateTime = new Date(year, month, day, hh, mm, 0, 0);
-    return orderDateTime;
+    return new Date(year, month, day, hh, mm, 0, 0);
   }
 
   clearFilter() {
@@ -332,17 +325,17 @@ pedidos.forEach(o => {
   }
 
   get filteredOrders(): any[] {
+    if (this.viewMode === 'FUTUROS') {
+      return this.orders;
+    }
+
     const now = new Date();
 
     return this.orders.filter(ord => {
       const orderDateTime = this.getOrderDateTime(ord);
       if (!orderDateTime) return false;
 
-      if (this.viewMode === 'FUTUROS') {
-        return orderDateTime.getTime() > new Date().getTime();
-      }
-
-      return orderDateTime.getTime() <= new Date().getTime();
+      return orderDateTime.getTime() <= now.getTime();
     });
   }
 

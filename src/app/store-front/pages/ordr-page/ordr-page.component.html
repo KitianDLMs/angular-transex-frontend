@@ -116,11 +116,15 @@
                 hover:shadow-xl transition cursor-pointer">
 
       <div class="text-center mb-3">
-        <p class="text-sm text-gray-400 uppercase">
-          {{ ord.proj_name || selectedProject }}
+        <p class="text-sm text-black uppercase">
+          {{ ord.proj_name }}        
         </p>
         <p class="text-xs text-gray-500">
-          Pedido #{{ ord.order_code.trim() }}
+          Proyecto <b>{{ ord.proj_code.trim() }}</b>
+        </p>
+        <p class="text-xs text-gray-500">
+          <!-- address -->
+          <b></b> 
         </p>
       </div>
 
@@ -128,14 +132,18 @@
         <p class="font-semibold text-gray-700">
           {{ ord.prod_code.trim() }} / {{ ord.prod_descr.trim() }}
         </p>
-        <p class="text-xs text-gray-400">
-          Inicio {{ ord.start_time || 'Hora por confirmar' }}
-        </p>
       </div>
-
-      <div class="text-xs text-red-500 text-center">
+     <div class="grid grid-cols-3 gap-x-4 gap-y-1 mb-3 text-xs text-black text-center">
+        <span class="font-semibold">Cod. Pedido</span>
+        <span class="font-semibold">Inicio</span>
+        <span class="font-semibold">Frecuencia</span>
+        <span>{{ ord.order_code }}</span>
+        <span>{{ ord.start_time | hora }}</span>
+        <span>{{ ord.truck_spacing_mins }} min</span>
+      </div>
+      <!-- <div class="text-xs text-red-500 text-center">
         DEBUG: {{ ord.delv_qty }} / {{ ord.order_qty }}
-      </div>
+      </div> -->
 
 
       <div class="flex justify-center my-4">        
@@ -188,10 +196,10 @@
 
       <div class="text-center mb-3">
         <p class="text-sm text-gray-400 uppercase">
-          {{ ord.proj_name || selectedProject }}
+          {{ ord.proj_name }}          
         </p>
         <p class="text-xs text-gray-500">
-          Pedido #{{ ord.order_code.trim() }}
+          Pedido #{{ ord.proj_code.trim() }}
         </p>
       </div>
 
@@ -199,14 +207,15 @@
         <p class="font-semibold text-gray-700">
           {{ ord.prod_code.trim() }} / {{ ord.prod_descr.trim() }}
         </p>
-        <p class="text-xs text-gray-400">
-          Inicio {{ ord.start_time || 'Hora por confirmar' }}
+        <p class="text-xs text-black">
+          <!-- Inicio {{ ord.start_time | hora }} -->
+          Inicio {{ ord.start_time | hora}}        
         </p>
       </div>
 
-      <div class="text-xs text-red-500 text-center">
+      <!-- <div class="text-xs text-red-500 text-center">
         DEBUG: {{ ord.delv_qty }} / {{ ord.order_qty }}
-      </div>
+      </div> -->
 
       <!-- No mostrar barra de progreso para FUTUROS -->
       <!-- Solo info general -->

@@ -4,12 +4,10 @@ import {
   ElementRef,
   EventEmitter,
   Input,
-  OnInit,
   Output,
   signal,
   viewChild,
 } from '@angular/core';
-
 import { CommonModule } from '@angular/common';
 import mapboxgl from 'mapbox-gl';
 import { environment } from 'src/environments/environment.development';
@@ -23,65 +21,45 @@ mapboxgl.accessToken = environment.mapboxKey;
   templateUrl: './seguimiento-sheet.component.html',
 })
 export class SeguimientoOverlayComponent
-  implements OnInit, AfterViewInit
-{
+  implements AfterViewInit {
+
   @Input() ord!: any;
   @Output() close = new EventEmitter<void>();
 
-  divElement = viewChild<ElementRef>('map');
+  divMap = viewChild<ElementRef>('map');
   map = signal<mapboxgl.Map | null>(null);
 
-  programaPedido = signal<any[]>([]);
+  // ------------------------
+  // CONTROL DE ABANICOS
+  // ------------------------
+  accordion: Record<string, boolean> = {
+    programado: false,
+    impreso: false,
+    transito: false,
+    obra: false,
+    completado: false,
+  };
 
-  programado: any[] = [];
-  enTransito: any[] = [];
-  completado: any[] = [];
-
-  ngOnInit() {
-    if (!this.ord?.detalles) return;
-
-    console.log(this.ord);
-
-    this.programado = this.ord.detalles.filter(
-      (d: any) => d.estado === 'PROGRAMADO'
-    );
-
-    this.enTransito = this.ord.detalles.filter(
-      (d: any) => d.estado === 'EN_TRANSITO'
-    );
-
-    this.completado = this.ord.detalles.filter(
-      (d: any) => d.estado === 'COMPLETADO'
-    );
+  toggle(key: keyof typeof this.accordion) {
+    console.log(key);
+    console.log(this.accordion);    
+    this.accordion[key] = !this.accordion[key];
   }
 
-  async ngAfterViewInit() {
-    if (!this.divElement()?.nativeElement) return;
-
-    await new Promise((r) => setTimeout(r, 50));
+  ngAfterViewInit() {
+    if (!this.divMap()?.nativeElement) return;
 
     const map = new mapboxgl.Map({
-      container: this.divElement()!.nativeElement,
+      container: this.divMap()!.nativeElement,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [
-        Number(this.ord.longitud),
-        Number(this.ord.latitud),
-      ],
-      zoom: 10,
+      center: [this.ord.longitud, this.ord.latitud],
+      zoom: 14,
     });
 
+    map.addControl(new mapboxgl.NavigationControl());
     this.map.set(map);
 
-    map.on('load', () => {
-      map.addControl(new mapboxgl.NavigationControl());
-
-      if (this.ord?.latitud && this.ord?.longitud) {
-        this.addMarker(
-          Number(this.ord.latitud),
-          Number(this.ord.longitud)
-        );
-      }
-    });
+    this.addMarker(this.ord.latitud, this.ord.longitud);
   }
 
   addMarker(lat: number, lng: number) {
@@ -93,69 +71,34 @@ export class SeguimientoOverlayComponent
     el.style.height = '40px';
     el.style.backgroundSize = 'contain';
 
-    new mapboxgl.Marker({
-      element: el,
-      anchor: 'bottom',
-    })
+    new mapboxgl.Marker({ element: el, anchor: 'bottom' })
       .setLngLat([lng, lat])
       .addTo(this.map()!);
   }
 
-  get estadoActual(): string {
-    const estado = this.programaPedido()[0]?.estado
-      ?.trim()
-      ?.toUpperCase();
+  // ------------------------
+  // HELPERS
+  // ------------------------
 
-    switch (estado) {
-      case 'POR CONFIRMAR':
-        return 'PROGRAMADO';
-      case 'CARGANDO':
-        return 'CARGANDO';
-      case 'EN TRANSITO':
-        return 'EN TRANSITO';
-      case 'EN OBRA':
-        return 'EN OBRA';
-      case 'NORMAL':
-        return 'COMPLETADO';
-      default:
-        return 'DESCONOCIDO';
-    }
+  get m3Total() {
+    return this.ord.order_qty;
   }
 
-  get filasCompletadas() {
-    if (this.ord?.estado?.trim().toUpperCase() !== 'NORMAL') {
-      return [];
-    }
-
-    return (this.ord.start_times || []).map(
-      (hora: string) => ({
-        guia: '—',
-        camion: '—',
-        cantidad: this.ord.load_size,
-        hora_fin: hora,
-      })
-    );
+  get m3PorCamion() {
+    return this.ord.load_size;
   }
 
-  get filasEnTransito() {
-    const estado = this.ord?.estado?.trim().toUpperCase();
-    if (estado === 'NORMAL') return [];
+  get completado() {
+    return (this.ord.start_times || []).map((h: string, i: number) => ({
+      guia: '—',
+      camion: '—',
+      cantidad: this.m3PorCamion,
+      hora: h,
+    }));
+  }
 
-    const ultimaHora =
-      this.ord?.start_times?.[
-        this.ord.start_times.length - 1
-      ];
-
-    if (!ultimaHora) return [];
-
-    return [
-      {
-        guia: '—',
-        camion: '—',
-        cantidad: this.ord.load_size,
-        hora_obra: ultimaHora,
-      },
-    ];
+  get m3Completado() {
+    return this.completado.length * this.m3PorCamion;
   }
 
   onClose() {
