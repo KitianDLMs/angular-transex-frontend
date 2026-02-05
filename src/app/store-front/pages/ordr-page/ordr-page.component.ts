@@ -187,7 +187,7 @@ export class OrdrPageComponent implements OnInit {
 
   loadOrders() {
         if (!this.userCustCode || !this.selectedProject) {
-          this.orders = [];
+          // this.orders = [];
           this.loading = false;
           return;
         }
@@ -196,12 +196,12 @@ export class OrdrPageComponent implements OnInit {
 
         let pedidos$;
 
-        if (this.viewMode === 'FUTUROS') {      
-          pedidos$ = this.ordrService.getFutureOrders(this.userCustCode, this.selectedProject);
-        } else {      
-          pedidos$ = this.ordrService.getPedidosPorProyecto(this.selectedProject, this.userCustCode);
-        }
-        
+        // if (this.viewMode === 'FUTUROS') {      
+        //   pedidos$ = this.ordrService.getFutureOrders(this.userCustCode, this.selectedProject);
+        // } else {      
+          // }
+          
+        pedidos$ = this.ordrService.getPedidosPorProyecto(this.selectedProject, this.userCustCode);
         pedidos$.subscribe({
           next: (pedidos: any[]) => {            
             const pedidosUnicos = new Map<string, any>();
@@ -264,9 +264,10 @@ export class OrdrPageComponent implements OnInit {
   }
 
   selectViewMode(mode: 'ACTUALES' | 'FUTUROS') {
+    if (this.viewMode === mode) return;
     this.viewMode = mode;
-    this.page = 1;
-    this.loadOrders(); 
+    // this.page = 1;
+    // this.loadOrders(); 
   }
 
   private getOrderDateTime(ord: any): Date | null {
@@ -291,13 +292,12 @@ export class OrdrPageComponent implements OnInit {
 
   clearFilter() {
     this.selectedProject = '';
-    if (this.projectOptions.length) {
-      this.activeProject = this.projectOptions[0].proj_code;
-      this.page = 1;
-      this.loadOrders();
-    } else {
-      this.orders = [];
-    }
+    this.activeProject = null;
+
+    this.viewMode = null;
+    this.orders = [];    
+    this.page = 1;
+    this.loading = false;
   }
 
   goToSeguimiento(ord: any, event: Event) {
@@ -317,6 +317,10 @@ export class OrdrPageComponent implements OnInit {
   }
 
   get filteredOrders(): any[] {
+    if (!this.viewMode || !this.hasSelectedProject) {
+      return [];
+    }
+
     if (this.viewMode === 'FUTUROS') {
       return this.orders;
     }
@@ -326,7 +330,6 @@ export class OrdrPageComponent implements OnInit {
     return this.orders.filter(ord => {
       const orderDateTime = this.getOrderDateTime(ord);
       if (!orderDateTime) return false;
-
       return orderDateTime.getTime() <= now.getTime();
     });
   }
