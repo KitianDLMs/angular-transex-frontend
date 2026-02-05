@@ -206,16 +206,8 @@ export class OrdrPageComponent implements OnInit {
           next: (pedidos: any[]) => {            
             const pedidosUnicos = new Map<string, any>();
             pedidos.forEach(o => {
-          
-                  const code = o.order_code?.trim();
-                  if (!code) return;
-                  pedidos.forEach(o => {
-                console.log(
-                  'order:', o.order_code,
-                  'start_time:', o.start_time,
-                  'computed:', this.getOrderDateTime(o)?.toLocaleTimeString()
-                );
-            });
+              const code = o.order_code?.trim();
+              if (!code) return;                  
           if (!pedidosUnicos.has(code)) {
             pedidosUnicos.set(code, {
               ...o,

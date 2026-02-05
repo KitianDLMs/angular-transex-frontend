@@ -5,7 +5,10 @@
 <div class="fixed inset-0 z-50 flex flex-col">
   <!-- MAPA (compacto con márgenes laterales) -->
   <div class="bg-gray-100 py-3">
-    <div class="mx-4 bg-white rounded-xl shadow-md overflow-hidden">
+    <div class="mx-4 bg-white rounded-xl shadow-md overflow-hidden sm:mx-0
+         md:mx-6
+         lg:mx-12
+         xl:mx-20">
       
       <!-- Header mapa -->
       <div class="px-4 py-2 text-sm font-semibold text-gray-700 border-b">
@@ -21,27 +24,30 @@
   <section class="bg-white flex-1 overflow-y-auto">
 
     <!-- INFO -->
-    <div class="p-4 text-sm border-b space-y-1">
+    <div class="p-4 text-sm border-b space-y-1 sm:mx-0
+         md:mx-6
+         lg:mx-12
+         xl:mx-20">
 
-    <div class="grid grid-cols-[auto_1fr] gap-x-3">
-        <span class="text-gray-500">Pedido</span>
-        <strong class="text-right">{{ ord.order_code }}</strong>
-    </div>
+      <div class="grid grid-cols-[auto_1fr] gap-x-3">
+          <span class="text-gray-500">Pedido</span>
+          <strong class="text-right">{{ ord.order_code }}</strong>
+      </div>
 
-    <div class="grid grid-cols-[auto_1fr] gap-x-3">
-        <span class="text-gray-500">Estado</span>
-        <strong class="text-right">Normal</strong>
-    </div>
+      <div class="grid grid-cols-[auto_1fr] gap-x-3">
+          <span class="text-gray-500">Estado</span>
+          <strong class="text-right">Normal</strong>
+      </div>
 
-    <div class="grid grid-cols-[auto_1fr] gap-x-3">
-        <span class="text-gray-500">Producto</span>
-        <strong class="text-right">{{ ord.prod_descr }}</strong>
-    </div>
+      <div class="grid grid-cols-[auto_1fr] gap-x-3">
+          <span class="text-gray-500">Producto</span>
+          <strong class="text-right">{{ ord.prod_descr }}</strong>
+      </div>
 
-    <div class="grid grid-cols-[auto_1fr] gap-x-3">
-        <span class="text-gray-500">Cantidad</span>
-        <strong class="text-right">{{ ord.order_qty }} m³</strong>
-    </div>
+      <div class="grid grid-cols-[auto_1fr] gap-x-3">
+          <span class="text-gray-500">Cantidad</span>
+          <strong class="text-right">{{ ord.order_qty }} m³</strong>
+      </div>
 
     </div>
 
@@ -52,10 +58,11 @@
         class="p-4 bg-yellow-100 font-semibold cursor-pointer"
         (click)="toggle('programado')">
         Programado
-        <span class="float-right">{{ ord.order_qty }} m³</span>
+        <!-- <span class="float-right">{{ ord.order_qty }} m³</span> -->
+        <span class="float-right">{{ m3Completado }} m³</span>
     </div>
 
-    <table *ngIf="accordion['programado']" class="w-full text-sm border-b">
+    <table *ngIf="accordion['programado']" class="w-full text-sm border-b text-center">
       <tr class="bg-gray-100">
         <th class="p-2">Planta</th>
         <th class="p-2">Cantidad</th>
