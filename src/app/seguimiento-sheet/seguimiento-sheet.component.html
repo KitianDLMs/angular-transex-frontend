@@ -1,13 +1,13 @@
 <!-- FONDO -->
-<div class="fixed inset-0 bg-black/40 z-40" (click)="onClose()"></div>
+<div class="fixed inset-0 bg-black/40 z-40 bg-white" (click)="onClose()"></div>
 
 <!-- CONTENEDOR -->
 <div class="fixed inset-0 z-50 flex flex-col">
   <!-- MAPA (compacto con márgenes laterales) -->
   <div class="bg-gray-100 py-3">
     <div class="mx-4 bg-white rounded-xl shadow-md overflow-hidden sm:mx-0
-         md:mx-6
-         lg:mx-12
+         md:mx-20
+         lg:mx-20
          xl:mx-20">
       
       <!-- Header mapa -->
@@ -21,14 +21,13 @@
     </div>
   </div>
   <!-- FICHA -->
-  <section class="bg-white flex-1 overflow-y-auto">
-
-    <!-- INFO -->
-    <div class="p-4 text-sm border-b space-y-1 sm:mx-0
-         md:mx-6
-         lg:mx-12
+  <section class="bg-white flex-1 overflow-y-auto sm:mx-0
+         md:mx-20
+         lg:mx-20
          xl:mx-20">
 
+    <!-- INFO -->
+    <div class="p-4 text-sm border-b space-y-1">
       <div class="grid grid-cols-[auto_1fr] gap-x-3">
           <span class="text-gray-500">Pedido</span>
           <strong class="text-right">{{ ord.order_code }}</strong>
@@ -59,7 +58,7 @@
         (click)="toggle('programado')">
         Programado
         <!-- <span class="float-right">{{ ord.order_qty }} m³</span> -->
-        <span class="float-right">{{ m3Completado }} m³</span>
+        <span class="float-right">{{ m3Programado }} m³</span>
     </div>
 
     <table *ngIf="accordion['programado']" class="w-full text-sm border-b text-center">
@@ -68,10 +67,10 @@
         <th class="p-2">Cantidad</th>
         <th class="p-2">Hora en Obra</th>
       </tr>
-      <tr *ngFor="let h of ord.start_times">
+       <tr *ngFor="let c of programados">
         <td class="p-2">{{ ord.plant_code }}</td>
-        <td class="p-2">{{ m3PorCamion }}</td>
-        <td class="p-2">{{ h }}</td>
+        <td class="p-2">{{ c.cantidad }}</td>
+        <td class="p-2">{{ c.hora }}</td>
       </tr>
     </table>
 
@@ -82,7 +81,7 @@
         class="p-4 bg-yellow-100 font-semibold cursor-pointer"
         (click)="toggle('impreso')">
         Impreso / Cargando
-        <span class="float-right">0 m³</span>
+        <span class="float-right">{{m3Impreso}} m³</span>
     </div>
 
     <table *ngIf="accordion['impreso']" class="w-full text-sm border-b text-center">
@@ -92,10 +91,11 @@
         <th class="p-2">Cantidad</th>
         <th class="p-2">Estado</th>
       </tr>
-      <tr>
-        <td colspan="4" class="p-3 text-gray-400">
-          Sin registros
-        </td>
+        <tr *ngFor="let c of impresos">
+        <td class="p-2">—</td>
+        <td class="p-2">—</td>
+        <td class="p-2">{{ c.cantidad }}</td>
+        <td class="p-2">IMPRESO</td>
       </tr>
     </table>
 
@@ -106,7 +106,7 @@
         class="p-4 bg-yellow-100 font-semibold cursor-pointer"
         (click)="toggle('transito')">
         En Tránsito
-        <span class="float-right">0 m³</span>
+        <span class="float-right">{{ m3Transito }} m³</span>
     </div>
 
     <table *ngIf="accordion['transito']" class="w-full text-sm border-b text-center">
@@ -116,10 +116,11 @@
         <th class="p-2">Cantidad</th>
         <th class="p-2">Hr. En Obra</th>
       </tr>
-      <tr>
-        <td colspan="4" class="p-3 text-gray-400">
-          Sin registros
-        </td>
+      <tr *ngFor="let c of enTransito">
+        <td class="p-2">—</td>
+        <td class="p-2">—</td>
+        <td class="p-2">{{ c.cantidad }}</td>
+        <td class="p-2">{{ c.hora }}</td>
       </tr>
     </table>
 
@@ -130,7 +131,7 @@
         class="p-4 bg-yellow-100 font-semibold cursor-pointer"
         (click)="toggle('obra')">
         En Obra
-        <span class="float-right">0 m³</span>
+        <span class="float-right">{{ m3Obra }} m³</span>
     </div>
 
     <table *ngIf="accordion['obra']" class="w-full text-sm border-b text-center">
@@ -140,10 +141,11 @@
         <th class="p-2">Cantidad</th>
         <th class="p-2">Hr. En Obra</th>
       </tr>
-      <tr>
-        <td colspan="4" class="p-3 text-gray-400">
-          Sin registros
-        </td>
+      <tr *ngFor="let c of enObra">
+        <td class="p-2">—</td>
+        <td class="p-2">—</td>
+        <td class="p-2">{{ c.cantidad }}</td>
+        <td class="p-2">{{ c.hora }}</td>
       </tr>
     </table>
 
@@ -164,18 +166,18 @@
         <th class="p-2">Cantidad</th>
         <th class="p-2">Terminado</th>
       </tr>
-      <tr *ngFor="let d of completado">
-        <td class="p-2">{{ d.guia }}</td>
-        <td class="p-2">{{ d.camion }}</td>
-        <td class="p-2">{{ d.cantidad }}</td>
-        <td class="p-2">{{ d.hora }}</td>
+      <tr *ngFor="let c of completados">
+        <td class="p-2">—</td>
+        <td class="p-2">—</td>
+        <td class="p-2">{{ c.cantidad }}</td>
+        <td class="p-2">{{ c.hora }}</td>
       </tr>
     </table>
 
     <!-- BOTÓN -->
     <div class="p-4">
       <button
-        class="w-full bg-cyan-700 text-white py-2 rounded-lg"
+        class="w-full bg-cyan-700 text-white py-2 rounded-lg mt-12"
         (click)="onClose()">
         Cerrar
       </button>

@@ -4,6 +4,7 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  OnInit,
   Output,
   signal,
   viewChild,
@@ -11,6 +12,7 @@ import {
 import { CommonModule } from '@angular/common';
 import mapboxgl from 'mapbox-gl';
 import { environment } from 'src/environments/environment.development';
+import { SchdlService } from '@shared/services/schdl.service';
 
 mapboxgl.accessToken = environment.mapboxKey;
 
@@ -27,17 +29,23 @@ interface CamionEstado {
   templateUrl: './seguimiento-sheet.component.html',
 })
 export class SeguimientoOverlayComponent
-  implements AfterViewInit {
+  implements OnInit, AfterViewInit {
 
+  // ========================
+  // INPUT / OUTPUT
+  // ========================
   @Input() ord!: any;
   @Output() close = new EventEmitter<void>();
 
+  // ========================
+  // MAPA
+  // ========================
   divMap = viewChild<ElementRef>('map');
   map = signal<mapboxgl.Map | null>(null);
 
-  // ------------------------
-  // CONTROL DE ABANICOS
-  // ------------------------
+  // ========================
+  // ACORDEÓN
+  // ========================
   accordion: Record<string, boolean> = {
     programado: false,
     impreso: false,
@@ -46,24 +54,73 @@ export class SeguimientoOverlayComponent
     completado: false,
   };
 
+  // ========================
+  // DATA BASE
+  // ========================
   camiones: CamionEstado[] = [];
 
-  private construirCamiones() {
-    this.camiones = (this.ord.start_times || []).map((hora: string) => ({
-      hora,
-      estado: this.clasificarHora(hora),
-      cantidad: this.m3PorCamion,
-    }));
+  programados: CamionEstado[] = [];
+  impresos: CamionEstado[] = [];
+  enTransito: CamionEstado[] = [];
+  enObra: CamionEstado[] = [];
+  completados: CamionEstado[] = [];
+
+  m3Programado = 0;
+  m3Impreso = 0;
+  m3Transito = 0;
+  m3Obra = 0;
+  m3Completado = 0;
+
+  constructor(private schdlService: SchdlService) {}
+
+  // ========================
+  // INIT
+  // ========================
+  ngOnInit(): void {
+     console.log('ORD INPUT 👉', this.ord);
+    if (!this.ord?.order_code || !this.ord?.order_date) return;
+
+    if (this.esPedidoFuturo) {
+      this.camiones = [];
+      this.recalcularEstados();
+      return;
+    }
+    this.schdlService
+      .getSchlByPedido(this.ord.order_code, this.ord.order_date)
+      .subscribe({
+        next: rows => {
+          console.log(
+            'getSchlByPedido → respuesta cruda 🧱',
+            rows
+          );
+
+          // 👀 si quieres verlo fila por fila
+          rows.forEach((r, i) => {
+            console.log(`row[${i}]`, r);
+          });
+
+          this.camiones = rows.map(r => ({
+            hora: r.hora_obra ?? r.start_time ?? r.hora,
+            estado: this.mapEstado(r.estado),
+            cantidad: Number(r.load_size ?? this.ord.load_size),
+          }));
+
+          console.log('camiones mapeados 🚚', this.camiones);
+
+          this.recalcularEstados();
+        },
+        error: err => {
+          console.error('Error getSchlByPedido ❌', err);
+        },
+      });
   }
 
-  toggle(key: keyof typeof this.accordion) {
-    this.accordion[key] = !this.accordion[key];
-  }
-
+  // ========================
+  // MAPA
+  // ========================
   ngAfterViewInit() {
     if (!this.divMap()?.nativeElement) return;
-    this.verificarStartTimes();
-    this.construirCamiones();
+
     const map = new mapboxgl.Map({
       container: this.divMap()!.nativeElement,
       style: 'mapbox://styles/mapbox/streets-v12',
@@ -73,50 +130,50 @@ export class SeguimientoOverlayComponent
 
     map.addControl(new mapboxgl.NavigationControl());
     this.map.set(map);
-
     this.addMarker(this.ord.latitud, this.ord.longitud);
   }
 
-  private clasificarHora(hora: string): string {
-    const ahora = Date.now();
-    const fechaHora = this.horaToDate(hora).getTime();
-    const diffMin = Math.round((fechaHora - ahora) / 60000);
-    const spacing = this.ord.truck_spacing_mins;
+  // ========================
+  // LOGICA
+  // ========================
+  private recalcularEstados() {
+    this.programados = this.camiones.filter(c => c.estado === 'PROGRAMADO');
+    this.impresos = this.camiones.filter(c => c.estado === 'IMPRESO / CARGANDO');
+    this.enTransito = this.camiones.filter(c => c.estado === 'EN TRANSITO');
+    this.enObra = this.camiones.filter(c => c.estado === 'EN OBRA');
+    this.completados = this.camiones.filter(c => c.estado === 'COMPLETADO');
 
-    if (diffMin > spacing) return 'PROGRAMADO';
+    const m3 = this.m3PorCamion;
 
-    if (diffMin > 0 && diffMin <= spacing)
-      return 'IMPRESO / CARGANDO';
-
-    if (diffMin <= 0 && diffMin > -spacing)
-      return 'EN TRANSITO';
-
-    if (diffMin <= -spacing && diffMin > -2 * spacing)
-      return 'EN OBRA';
-
-    return 'COMPLETADO';
+    this.m3Programado = this.programados.length * m3;
+    this.m3Impreso = this.impresos.length * m3;
+    this.m3Transito = this.enTransito.length * m3;
+    this.m3Obra = this.enObra.length * m3;
+    this.m3Completado = this.completados.length * m3;
   }
 
-  verificarStartTimes() {
-    this.ord.start_times.forEach((hora: string) => {
-      const estado = this.clasificarHora(hora);
-    });
+  private mapEstado(estado: string): string {
+    switch ((estado || '').toUpperCase()) {
+      case 'PROGRAMADO':
+        return 'PROGRAMADO';
+      case 'IMPRESO':
+      case 'CARGANDO':
+        return 'IMPRESO / CARGANDO';
+      case 'TRANSITO':
+      case 'EN TRANSITO':
+        return 'EN TRANSITO';
+      case 'OBRA':
+      case 'EN OBRA':
+        return 'EN OBRA';
+      case 'COMPLETADO':
+        return 'COMPLETADO';
+      default:
+        return 'PROGRAMADO';
+    }
   }
 
-  private horaToDate(hora: string): Date {
-    const now = new Date();
-
-    const [hours, minutes] = hora.split(':').map(Number);
-
-    return new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      hours,
-      minutes,
-      0,
-      0
-    );
+  toggle(key: keyof typeof this.accordion) {
+    this.accordion[key] = !this.accordion[key];
   }
 
   addMarker(lat: number, lng: number) {
@@ -133,9 +190,20 @@ export class SeguimientoOverlayComponent
       .addTo(this.map()!);
   }
 
-  // ------------------------
+  // ========================
   // HELPERS
-  // ------------------------
+  // ========================
+  get esPedidoFuturo(): boolean {
+    if (!this.ord?.order_date) return false;
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const fechaPedido = new Date(this.ord.order_date);
+    fechaPedido.setHours(0, 0, 0, 0);
+
+    return fechaPedido > hoy;
+  }
 
   get m3Total() {
     return this.ord.order_qty;
@@ -143,55 +211,6 @@ export class SeguimientoOverlayComponent
 
   get m3PorCamion() {
     return this.ord.load_size;
-  }
-
-  get completado() {
-    return (this.ord.start_times || []).map((h: string, i: number) => ({
-      guia: '—',
-      camion: '—',
-      cantidad: this.m3PorCamion,
-      hora: h,
-    }));
-  }
-
-  get programados() {
-    return this.camiones.filter(c => c.estado === 'PROGRAMADO');
-  }
-
-  get impresos() {
-    return this.camiones.filter(c => c.estado === 'IMPRESO / CARGANDO');
-  }
-
-  get enTransito() {
-    return this.camiones.filter(c => c.estado === 'EN TRANSITO');
-  }
-
-  get enObra() {
-    return this.camiones.filter(c => c.estado === 'EN OBRA');
-  }
-
-  get completados() {
-    return this.camiones.filter(c => c.estado === 'COMPLETADO');
-  }
-
-  get m3Programado() {
-    return this.programados.length * this.m3PorCamion;
-  }
-
-  get m3Impreso() {
-    return this.impresos.length * this.m3PorCamion;
-  }
-
-  get m3Transito() {
-    return this.enTransito.length * this.m3PorCamion;
-  }
-
-  get m3Obra() {
-    return this.enObra.length * this.m3PorCamion;
-  }
-
-  get m3Completado() {
-    return this.completados.length * this.m3PorCamion;
   }
 
   onClose() {
