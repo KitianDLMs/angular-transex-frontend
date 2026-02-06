@@ -87,16 +87,15 @@
     <table *ngIf="accordion['impreso']" class="w-full text-sm border-b text-center">
       <tr class="bg-gray-100">
         <th class="p-2">Guía</th>
-        <th class="p-2">Planta</th>
+        <th class="p-2">Camión</th>
         <th class="p-2">Cantidad</th>
         <th class="p-2">Estado</th>
-      </tr>
-        <tr *ngFor="let c of impresos">
-        <td class="p-2">—</td>
-        <td class="p-2">—</td>
+      <tr *ngFor="let c of impresos">
+        <td class="p-2">{{ c.guia }}</td>
+        <td class="p-2">{{ c.truck }}</td>
         <td class="p-2">{{ c.cantidad }}</td>
-        <td class="p-2">IMPRESO</td>
-      </tr>
+        <td class="p-2">CARGANDO</td>
+        </tr>
     </table>
 
     <!-- ================= -->
@@ -116,9 +115,9 @@
         <th class="p-2">Cantidad</th>
         <th class="p-2">Hr. En Obra</th>
       </tr>
-      <tr *ngFor="let c of enTransito">
-        <td class="p-2">—</td>
-        <td class="p-2">—</td>
+        <tr *ngFor="let c of enTransito">
+        <td class="p-2">{{ c.guia }}</td>
+        <td class="p-2">{{ c.truck }}</td>
         <td class="p-2">{{ c.cantidad }}</td>
         <td class="p-2">{{ c.hora }}</td>
       </tr>
@@ -142,8 +141,8 @@
         <th class="p-2">Hr. En Obra</th>
       </tr>
       <tr *ngFor="let c of enObra">
-        <td class="p-2">—</td>
-        <td class="p-2">—</td>
+        <td class="p-2">{{ c.guia }}</td>
+        <td class="p-2">{{ c.truck }}</td>
         <td class="p-2">{{ c.cantidad }}</td>
         <td class="p-2">{{ c.hora }}</td>
       </tr>
@@ -167,8 +166,8 @@
         <th class="p-2">Terminado</th>
       </tr>
       <tr *ngFor="let c of completados">
-        <td class="p-2">—</td>
-        <td class="p-2">—</td>
+        <td class="p-2">{{ c.guia }}</td>
+        <td class="p-2">{{ c.truck }}</td>
         <td class="p-2">{{ c.cantidad }}</td>
         <td class="p-2">{{ c.hora }}</td>
       </tr>

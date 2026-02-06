@@ -13,6 +13,7 @@ import { CommonModule } from '@angular/common';
 import mapboxgl from 'mapbox-gl';
 import { environment } from 'src/environments/environment.development';
 import { SchdlService } from '@shared/services/schdl.service';
+import { OrdrService } from '@shared/services/ordr.service';
 
 mapboxgl.accessToken = environment.mapboxKey;
 
@@ -20,6 +21,9 @@ interface CamionEstado {
   hora: string;
   estado: string;
   cantidad: number;
+  planta: string;
+  truck: string;
+  guia: string;
 }
 
 @Component({
@@ -71,48 +75,36 @@ export class SeguimientoOverlayComponent
   m3Obra = 0;
   m3Completado = 0;
 
-  constructor(private schdlService: SchdlService) {}
+  constructor(private ordrService: OrdrService) {}
 
   // ========================
   // INIT
   // ========================
   ngOnInit(): void {
-     console.log('ORD INPUT 👉', this.ord);
-    if (!this.ord?.order_code || !this.ord?.order_date) return;
+    console.log('ORD INPUT 👉', this.ord);
 
+    console.log(this.ord.order_code);
+    console.log(this.ord.order_Date);    
+    if (!this.ord?.order_code || !this.ord?.order_Date) return;
+
+    // 👉 NUEVA LLAMADA: PROGRAMA DEL PEDIDO
+    this.ordrService
+      .getProgramaPorPedido(this.ord.order_code, this.ord.order_Date)
+      .subscribe({
+        next: programa => {          
+          this.procesarPrograma(programa);
+        },
+        error: err => {
+          console.error('❌ Error al obtener programa del pedido', err);
+        },
+      });
+
+    // ---- lo que ya tenías ----
     if (this.esPedidoFuturo) {
       this.camiones = [];
       this.recalcularEstados();
       return;
     }
-    this.schdlService
-      .getSchlByPedido(this.ord.order_code, this.ord.order_date)
-      .subscribe({
-        next: rows => {
-          console.log(
-            'getSchlByPedido → respuesta cruda 🧱',
-            rows
-          );
-
-          // 👀 si quieres verlo fila por fila
-          rows.forEach((r, i) => {
-            console.log(`row[${i}]`, r);
-          });
-
-          this.camiones = rows.map(r => ({
-            hora: r.hora_obra ?? r.start_time ?? r.hora,
-            estado: this.mapEstado(r.estado),
-            cantidad: Number(r.load_size ?? this.ord.load_size),
-          }));
-
-          console.log('camiones mapeados 🚚', this.camiones);
-
-          this.recalcularEstados();
-        },
-        error: err => {
-          console.error('Error getSchlByPedido ❌', err);
-        },
-      });
   }
 
   // ========================
@@ -137,7 +129,7 @@ export class SeguimientoOverlayComponent
   // LOGICA
   // ========================
   private recalcularEstados() {
-    this.programados = this.camiones.filter(c => c.estado === 'PROGRAMADO');
+    this.programados = this.camiones.filter(c => c.estado === '');
     this.impresos = this.camiones.filter(c => c.estado === 'IMPRESO / CARGANDO');
     this.enTransito = this.camiones.filter(c => c.estado === 'EN TRANSITO');
     this.enObra = this.camiones.filter(c => c.estado === 'EN OBRA');
@@ -152,9 +144,67 @@ export class SeguimientoOverlayComponent
     this.m3Completado = this.completados.length * m3;
   }
 
+  private procesarPrograma(programa: any[]) {
+    // 🔄 RESET TOTAL
+    this.programados = [];
+    this.impresos = [];
+    this.enTransito = [];
+    this.enObra = [];
+    this.completados = [];
+
+    this.m3Programado = 0;
+    this.m3Impreso = 0;
+    this.m3Transito = 0;
+    this.m3Obra = 0;
+    this.m3Completado = 0;
+
+    programa.forEach(p => {
+      const estado = this.mapEstado(p.estado);
+      const carga = Number(p.load_size) || 0; // ✅ CARGA REAL
+
+      const camion: CamionEstado = {
+        hora: p.hora,
+        cantidad: carga,
+        estado,
+        planta: p.planta?.trim() || '—',
+        truck: p.truck_code || '—',
+        guia: p.tkt_code || '—',
+      };
+
+      switch (estado) {
+        case 'PROGRAMADO':
+          this.programados.push(camion);
+          this.m3Programado += carga;
+          break;
+
+        case 'IMPRESO / CARGANDO':
+          this.impresos.push(camion);
+          this.m3Impreso += carga;
+          break;
+
+        case 'EN TRANSITO':
+          this.enTransito.push(camion);
+          this.m3Transito += carga;
+          break;
+
+        case 'EN OBRA':
+          this.enObra.push(camion);
+          this.m3Obra += carga;
+          break;
+
+        case 'TERMINADO':
+          this.completados.push(camion);
+          this.m3Completado += carga;
+          break;
+      }
+    });
+
+    console.log('✅ M3 COMPLETADO REAL:', this.m3Completado);
+  }
+
   private mapEstado(estado: string): string {
     switch ((estado || '').toUpperCase()) {
-      case 'PROGRAMADO':
+      case '':
         return 'PROGRAMADO';
       case 'IMPRESO':
       case 'CARGANDO':
@@ -162,13 +212,13 @@ export class SeguimientoOverlayComponent
       case 'TRANSITO':
       case 'EN TRANSITO':
         return 'EN TRANSITO';
-      case 'OBRA':
+      case 'DESCARGANDO':
       case 'EN OBRA':
         return 'EN OBRA';
-      case 'COMPLETADO':
-        return 'COMPLETADO';
+      case 'TERMINADO':
+        return 'TERMINADO';
       default:
-        return 'PROGRAMADO';
+        return '';
     }
   }
 
