@@ -176,8 +176,7 @@ export class SeguimientoOverlayComponent
           this.m3Programado += carga;
           break;
 
-        case 'IMPRESO':
-        case 'CARGANDO':          
+        case 'IMPRESO / CARGANDO':        
           this.impresos.push(camion);
           this.m3Impreso += carga;
           break;

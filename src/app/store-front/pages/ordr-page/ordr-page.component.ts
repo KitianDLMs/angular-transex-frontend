@@ -203,7 +203,7 @@ export class OrdrPageComponent implements OnInit {
           
         pedidos$ = this.ordrService.getPedidosPorProyecto(this.selectedProject, this.userCustCode);
         pedidos$.subscribe({
-          next: (pedidos: any[]) => {            
+          next: (pedidos: any[]) => { 
             const pedidosUnicos = new Map<string, any>();
             pedidos.forEach(o => {
               const code = o.order_code?.trim();
@@ -336,23 +336,21 @@ export class OrdrPageComponent implements OnInit {
 
   onOpenOrder(ord: any, event: Event) {
     event.stopPropagation();
-
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const orderDate = new Date(ord.order_Date);
     orderDate.setHours(0, 0, 0, 0);
-
-    if (orderDate <= today) {
-      this.router.navigate(
-        ['/store-front/pedidos-actuales'],
-        { queryParams: { code: ord.order_code, date: ord.order_Date } }
-      );
-    } else {
-      this.router.navigate(
-        ['/store-front/pedidos-futuros'],
-        { queryParams: { code: ord.order_code, date: ord.order_Date } }
-      );
-    }
+    // if (orderDate <= today) {
+    //   this.router.navigate(
+    //     ['/store-front/pedidos-actuales'],
+    //     { queryParams: { code: ord.order_code, date: ord.order_Date } }
+    //   );
+    // } else {
+    //   this.router.navigate(
+    //     ['/store-front/pedidos-futuros'],
+    //     { queryParams: { code: ord.order_code, date: ord.order_Date } }
+    //   );
+    // }
   }
 }
