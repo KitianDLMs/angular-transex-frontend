@@ -162,11 +162,17 @@
 <div class="navbar-end gap-3">
 
   @if (authService.authStatus() === 'authenticated') {
-
     <!-- ADMIN -->
     @if (authService.isAdmin()) {
       <div class="relative group flex items-center gap-2 cursor-pointer">
-
+        <div class="border-gray-600 hidden md:block">
+          <a
+            routerLink="/admin"
+            class="text-xs text-green-600 hover:underline"
+          >
+            Ir al Panel Admin
+          </a>
+        </div>
         <!-- ICONO USER -->
         <button class="btn btn-circle btn-ghost btn-sm">
           <i class="fa-solid fa-user"></i>

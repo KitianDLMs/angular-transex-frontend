@@ -46,6 +46,7 @@ export class SeguimientoOverlayComponent
   // ========================
   divMap = viewChild<ElementRef>('map');
   map = signal<mapboxgl.Map | null>(null);
+  loadingPrograma = false;
 
   // ========================
   // ACORDEÓN
@@ -81,21 +82,19 @@ export class SeguimientoOverlayComponent
   // INIT
   // ========================
   ngOnInit(): void {
-    console.log('ORD INPUT 👉', this.ord);
-
-    console.log(this.ord.order_code);
-    console.log(this.ord.order_Date);    
     if (!this.ord?.order_code || !this.ord?.order_Date) return;
-
-    // 👉 NUEVA LLAMADA: PROGRAMA DEL PEDIDO
+    this.loadingPrograma = true;
+    
     this.ordrService
       .getProgramaPorPedido(this.ord.order_code, this.ord.order_Date)
       .subscribe({
         next: programa => {          
           this.procesarPrograma(programa);
+          this.loadingPrograma = false;
         },
         error: err => {
           console.error('❌ Error al obtener programa del pedido', err);
+          this.loadingPrograma = false;
         },
       });
 
@@ -160,7 +159,7 @@ export class SeguimientoOverlayComponent
 
     programa.forEach(p => {
       const estado = this.mapEstado(p.estado);
-      const carga = Number(p.load_size) || 0; // ✅ CARGA REAL
+      const carga = Number(p.load_size) || 0;
 
       const camion: CamionEstado = {
         hora: p.hora,
@@ -170,14 +169,15 @@ export class SeguimientoOverlayComponent
         truck: p.truck_code || '—',
         guia: p.tkt_code || '—',
       };
-
       switch (estado) {
-        case 'PROGRAMADO':
+        case '':
+        case 'PROGRAMADO':          
           this.programados.push(camion);
           this.m3Programado += carga;
           break;
 
-        case 'IMPRESO / CARGANDO':
+        case 'IMPRESO':
+        case 'CARGANDO':          
           this.impresos.push(camion);
           this.m3Impreso += carga;
           break;
@@ -188,6 +188,7 @@ export class SeguimientoOverlayComponent
           break;
 
         case 'EN OBRA':
+        case 'DESCARGANDO':
           this.enObra.push(camion);
           this.m3Obra += carga;
           break;
@@ -198,8 +199,6 @@ export class SeguimientoOverlayComponent
           break;
       }
     });
-
-    console.log('✅ M3 COMPLETADO REAL:', this.m3Completado);
   }
 
   private mapEstado(estado: string): string {
