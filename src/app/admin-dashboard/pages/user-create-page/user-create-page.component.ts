@@ -124,7 +124,6 @@ export class UserCreatePageComponent implements OnInit {
       control?.setErrors({ required: true });
       return;
     }
-
     this.custService.getCustByCode(code).subscribe({
       next: (cust) => {
         if (cust) {
@@ -150,7 +149,11 @@ export class UserCreatePageComponent implements OnInit {
 
   onCustCodeInput(event: any) {
     const input = event.target;
-    input.value = input.value.replace(/\D/g, '').slice(0, 13);
+
+    input.value = input.value
+      .replace(/[^0-9kK-]/g, '') // permite números, K y guión
+      .toUpperCase()
+      .slice(0, 13);
   }
 
   loadCustomers() {
