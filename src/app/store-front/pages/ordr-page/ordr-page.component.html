@@ -77,7 +77,7 @@
 
   <!-- SIN OBRA -->
   <div *ngIf="!loading && !hasSelectedProject"
-       class="bg-white rounded-2xl mt-10 p-10 text-center text-gray-500 shadow">
+       class="bg-white rounded-2xl mt-10 p-10 text-center text-gray-500 shadow animate__animated animate__fadeIn">
        <div class="flex justify-center mb-4">
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -98,7 +98,7 @@
 
   <!-- BOTONES ACTUALES / FUTUROS -->
   <div *ngIf="!loading && hasSelectedProject"
-       class="flex justify-center gap-4 mt-8">
+       class="flex justify-center gap-4 mt-8 animate__animated animate__fadeIn">
     <button
       class="px-6 py-2 rounded-lg font-medium"
       [class.bg-cyan-700]="viewMode === 'ACTUALES'"
@@ -140,6 +140,12 @@
           <!-- address -->
           <b></b> 
         </p>
+      </div>
+
+      <div class="text-center mb-3">
+        <p class="text-xs text-gray-500">
+          <b>{{ ord.ship_addr_line }}</b>
+        </p>        
       </div>
 
       <div class="text-center mb-3">
@@ -198,54 +204,127 @@
   </div>
 
   <!-- ===================== -->
-  <!-- CARDS - FUTUROS -->
+  <!-- TABLA - FUTUROS -->
   <!-- ===================== -->
-  <div *ngIf="viewMode === 'FUTUROS' && filteredOrders.length"
-      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10 animate__animated animate__fadeIn">
+  <div
+    *ngIf="viewMode === 'FUTUROS' && filteredOrders.length"
+    class="mt-10 bg-white shadow-lg rounded-2xl border border-gray-200 overflow-x-auto animate__animated animate__fadeIn"
+  >
 
-    <div *ngFor="let ord of filteredOrders"
-        class="bg-white rounded-2xl shadow-lg border p-5
-                hover:shadow-xl transition cursor-pointer"
-        (click)="onOpenOrder(ord, $event)">
+    <table class="min-w-full text-sm">
+      <thead class="bg-cyan-700 text-white">
+        <tr>
+          <th class="p-3 text-left">Fecha</th>
+          <th class="p-3 max-w-[160px] sm:max-w-none
+                  overflow-x-auto
+                  whitespace-nowrap
+                  scrollbar-thin">Hora inicio</th>
+          <th class="p-3 text-left">Proyecto</th>
+          <th class="p-3 max-w-[160px] sm:max-w-none
+                  overflow-x-auto
+                  whitespace-nowrap
+                  scrollbar-thin">Cod. Producto</th>
+          <th class="p-3 text-left">Producto</th>
+          <th class="p-3 text-left">m³</th>
+          <th class="p-3 text-left">Camiones</th>
+          <th class="p-3 text-left">Frecuencia</th>
+          <th class="p-3 text-left">Dirección</th>
+          <th class="p-3 text-left">Comuna</th>
+          <th class="p-3 text-left">Estado</th>
+        </tr>
+      </thead>
 
-      <div class="text-center mb-3">
-        <p class="text-sm text-gray-400 uppercase">
-          {{ ord.proj_name }}          
-        </p>
-        <p class="text-xs text-gray-500">
-          Pedido #{{ ord.proj_code.trim() }}
-        </p>
-      </div>
+      <tbody>
+        <tr
+          *ngFor="let ord of filteredOrders"
+          class="border-t bg-white hover:bg-cyan-50 cursor-pointer"
+          (click)="onOpenOrder(ord, $event)"
+        >
+          <!-- FECHA -->
+          <td class="px-3 py-2">
+            {{ ord.order_Date | date:'dd/MM/yyyy' }}
+          </td>
 
-      <div class="text-center mb-3">
-        <p class="font-semibold text-gray-700">
-          {{ ord.prod_code.trim() }} / {{ ord.prod_descr.trim() }}
-        </p>
-        <p class="text-xs text-black">
-          <!-- Inicio {{ ord.start_time | hora }} -->
-          Inicio {{ ord.start_time | hora}}        
-        </p>
-      </div>
+          <!-- HORA -->
+          <td class="px-3 py-2">
+            {{ ord.start_time | hora }}
+          </td>
 
-      <!-- <div class="text-xs text-red-500 text-center">
-        DEBUG: {{ ord.delv_qty }} / {{ ord.order_qty }}
-      </div> -->
+          <!-- PROYECTO -->
+          <td class="p-3 max-w-[160px] sm:max-w-none
+                  overflow-x-auto
+                  whitespace-nowrap
+                  scrollbar-thin">  
+            <div class="">
+              {{ ord.proj_name.trim() }}
+            </div>
+          </td>
 
-      <!-- No mostrar barra de progreso para FUTUROS -->
-      <!-- Solo info general -->
-      <div class="flex justify-center my-4">
-        <p class="text-xs text-gray-500 text-center italic">
-          Pedido programado
-        </p>
-      </div>
+          <td class="p-3 max-w-[160px] sm:max-w-none
+              overflow-x-auto
+              whitespace-nowrap
+              scrollbar-thin">
+            <div class="font-medium">
+              {{ ord.prod_code.trim() }}
+            </div>
+          </td>
 
-      <div class="flex justify-center">
-        <span class="px-3 py-1 text-xs rounded-full
-                    bg-green-100 text-green-700">
-          {{ ord.estado }}
-        </span>
-      </div>
-    </div>
+          <!-- PRODUCTO -->
+          <td class="p-3 max-w-[160px] sm:max-w-none
+                  overflow-x-auto
+                  whitespace-nowrap
+                  scrollbar-thin">
+            <div class="">
+              {{ ord.prod_descr.trim() }}
+            </div>
+          </td>
+
+          <!-- M3 -->
+          <td class="px-3 py-2 text-center">
+            {{ ord.order_qty }}
+          </td>
+
+          <!-- CAMIONES -->
+          <td class="px-3 py-2 text-center">
+            {{ ord.loads }}
+          </td>
+
+          <!-- FRECUENCIA -->
+          <td class="px-3 py-2 text-center">
+            {{ ord.truck_spacing_mins }} min
+          </td>
+
+          <!-- DIRECCIÓN -->
+          <td class="p-3 max-w-[160px] sm:max-w-none
+                  overflow-x-auto
+                  whitespace-nowrap
+                  scrollbar-thin">
+            {{ ord.ship_addr_line?.trim() }}
+          </td>
+
+          <!-- COMUNA -->
+          <td class="px-3 py-2 sm:max-w-none
+              overflow-x-auto
+              whitespace-nowrap
+              scrollbar-thin">
+            {{ ord.comuna?.trim() }}
+          </td>
+
+          <!-- ESTADO -->
+          <td class="px-3 py-2 text-center">
+            <span
+              class="px-2 py-1 rounded-full text-[10px]"
+              [ngClass]="{
+                'bg-green-100 text-green-700': ord.estado === 'Normal',
+                'bg-yellow-100 text-yellow-700': ord.estado !== 'Normal'
+              }"
+            >
+              {{ ord.estado }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <!-- SIN PEDIDOS -->

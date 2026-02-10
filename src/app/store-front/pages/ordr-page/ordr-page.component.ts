@@ -67,11 +67,13 @@ export class OrdrPageComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    console.log('oninit');
+    console.log(this.userCustCode);    
+    console.log(this.viewMode);    
     this.currentUser = this.authService.user();
     if (!this.currentUser) return;
 
-    this.userCustCodes = this.currentUser.cust_codes || [];
-
+    this.userCustCodes = this.currentUser.cust_codes || [];    
     if (this.userCustCodes.length <= 1) {
       this.selectedCustCode = this.userCustCodes[0] || this.currentUser.cust_code;
       this.userCustCode = this.selectedCustCode;
@@ -79,8 +81,9 @@ export class OrdrPageComponent implements OnInit {
         this.custService.getCustByCode(this.userCustCode).subscribe(cust => {
           this.customerName = cust.name;
           this.customerAddress = cust.addr_line_1 ?? null;
+          console.log(this.userCustCode);          
           this.loadProjects();
-          this.loadOrders();
+          // this.loadOrders();
         });
       }
     } else {
@@ -130,21 +133,6 @@ export class OrdrPageComponent implements OnInit {
     this.loadCustomerData(this.selectedCustCode);
   }
 
-  loadCustomerData(custCode: string) {
-    this.userCustCode = custCode;
-
-    const data = this.customersData[custCode];
-    if (data) {
-      this.customerName = data.name;
-      this.customerAddress = data.addr_line_1 ?? null;
-    } else {
-      this.loadCustomer(custCode);
-    }
-
-    this.loadProjects();
-    this.loadOrders();
-  }
-
   loadCustomer(custCode: string) {
     this.custService.getCustByCode(custCode).subscribe(cust => {
       this.customerName = cust.name;
@@ -180,7 +168,7 @@ export class OrdrPageComponent implements OnInit {
 
       if (this.projectOptions.length) {
         this.activeProject = this.projectOptions[0].proj_code;
-        this.loadOrders();
+        // this.loadOrders();
       }
     });
   }
@@ -196,16 +184,14 @@ export class OrdrPageComponent implements OnInit {
 
         let pedidos$;
 
-        // if (this.viewMode === 'FUTUROS') {      
-        //   pedidos$ = this.ordrService.getFutureOrders(this.userCustCode, this.selectedProject);
-        // } else {      
-          // }
           
         pedidos$ = this.ordrService.getPedidosPorProyecto(this.selectedProject, this.userCustCode);
         pedidos$.subscribe({
           next: (pedidos: any[]) => { 
+            console.log(pedidos);            
             const pedidosUnicos = new Map<string, any>();
             pedidos.forEach(o => {
+              console.log(o);              
               const code = o.order_code?.trim();
               if (!code) return;                  
           if (!pedidosUnicos.has(code)) {
@@ -258,16 +244,132 @@ export class OrdrPageComponent implements OnInit {
     });
   }
 
+  loadOrdersFutures() {
+    if (!this.userCustCode || !this.selectedProject) {
+      this.loading = false;
+      return;
+    }
+
+    this.loading = true;
+
+    const tomorrow = this.getTomorrowAsApiDate(); // 👈 AQUÍ
+
+    this.ordrService
+      .getPedidosFuturosPorProyecto(this.selectedProject, this.userCustCode)
+      .subscribe({
+        next: (pedidos: any[]) => {
+          const pedidosUnicos = new Map<string, any>();
+
+          pedidos.forEach(o => {
+            const code = `${o.order_code.trim()}_${o.order_Date}`;
+            if (!code) return;
+            console.log(pedidos);          
+            if (!pedidosUnicos.has(code)) {
+              pedidosUnicos.set(code, {
+                ...o,
+                order_code: code,
+                order_qty: Number(o.order_qty) || 0,
+                detalles: [],
+                ejecutado: 0,
+                porcentaje: 0,
+                programa: []
+              });
+            }
+
+            pedidosUnicos.get(code).detalles.push(o);
+          });
+
+          const ordersArray = Array.from(pedidosUnicos.values());
+
+          const requests$ = ordersArray.map(ord =>
+            forkJoin({
+              avance: this.ordrService.getAvancePedido(
+                ord.order_code,
+                ord.order_Date // avance sigue usando la fecha del pedido
+              ),
+              programa: this.ordrService.getProgramaPorPedido(
+                ord.order_code,
+                tomorrow // 👈 AQUÍ ESTÁ LA CLAVE
+              )
+            }).pipe(
+              map(({ avance, programa }) => ({
+                ...ord,
+                ejecutado: avance?.ejecutado || 0,
+                porcentaje:
+                  ord.order_qty > 0
+                    ? Math.round(((avance?.ejecutado || 0) / ord.order_qty) * 100)
+                    : 0,
+                descargaConfirmada: (avance?.ejecutado || 0) > 0,
+                programa: programa || []
+              }))
+            )
+          );
+
+          forkJoin(requests$).subscribe({
+            next: ordersFinal => {
+              this.orders = ordersFinal;
+              console.log('ORDERS FUTUROS FINAL:', ordersFinal);
+              this.loading = false;
+            },
+            error: err => {
+              console.error('Error cargando avance o programa:', err);
+              this.orders = ordersArray;
+              this.loading = false;
+            }
+          });
+        },
+        error: err => {
+          console.error('Error cargando pedidos:', err);
+          this.orders = [];
+          this.loading = false;
+        }
+      });
+  }
+
+  private getTomorrowAsApiDate(): string {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+
+    return `${yyyy}-${mm}-${dd}`; // YYYY-MM-DD
+  }
+
+
+  private isWithinNext3Days(orderDateStr: string): boolean {
+    if (!orderDateStr) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const maxDate = new Date(today);
+    maxDate.setDate(today.getDate() + 3);
+
+    const orderDate = new Date(orderDateStr);
+    orderDate.setHours(0, 0, 0, 0);
+
+    return orderDate >= today && orderDate <= maxDate;
+  }
+
   onSelectProject() {
     this.page = 1;
-    this.loadOrders();
+    // this.loadOrders();
   }
 
   selectViewMode(mode: 'ACTUALES' | 'FUTUROS') {
     if (this.viewMode === mode) return;
+
     this.viewMode = mode;
-    // this.page = 1;
-    // this.loadOrders(); 
+    this.orders = [];       // 🔥 LIMPIA
+    this.loading = true;
+
+    if (mode === 'FUTUROS') {
+      this.loadOrdersFutures();
+    } else {
+      this.loadOrders();
+    }
   }
 
   private getOrderDateTime(ord: any): Date | null {
@@ -321,16 +423,38 @@ export class OrdrPageComponent implements OnInit {
       return [];
     }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     if (this.viewMode === 'FUTUROS') {
-      return this.orders;
+      return this.orders
+        .filter(ord => {
+          const d = new Date(ord.order_Date);
+          d.setHours(0, 0, 0, 0);
+          return d > today;
+        })
+        .sort((a, b) => {
+          // 1️⃣ ordenar por fecha
+          const dateA = new Date(a.order_Date).getTime();
+          const dateB = new Date(b.order_Date).getTime();
+
+          if (dateA !== dateB) {
+            return dateA - dateB;
+          }
+
+          // 2️⃣ si es la misma fecha, ordenar por hora inicio
+          const timeA = this.getOrderDateTime(a)?.getTime() ?? 0;
+          const timeB = this.getOrderDateTime(b)?.getTime() ?? 0;
+
+          return timeA - timeB;
+        });
     }
 
+    // ACTUALES
     const now = new Date();
-
     return this.orders.filter(ord => {
       const orderDateTime = this.getOrderDateTime(ord);
-      if (!orderDateTime) return false;
-      return orderDateTime.getTime() <= now.getTime();
+      return orderDateTime && orderDateTime <= now;
     });
   }
 
@@ -352,5 +476,23 @@ export class OrdrPageComponent implements OnInit {
     //     { queryParams: { code: ord.order_code, date: ord.order_Date } }
     //   );
     // }
+  }
+
+  loadCustomerData(custCode: string) {
+    this.userCustCode = custCode;
+
+    const data = this.customersData[custCode];
+    if (data) {
+      this.customerName = data.name;
+      this.customerAddress = data.addr_line_1 ?? null;
+    } else {
+      this.loadCustomer(custCode);
+    }
+
+    this.loadProjects();
+
+    // 🔥 NO cargar pedidos aquí
+    this.orders = [];
+    this.viewMode = null;
   }
 }

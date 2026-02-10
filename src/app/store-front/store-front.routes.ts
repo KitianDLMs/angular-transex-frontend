@@ -10,6 +10,7 @@ import { DocsPageComponent } from './pages/docs-page/docs-page.component';
 import { LaboratorioPageComponent } from './pages/laboratorio-page/laboratorio-page.component';
 import { PedidosActualesComponent } from './pages/pedidos-actuales/pedidos-actuales.component';
 import { PedidosFuturosComponent } from './pages/pedidos-futuros/pedidos-futuros.component';
+import { CustomerProjectPageComponent } from '@shared/customer-project-page/customer-project-page.component';
 
 export const storeFrontRoutes: Routes = [
   {
@@ -17,6 +18,8 @@ export const storeFrontRoutes: Routes = [
     component: StoreFrontLayoutComponent,
     children: [
       { path: '', component: OrdrPageComponent },
+
+      { path: 'customer-project', component: CustomerProjectPageComponent },
 
       { path: 'obras', component: ObraPageComponent },
             

@@ -57,7 +57,21 @@ export class OrdrService {
       params: {
         proj_code: projCode.trim(),
         cust_code: custCode.trim(),
-        viewMode // <-- agregamos este query param
+        viewMode
+      },
+    });
+  }
+
+  getPedidosFuturosPorProyecto(
+    projCode: string,
+    custCode: string,
+    viewMode: 'ACTUALES' | 'FUTUROS' = 'ACTUALES'
+  ) {
+    return this.http.get<any[]>(`${this.baseUrl}/ordr/external/futuros`, {      
+      params: {
+        proj_code: projCode.trim(),
+        cust_code: custCode.trim(),
+        viewMode
       },
     });
   }
