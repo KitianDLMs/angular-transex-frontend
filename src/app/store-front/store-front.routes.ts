@@ -17,9 +17,9 @@ export const storeFrontRoutes: Routes = [
     path: '',
     component: StoreFrontLayoutComponent,
     children: [
-      { path: '', component: OrdrPageComponent },
+      { path: 'order', component: OrdrPageComponent },
 
-      { path: 'customer-project', component: CustomerProjectPageComponent },
+      { path: '', component: CustomerProjectPageComponent },
 
       { path: 'obras', component: ObraPageComponent },
             
