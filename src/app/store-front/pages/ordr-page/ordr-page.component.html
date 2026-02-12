@@ -8,65 +8,69 @@
 <div class="p-4 bg-gray-50">
 
   <!-- FILTROS -->
-  <div class="bg-white shadow-md rounded-xl p-4 border border-gray-200 flex flex-col sm:flex-row sm:items-center gap-4">
+  <div
+    class="bg-white shadow-md rounded-xl p-4 border border-gray-200
+          flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
-    <div class="text-gray-600 text-center sm:text-left sm:mr-auto">
-      <div class="font-semibold flex items-center justify-center sm:justify-start gap-2"
-           [ngClass]="{ 'mb-3 mt-3': authService.isAdmin()}">
+     <!-- 👑 DERECHA: CLIENTE (solo admin) -->
+    <div *ngIf="selectedCustCode"
+        class="flex items-center gap-2 bg-cyan-50 px-3 py-2 rounded-lg animate__animated animate__fadeIn">
 
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-600"
-             fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 12a4 4 0 100-8 4 4 0 000 8z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M5.121 17.804A9 9 0 1118.879 17.804"/>
-        </svg>
+      <svg xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4 text-cyan-600"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor">
+        <path stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 12a4 4 0 100-8 4 4 0 000 8z"/>
+        <path stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5.121 17.804A9 9 0 1118.879 17.804"/>
+      </svg>
 
-        <ng-container *ngIf="userCustCodes.length > 1; else singleCustomer">
-          <select [(ngModel)]="selectedCustCode"
-                  (change)="onCustomerChange()"
-                  class="select select-bordered bg-gray-50">
-            <option *ngFor="let code of sortedUserCustCodes" [value]="code">
-              {{ customersData[code].name || code }}
-            </option>
-          </select>
-        </ng-container>
-
-        <ng-template #singleCustomer>
-          <span>{{ customerName }}</span>
-        </ng-template>
+      <div class="text-sm text-right">
+        <div class="text-gray-400 text-xs uppercase">Cliente</div>
+        <div class="font-semibold text-gray-800">
+          {{ customerName || selectedCustCode }}
+        </div>
       </div>
     </div>
 
-    <select class="select select-bordered bg-gray-50 w-full sm:w-64"
-            [(ngModel)]="selectedProject"
-            (change)="onSelectProject()">
-      <option value="">Todas las obras</option>
-      <option *ngFor="let proj of projectOptions"
-              [value]="proj.proj_code.trim()">
-        {{ proj.proj_code.trim() }} - {{ proj.proj_name.trim() }}
-      </option>
-    </select>
+    <!-- 🏗 IZQUIERDA: PROYECTO -->
+    <div class="flex items-center gap-4 animate__animated animate__fadeIn">
 
-    <button
-      class="btn bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg"
-      (click)="clearFilter()">
-           <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 20l5-5m0 0l3 3m-3-3l6-6m3-3a2.828 2.828 0 10-4-4l4 4z"
-          />
+      <div *ngIf="selectedProject"
+          class="flex items-center gap-2 bg-green-50 px-3 py-2 rounded-lg">
+
+        <svg xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 text-green-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor">
+          <path stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 7h18M3 12h18M3 17h18"/>
         </svg>
-      Limpiar
-    </button>
+
+        <div class="text-sm">
+          <div class="text-gray-400 text-xs uppercase">Proyecto</div>
+          <div class="font-semibold text-gray-800">
+            {{ selectedProjectName }}
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!selectedProject"
+          class="text-gray-400 text-sm italic">
+        No hay proyecto seleccionado
+      </div>
+
+    </div>   
+
   </div>
 
   <!-- LOADING -->

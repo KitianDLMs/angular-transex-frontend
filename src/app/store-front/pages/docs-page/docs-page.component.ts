@@ -24,7 +24,6 @@ export class DocsPageComponent implements OnInit {
   private projService = inject(ProjService);  
     
   customerName = '';
-  customerAddress = '';
   currentYear = new Date().getFullYear();
   today = new Date();
   userCustCode: string | null = null;
@@ -41,6 +40,7 @@ export class DocsPageComponent implements OnInit {
 
   projectOptions: { proj_code: string; proj_name: string }[] = [];
 
+  currentUser: any = null;
   filterWork: string = '';
   filterDocType: string = '';
   filterDateTo: string = '';
@@ -52,6 +52,8 @@ export class DocsPageComponent implements OnInit {
   userCustCodes: string[] = []; 
   selectedCustCode: string | null = null;
   customersData: { [code: string]: { name: string, addr: string } } = {};
+  selectedProjectName: string | null = null;
+  customerAddress: string | null = null;
 
   onCustomerChange() {
     if (!this.selectedCustCode) return;
@@ -63,8 +65,120 @@ export class DocsPageComponent implements OnInit {
     }
 
     this.userCustCode = this.selectedCustCode;
+    localStorage.removeItem('selectedSelection');
+    this.selectedProject = '';
+    this.selectedProjectName = null;
     this.loadProjectsByCustomer();
     this.onSearch(true);
+  }
+
+  loadCustomerData(custCode: string) {
+    this.userCustCode = custCode;
+
+    this.selectedProject = '';
+    this.selectedProjectName = null;
+
+    const data = this.customersData[custCode];
+    if (data) {
+      this.customerName = data.name;
+      this.customerAddress = data.addr;
+    } else {
+      this.loadCustomer();
+    }
+
+    this.loadProjects();
+  }
+
+  loadCustomer() {
+    this.custService.getCustByCode(this.userCustCode!).subscribe(c => {
+      this.customerName = c.name;
+      this.customerAddress = c.addr_line_1 ?? null;
+    });
+  }
+
+  loadProjects() {
+    if (!this.userCustCode) return;
+
+    const allowedProjects = this.currentUser?.projects ?? [];
+
+    this.projService.getByCust(this.userCustCode).subscribe(projects => {
+
+      const map = new Map<string, { proj_code: string; proj_name: string }>();
+
+      projects.forEach(p => {
+        if (!p.projcode || !p.projname) return;
+
+        const code = p.projcode.trim();
+        const name = p.projname.trim();
+
+        if (!allowedProjects.includes(code)) return;
+
+        if (!map.has(code)) {
+          map.set(code, { proj_code: code, proj_name: name });
+        }
+      });
+
+      this.projectOptions = Array.from(map.values());
+
+      // ==========================
+      // 🔥 RESTAURAR DESDE STORAGE
+      // ==========================
+
+      const stored = localStorage.getItem('selectedSelection');
+
+      if (!stored) {
+        // this.loadProducts();
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(stored);
+        const storedCust = parsed.custCode;
+        const storedProj = parsed.projCode;
+
+        // 🚨 Validar cliente
+        if (storedCust !== this.userCustCode) {
+          localStorage.removeItem('selectedSelection');
+          // this.loadProducts();
+          return;
+        }
+
+        // 🚨 Validar que el proyecto exista
+        const exists = this.projectOptions.find(
+          p => p.proj_code === storedProj
+        );
+
+        if (!exists) {
+          localStorage.removeItem('selectedSelection');
+          // this.loadProducts();
+          return;
+        }
+
+        // ✅ Todo válido
+        this.selectedProject = storedProj;
+        this.resolveSelectedProjectName();
+
+        // this.loadProducts();
+
+      } catch (error) {
+        console.error('Error parsing selectedSelection', error);
+        localStorage.removeItem('selectedSelection');
+        // this.loadProducts();
+      }
+    });
+  }
+  
+  private resolveSelectedProjectName() {
+    if (!this.selectedProject) {
+      this.selectedProjectName = null;
+      return;
+    }
+
+    const found = this.projectOptions.find(
+      p => p.proj_code === this.selectedProject
+    );
+
+    this.selectedProjectName = found?.proj_name || this.selectedProject;
   }
 
   ngOnInit(): void {
@@ -75,8 +189,19 @@ export class DocsPageComponent implements OnInit {
       const singleCustCode = user?.cust_code || null;
       if (singleCustCode) this.userCustCodes = [singleCustCode];
     }    
-    this.selectedCustCode = this.userCustCodes[0] || null;
-    this.userCustCode = this.selectedCustCode;
+    const stored = localStorage.getItem('selectedSelection');
+
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      this.userCustCode = parsed.custCode;
+      this.selectedCustCode = parsed.custCode;
+      this.selectedProject = parsed.projCode;
+      this.resolveSelectedProjectName();
+    } else {
+      this.selectedCustCode = this.userCustCodes[0] || null;
+      this.userCustCode = this.selectedCustCode;
+    }
+
     if (!this.selectedCustCode) return;
     if (this.userCustCodes.length === 1) {      
       this.custService.getCustByCode(this.selectedCustCode).subscribe(cust => {
@@ -104,10 +229,18 @@ export class DocsPageComponent implements OnInit {
           customers.sort((a, b) =>
             a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
           );
+
           this.userCustCodes = customers.map(c => c.code);
-          this.selectedCustCode = this.userCustCodes[0];
-          this.userCustCode = this.selectedCustCode;
-          const data = this.customersData[this.selectedCustCode];
+
+          // 🔥 RESPETAR STORAGE
+          if (this.selectedCustCode && this.userCustCodes.includes(this.selectedCustCode)) {
+            this.userCustCode = this.selectedCustCode;
+          } else {
+            this.selectedCustCode = this.userCustCodes[0];
+            this.userCustCode = this.selectedCustCode;
+          }
+
+          const data = this.customersData[this.selectedCustCode!];
           this.customerName = data.name;
           this.customerAddress = data.addr;
           this.loadProjectsByCustomer();
@@ -160,8 +293,43 @@ export class DocsPageComponent implements OnInit {
             map.set(code, { proj_code: code, proj_name: name });
           }
         });                
-        this.projectOptions = Array.from(map.values());        
-      },
+        this.projectOptions = Array.from(map.values());   
+        // 🔥 RESTAURAR PROYECTO DESDE STORAGE
+        const stored = localStorage.getItem('selectedSelection');
+
+          if (stored) {
+            try {
+              const parsed = JSON.parse(stored);
+
+              // Validar que el cliente coincida
+              if (parsed.custCode !== this.userCustCode) {
+                localStorage.removeItem('selectedSelection');
+                this.selectedProject = '';
+                this.selectedProjectName = null;
+                return;
+              }
+
+              // Validar que el proyecto exista
+              const exists = this.projectOptions.find(
+                p => p.proj_code === parsed.projCode
+              );
+
+              if (!exists) {
+                localStorage.removeItem('selectedSelection');
+                this.selectedProject = '';
+                this.selectedProjectName = null;
+                return;
+              }
+
+              this.selectedProject = parsed.projCode;
+              this.resolveSelectedProjectName();
+            } catch {
+              localStorage.removeItem('selectedSelection');
+              this.selectedProject = '';
+              this.selectedProjectName = null;
+            }
+          }     
+        },
       error: err => {
         console.error('Error cargando obras:', err);
         this.projectOptions = [];
@@ -495,6 +663,7 @@ export class DocsPageComponent implements OnInit {
 
   clearFilter() {
     this.selectedProject = '';
+    this.selectedProjectName = null;
     this.filterWork = '';
     this.filterDocNumber = '';
     this.filterDocType = '';
@@ -508,6 +677,15 @@ export class DocsPageComponent implements OnInit {
   }
 
   onSelectProject() {
+
+    if (this.selectedProject && this.userCustCode) {
+      localStorage.setItem('selectedSelection', JSON.stringify({
+        custCode: this.userCustCode,
+        projCode: this.selectedProject
+      }));
+    }
+
+    this.resolveSelectedProjectName();
     this.onSearch(true);
   }
 

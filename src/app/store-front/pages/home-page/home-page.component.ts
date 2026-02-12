@@ -50,8 +50,19 @@ export class HomePageComponent implements OnInit {
   userCustCodes: string[] = [];
   selectedCustCode: string | null = null;
   customersData: { [code: string]: { name: string; addr: string } } = {};
+  selectedProjectName: string | null = null;
+  storedProject: string | null = null;
 
   ngOnInit() {
+    const stored = localStorage.getItem('selectedSelection');
+
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      this.storedProject = parsed.projCode;
+      this.userCustCode = parsed.custCode;
+      this.selectedCustCode = parsed.custCode;
+    }
+
     this.currentUser = this.authService.user();
     if (!this.currentUser) return;
     this.userCustCodes = this.currentUser.cust_codes || [];
@@ -91,7 +102,9 @@ export class HomePageComponent implements OnInit {
             addr: c.addr
           };
         });        
-        this.selectedCustCode = this.userCustCodes[0];
+        if (!this.selectedCustCode) {
+          this.selectedCustCode = this.userCustCodes[0];
+        }
         this.userCustCode = this.selectedCustCode;
 
         this.loadCustomerData(this.userCustCode!);
@@ -99,13 +112,36 @@ export class HomePageComponent implements OnInit {
     }
   }
 
+  private resolveSelectedProjectName() {
+    if (!this.selectedProject) {
+      this.selectedProjectName = null;
+      return;
+    }
+
+    const found = this.projectOptions.find(
+      p => p.proj_code === this.selectedProject
+    );
+
+    this.selectedProjectName = found?.proj_name || this.selectedProject;
+  }
+
   onCustomerChange() {
     if (!this.selectedCustCode) return;
     this.loadCustomerData(this.selectedCustCode);
+    localStorage.setItem(
+      'selectedSelection',
+      JSON.stringify({
+        custCode: this.selectedCustCode,
+        projCode: ''
+      })
+    );
   }
 
   loadCustomerData(custCode: string) {
     this.userCustCode = custCode;
+
+    this.selectedProject = '';
+    this.selectedProjectName = null;
 
     const data = this.customersData[custCode];
     if (data) {
@@ -116,7 +152,6 @@ export class HomePageComponent implements OnInit {
     }
 
     this.loadProjects();
-    this.loadProducts();
   }
 
   loadCustomer() {
@@ -127,9 +162,12 @@ export class HomePageComponent implements OnInit {
   }
 
   loadProjects() {
+    if (!this.userCustCode) return;
+
     const allowedProjects = this.currentUser?.projects ?? [];
 
-    this.projService.getByCust(this.userCustCode!).subscribe(projects => {
+    this.projService.getByCust(this.userCustCode).subscribe(projects => {
+
       const map = new Map<string, { proj_code: string; proj_name: string }>();
 
       projects.forEach(p => {
@@ -146,6 +184,52 @@ export class HomePageComponent implements OnInit {
       });
 
       this.projectOptions = Array.from(map.values());
+
+      // ==========================
+      // 🔥 RESTAURAR DESDE STORAGE
+      // ==========================
+
+      const stored = localStorage.getItem('selectedSelection');
+
+      if (!stored) {
+        this.loadProducts();
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(stored);
+        const storedCust = parsed.custCode;
+        const storedProj = parsed.projCode;
+
+        // 🚨 Validar cliente
+        if (storedCust !== this.userCustCode) {
+          localStorage.removeItem('selectedSelection');
+          this.loadProducts();
+          return;
+        }
+
+        // 🚨 Validar que el proyecto exista
+        const exists = this.projectOptions.find(
+          p => p.proj_code === storedProj
+        );
+
+        if (!exists) {
+          localStorage.removeItem('selectedSelection');
+          this.loadProducts();
+          return;
+        }
+
+        // ✅ Todo válido
+        this.selectedProject = storedProj;
+        this.resolveSelectedProjectName();
+
+        this.loadProducts();
+
+      } catch (error) {
+        console.error('Error parsing selectedSelection', error);
+        localStorage.removeItem('selectedSelection');
+        this.loadProducts();
+      }
     });
   }
 
@@ -229,11 +313,25 @@ export class HomePageComponent implements OnInit {
 
   onSelectProject() {
     this.page = 1;
+
+    localStorage.setItem(
+      'selectedSelection',
+      JSON.stringify({
+        custCode: this.userCustCode,
+        projCode: this.selectedProject
+      })
+    );
+
+    this.resolveSelectedProjectName();
     this.loadProducts();
   }
 
   clearFilter() {
     this.selectedProject = '';
+    this.selectedProjectName = null;
+
+    localStorage.removeItem('selectedSelection');
+
     this.page = 1;
     this.loadProducts();
   }

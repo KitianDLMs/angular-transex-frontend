@@ -23,6 +23,26 @@
       >
         <li>
           <a
+            routerLink="/store-front/customer-project"
+            routerLinkActive="text-secondary font-semibold"
+            class="btn btn-ghost justify-start gap-2"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" 
+                class="h-5 w-5" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor">
+              <path stroke-linecap="round" 
+                    stroke-linejoin="round" 
+                    stroke-width="2" 
+                    d="M21 21l-4.35-4.35M16 10a6 6 0 11-12 0 6 6 0 0112 0z" />
+            </svg>
+            Buscador
+          </a>
+        </li>
+        <li>
+          <a
             routerLink="/store-front/"
             routerLinkActive="text-secondary font-semibold"
             class="btn btn-ghost justify-start gap-2"
@@ -96,6 +116,28 @@
   </div>
   <div class="navbar-center hidden lg:flex">
     <ul class="menu menu-horizontal px-1">
+
+      <li>
+        <a
+          routerLink="/store-front/customer-project"
+          routerLinkActive="text-secondary font-semibold"
+          class="btn btn-ghost justify-start gap-2"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+       <svg xmlns="http://www.w3.org/2000/svg" 
+            class="h-5 w-5" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor">
+          <path stroke-linecap="round" 
+                stroke-linejoin="round" 
+                stroke-width="2" 
+                d="M21 21l-4.35-4.35M16 10a6 6 0 11-12 0 6 6 0 0112 0z" />
+        </svg>
+          Buscador
+        </a>
+      </li>
+      
       <li>
         <a
           routerLink="/store-front/"
@@ -170,7 +212,7 @@
             routerLink="/admin"
             class="text-xs text-green-600 hover:underline"
           >
-            Ir al Panel Admin
+            Admin
           </a>
         </div>
         <!-- ICONO USER -->

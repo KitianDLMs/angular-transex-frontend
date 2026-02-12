@@ -8,45 +8,77 @@
 <div class="p-6 bg-gray-50">
 
   <div class="w-full flex justify-center">
-    <div class="max-w-4xl animate__animated animate__fadeInLeft">
-      <div class="text-gray-600 text-center">
-        <div class="font-semibold flex items-center justify-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M5.121 17.804A9 9 0 1118.879 17.804
-                    A4.5 4.5 0 0012 13.5
-                    a4.5 4.5 0 00-6.879 4.304z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 12a4 4 0 100-8 4 4 0 000 8z"/>
-          </svg>          
-          <ng-container *ngIf="userCustCodes.length > 1; else singleCustomer">
-            <select [(ngModel)]="selectedCustCode" (change)="onCustomerChange()">
-              <option *ngFor="let code of userCustCodes" [value]="code">
-                {{ customersData[code].name || code }}
-              </option>
-            </select>
-          </ng-container>          
-          <ng-template #singleCustomer>
-            <span>{{ customerName }}</span>
-          </ng-template>
+    <div *ngIf="selectedCustCode"
+         class="flex items-center gap-2 bg-cyan-50 px-3 py-2 rounded-lg animate__animated animate__backInLeft">
+
+      <svg xmlns="http://www.w3.org/2000/svg"
+           class="h-4 w-4 text-cyan-600"
+           fill="none"
+           viewBox="0 0 24 24"
+           stroke="currentColor">
+        <path stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 12a4 4 0 100-8 4 4 0 000 8z"/>
+        <path stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5.121 17.804A9 9 0 1118.879 17.804"/>
+      </svg>
+
+      <div class="text-sm text-left">
+        <div class="text-gray-400 text-xs uppercase">Cliente</div>
+        <div class="font-semibold text-gray-800">
+          {{ customerName || selectedCustCode }}
         </div>
       </div>
     </div>
   </div>
   &nbsp;
- <div
+  <div
     class="bg-white shadow-md rounded-xl p-4 border border-gray-200
            grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-8 gap-4 items-end">
 
-    <div class="lg:col-span-2">
-      <select
-        class="select select-bordered bg-gray-50 w-full"
-        [(ngModel)]="selectedProject">
-        <option value="">Todas las obras</option>
-        <option *ngFor="let proj of projectOptions" [value]="proj.proj_code">
-          {{ proj.proj_code }} - {{ proj.proj_name }}        
-        </option>
-      </select>
+    <!-- 🔹 PROYECTO -->
+    <div class="lg:col-span-2 flex items-center animate__animated animate__fadeIn">
+      <div *ngIf="selectedProject"
+          class="w-full flex items-center gap-2 bg-green-50
+                  px-3 py-2 rounded-lg border border-green-100">
+
+        <svg xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 text-green-600 flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor">
+          <path stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 7h18M3 12h18M3 17h18"/>
+        </svg>
+
+        <div class="text-sm truncate w-full">
+          <div class="text-gray-400 text-xs uppercase leading-none">
+            Proyecto
+          </div>
+
+          <div
+            class="font-medium text-gray-800
+                  max-w-[160px] sm:max-w-none
+                  overflow-x-auto
+                  whitespace-nowrap
+                  scrollbar-thin"
+          >
+            {{ selectedProjectName }}
+          </div>
+
+        </div>
+      </div>
+
+      <div *ngIf="!selectedProject"
+          class="text-gray-400 text-sm italic">
+        Sin proyecto
+      </div>
+
     </div>
 
     <div class="lg:col-span-1">

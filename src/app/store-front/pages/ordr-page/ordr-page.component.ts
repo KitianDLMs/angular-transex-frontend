@@ -56,6 +56,7 @@ export class OrdrPageComponent implements OnInit {
   customersData: { [code: string]: { name: string; addr_line_1: string } } = {};
   showSeguimiento = false;
   ordenSeleccionada: any = null;
+  storedProject: string | null = null;
 
   authService = inject(AuthService);
   custService = inject(CustService);
@@ -67,26 +68,44 @@ export class OrdrPageComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    console.log('oninit');
-    console.log(this.userCustCode);    
-    console.log(this.viewMode);    
+   const stored = localStorage.getItem('selectedSelection');
+
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      this.storedProject = parsed.projCode;
+      this.userCustCode = parsed.custCode;
+      this.selectedCustCode = parsed.custCode;
+    }
+
+   this.viewMode = localStorage.getItem('viewMode') as 'ACTUALES' | 'FUTUROS' | null;
+
     this.currentUser = this.authService.user();
     if (!this.currentUser) return;
 
     this.userCustCodes = this.currentUser.cust_codes || [];    
     if (this.userCustCodes.length <= 1) {
-      this.selectedCustCode = this.userCustCodes[0] || this.currentUser.cust_code;
-      this.userCustCode = this.selectedCustCode;
-      if (this.userCustCode) {
-        this.custService.getCustByCode(this.userCustCode).subscribe(cust => {
+      const onlyCust = this.userCustCodes[0] || this.currentUser.cust_code;
+      // 🔥 Si viene cliente desde storage y es válido, respetarlo
+      if (this.userCustCode && this.userCustCode === onlyCust) {
+        this.selectedCustCode = this.userCustCode;
+      } else {
+        this.selectedCustCode = onlyCust;
+        this.userCustCode = onlyCust;
+      }
+
+      if (this.selectedCustCode) {
+        this.custService.getCustByCode(this.selectedCustCode).subscribe(cust => {
           this.customerName = cust.name;
           this.customerAddress = cust.addr_line_1 ?? null;
-          console.log(this.userCustCode);          
+
+          // Asegurar sincronización real
+          this.userCustCode = this.selectedCustCode;
+
           this.loadProjects();
-          // this.loadOrders();
         });
       }
-    } else {
+    }
+    else {
       const observables = this.userCustCodes.map(code =>
         this.custService.getCustByCode(code)
       );
@@ -114,7 +133,11 @@ export class OrdrPageComponent implements OnInit {
           };
         });
 
-        this.selectedCustCode = (this.userCustCodes[0] || '').trim();
+        if (this.userCustCode && this.userCustCodes.includes(this.userCustCode)) {
+          this.selectedCustCode = this.userCustCode;
+        } else {
+          this.selectedCustCode = (this.userCustCodes[0] || '').trim();
+        }
         this.loadCustomerData(this.selectedCustCode);
       });
     }
@@ -126,6 +149,16 @@ export class OrdrPageComponent implements OnInit {
       const nameB = (this.customersData[b]?.name || b).toUpperCase();
       return nameA.localeCompare(nameB);
     });
+  }
+
+  get selectedProjectName(): string | null {
+    if (!this.selectedProject) return null;
+
+    const proj = this.projectOptions.find(
+      p => p.proj_code === this.selectedProject
+    );
+
+    return proj?.proj_name || this.selectedProject;
   }
 
   onCustomerChange() {
@@ -146,9 +179,12 @@ export class OrdrPageComponent implements OnInit {
   }
 
   loadProjects() {
+    if (!this.userCustCode) return;
+
     const allowedProjects = this.currentUser?.projects ?? [];
 
-    this.projService.getByCust(this.userCustCode!).subscribe(projects => {
+    this.projService.getByCust(this.userCustCode).subscribe(projects => {
+
       const map = new Map<string, { proj_code: string; proj_name: string }>();
 
       projects.forEach(p => {
@@ -157,6 +193,7 @@ export class OrdrPageComponent implements OnInit {
         const code = p.projcode.trim();
         const name = p.projname.trim();
 
+        // Solo proyectos permitidos al usuario
         if (!allowedProjects.includes(code)) return;
 
         if (!map.has(code)) {
@@ -166,10 +203,59 @@ export class OrdrPageComponent implements OnInit {
 
       this.projectOptions = Array.from(map.values());
 
-      if (this.projectOptions.length) {
-        this.activeProject = this.projectOptions[0].proj_code;
-        // this.loadOrders();
+      // ==========================
+      // 🔥 RESTAURAR DESDE STORAGE
+      // ==========================
+      const stored = localStorage.getItem('selectedSelection');
+
+      if (!stored) return;
+
+      try {
+        const parsed = JSON.parse(stored);
+
+        const storedCust = parsed.custCode;
+        const storedProj = parsed.projCode;
+
+        // 🚨 Validar que el cliente coincida
+        if (storedCust !== this.userCustCode) {
+          localStorage.removeItem('selectedSelection');
+          localStorage.removeItem('viewMode');
+          return;
+        }
+
+        // 🚨 Validar que el proyecto exista en este cliente
+        const exists = this.projectOptions.find(
+          p => p.proj_code === storedProj
+        );
+
+        if (!exists) {
+          localStorage.removeItem('selectedSelection');
+          localStorage.removeItem('viewMode');
+          return;
+        }
+
+        // ✅ Todo válido
+        this.selectedProject = storedProj;
+
+        const storedMode = localStorage.getItem('viewMode') as
+          | 'ACTUALES'
+          | 'FUTUROS'
+          | null;
+
+        this.viewMode = storedMode ?? 'ACTUALES';
+
+        if (this.viewMode === 'FUTUROS') {
+          this.loadOrdersFutures();
+        } else {
+          this.loadOrders();
+        }
+
+      } catch (error) {
+        console.error('Error parsing selectedSelection', error);
+        localStorage.removeItem('selectedSelection');
+        localStorage.removeItem('viewMode');
       }
+
     });
   }
 
@@ -355,14 +441,35 @@ export class OrdrPageComponent implements OnInit {
 
   onSelectProject() {
     this.page = 1;
-    // this.loadOrders();
+    localStorage.setItem(
+      'selectedSelection',
+      JSON.stringify({
+        custCode: this.userCustCode,
+        projCode: this.selectedProject
+      })
+    );
+
+    const storedMode = localStorage.getItem('viewMode') as
+      | 'ACTUALES'
+      | 'FUTUROS'
+      | null;
+
+    this.viewMode = storedMode ?? 'ACTUALES';
+
+    if (this.viewMode === 'FUTUROS') {
+      this.loadOrdersFutures();
+    } else {
+      this.loadOrders();
+    }
   }
 
   selectViewMode(mode: 'ACTUALES' | 'FUTUROS') {
     if (this.viewMode === mode) return;
 
     this.viewMode = mode;
-    this.orders = [];       // 🔥 LIMPIA
+    localStorage.setItem('viewMode', mode); // 👈 agregar esto
+
+    this.orders = [];
     this.loading = true;
 
     if (mode === 'FUTUROS') {
