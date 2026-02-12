@@ -59,21 +59,35 @@ export class UserEditPageComponent implements OnInit {
       fullName: ['', Validators.required],
       rut: ['', [
         Validators.required,
-        Validators.pattern(/^\d{1,2}\.\d{3}\.\d{3}-[\dkK]$|^\d{7,8}-[\dkK]$/)
+        Validators.pattern(/^\d{7,8}-[\dkK]$/)
       ]],
       email: ['', [Validators.required, Validators.email]],
-      roles: ['', Validators.required],      
+      roles: ['', Validators.required],
       cust_code: [{ value: '', disabled: true }, [
         Validators.required,
         Validators.maxLength(13)
       ]],
-      cust_codes: [[]],  
-      custCodeInput: [
-        '',
-        [Validators.maxLength(13)]
-      ],
+      cust_codes: [[]],
+      custCodeInput: ['', [Validators.maxLength(13)]],
       projects: [[]],
-      password: ['', [Validators.maxLength(15), Validators.pattern(passwordRegex)]]
+      password: ['', [
+        Validators.maxLength(15),
+        Validators.pattern(passwordRegex)
+      ]]
+    });
+
+    // 🔥 FORMATEADOR RUT (permite K)
+    this.form.get('rut')?.valueChanges.subscribe(value => {
+      if (!value) return;
+
+      const cleaned = value
+        .replace(/[^0-9kK-]/g, '')
+        .toUpperCase()
+        .slice(0, 10); // 8 números + guión + DV
+
+      if (value !== cleaned) {
+        this.form.get('rut')?.setValue(cleaned, { emitEvent: false });
+      }
     });
 
     this.form.get('roles')?.valueChanges.subscribe(role =>
@@ -82,7 +96,10 @@ export class UserEditPageComponent implements OnInit {
 
     this.form.get('cust_codes')?.valueChanges.subscribe(codes => {
       if (codes?.length) {
-        this.loadProjectsByCustCodes(codes, this.form.get('projects')?.value || []);
+        this.loadProjectsByCustCodes(
+          codes,
+          this.form.get('projects')?.value || []
+        );
       } else {
         this.projects = [];
         this.form.get('projects')?.setValue([]);
@@ -269,19 +286,35 @@ export class UserEditPageComponent implements OnInit {
     });
   }
 
-  onCustCodeInput(event: Event, controlName: 'cust_code' | 'custCodeInput' = 'cust_code') {
+  onCustCodeInput(
+    event: Event,
+    controlName: 'cust_code' | 'custCodeInput' = 'cust_code'
+  ) {
     const input = event.target as HTMLInputElement;
-    const value = input.value.replace(/[^0-9]/g, '');
+
+    let value = input.value
+      .replace(/[^0-9kK]/g, '') // 🔥 permite números y K
+      .toUpperCase()
+      .slice(0, 13);
+
+    input.value = value;
 
     this.form.get(controlName)?.setValue(value, { emitEvent: false });
   }
 
-  onRutInput(event: any) {
-    const input = event.target;
-    input.value = input.value
+  onRutInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+
+    let value = input.value
       .replace(/[^0-9kK-]/g, '')
       .toUpperCase()
-      .slice(0, 10);
+      .slice(0, 12);
+
+    // Actualiza el input visual
+    input.value = value;
+
+    // Actualiza el formControl
+    this.form.get('rut')?.setValue(value, { emitEvent: false });
   }
 
   custCodeInputName: string | null = null;

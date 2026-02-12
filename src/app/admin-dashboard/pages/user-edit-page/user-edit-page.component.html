@@ -31,7 +31,6 @@
       type="text"
       class="input text-black input-bordered w-full"
       placeholder="12345678-9"
-      (input)="onRutInput($event)"
     />
 
     <div class="error-box">
@@ -104,7 +103,7 @@
       placeholder="Código de cliente"
       maxlength="13"
       required
-      inputmode="numeric"
+      inputmode="text"
       (input)="onCustCodeInput($event)"
       (blur)="checkCustCode()"
     />
