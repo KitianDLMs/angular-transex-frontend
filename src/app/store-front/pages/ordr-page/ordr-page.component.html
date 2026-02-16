@@ -31,7 +31,7 @@
               d="M5.121 17.804A9 9 0 1118.879 17.804"/>
       </svg>
 
-      <div class="text-sm text-right">
+      <div class="text-sm text-left">
         <div class="text-gray-400 text-xs uppercase">Cliente</div>
         <div class="font-semibold text-gray-800">
           {{ customerName || selectedCustCode }}
@@ -65,8 +65,8 @@
       </div>
 
       <div *ngIf="!selectedProject"
-          class="text-gray-400 text-sm italic">
-        No hay proyecto seleccionado
+          class="text-black text-md italic">
+        <b>No hay proyecto seleccionado</b>
       </div>
 
     </div>   

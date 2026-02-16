@@ -12,7 +12,6 @@ import {
 import { CommonModule } from '@angular/common';
 import mapboxgl from 'mapbox-gl';
 import { environment } from 'src/environments/environment.development';
-import { SchdlService } from '@shared/services/schdl.service';
 import { OrdrService } from '@shared/services/ordr.service';
 
 mapboxgl.accessToken = environment.mapboxKey;

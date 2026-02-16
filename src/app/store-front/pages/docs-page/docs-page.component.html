@@ -63,7 +63,7 @@
 
           <div
             class="font-medium text-gray-800
-                  max-w-[160px] sm:max-w-none
+                  sm:max-w-none
                   overflow-x-auto
                   whitespace-nowrap
                   scrollbar-thin"
@@ -75,10 +75,9 @@
       </div>
 
       <div *ngIf="!selectedProject"
-          class="text-gray-400 text-sm italic">
-        Sin proyecto
+          class="w-full flex justify-center items-center text-bold text-md italic mb-4">
+        <b>No hay proyecto seleccionado</b>
       </div>
-
     </div>
 
     <div class="lg:col-span-1">
