@@ -150,15 +150,15 @@
       <div *ngIf="authService.isAdmin()">
         <p class="text-xs uppercase text-gray-400">Cliente</p>
         <p class="font-medium">
-          {{ customerName || selectedCustCode }}
+          {{ selectedCustCode }} - {{ customerName }}
         </p>
       </div>
 
       <!-- Proyecto -->
       <div>
         <p class="text-xs uppercase text-gray-400">Proyecto</p>
-        <p class="font-medium">          
-          {{ selectedProjectData?.proj_name }}
+        <p class="font-medium">
+          {{ selectedProjectData?.proj_code }} - {{ selectedProjectData?.proj_name }}
         </p>
       </div>
 

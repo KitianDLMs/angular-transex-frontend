@@ -112,6 +112,10 @@ export class HomePageComponent implements OnInit {
     }
   }
 
+  get hasSelectedProject(): boolean {
+    return !!this.selectedProject;
+  }
+
   private resolveSelectedProjectName() {
     if (!this.selectedProject) {
       this.selectedProjectName = null;

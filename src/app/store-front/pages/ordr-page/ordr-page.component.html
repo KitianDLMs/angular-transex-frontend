@@ -356,11 +356,19 @@
     </div>
 
     <p class="text-lg font-semibold mb-2">
-      No tienes pedidos asignados
+      {{
+        viewMode === 'ACTUALES'
+          ? 'No existen pedidos actuales asociados'
+          : 'No existen pedidos futuros asociados'
+      }}
     </p>
 
     <p class="text-sm">
-      Cuando existan pedidos, los verás reflejados aquí.
+      {{
+        viewMode === 'ACTUALES'
+          ? 'Actualmente no hay pedidos para este proyecto.'
+          : 'No existen pedidos programados para fechas futuras.'
+      }}
     </p>
   </div>
 </div>

@@ -1,11 +1,12 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { environment } from "src/environments/environment";
+import { environment } from "src/environments/environment.development";
 
 @Injectable({ providedIn: 'root' })
 export class TickService {
 
   private baseUrl = `${environment.baseUrl}/tick`;
+  private baseUrlDownload = `${environment.baseUrl}/drive`;
 
  constructor(private http: HttpClient) {}
 
@@ -60,11 +61,11 @@ export class TickService {
   }
 
   checkTktCodes(filters: any) {
-    return this.http.post(`${this.baseUrl}/check-tkt-codes`, filters);
+    return this.http.post(`${this.baseUrlDownload}/check-tkt-codes`, filters);
   }
 
   downloadZipByCodes(tktCodes: string[]) {
-    return this.http.post(`${this.baseUrl}/download-zip`, { tktCodes }, {
+    return this.http.post(`${this.baseUrlDownload}/download-zip`, { tktCodes }, {
       observe: 'response',
       responseType: 'blob'
     });
@@ -89,7 +90,9 @@ export class TickService {
   }
 
   downloadTickPDF(tkt_code: string) {
-    return this.http.get(`${this.baseUrl}/download/${tkt_code}`, {
+    console.log('downloadTickPDF ', tkt_code); 
+    // http://localhost:3000/api/drive/download/691118   
+    return this.http.get(`${this.baseUrlDownload}/download/${tkt_code}`, {
       responseType: 'blob'
     });
   }

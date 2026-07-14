@@ -34,7 +34,8 @@ export class DocsPageComponent implements OnInit {
   totalItems = 0;
   loadingDownload = signal(false);
 
-  loading = signal(false);
+  // loading = signal(false);
+  loading = false;
   results: any[] = [];
   filterDateFrom: any;
 
@@ -54,6 +55,9 @@ export class DocsPageComponent implements OnInit {
   customersData: { [code: string]: { name: string, addr: string } } = {};
   selectedProjectName: string | null = null;
   customerAddress: string | null = null;
+  get hasSelectedProject(): boolean {
+    return !!this.selectedProject?.trim();
+  }
 
   onCustomerChange() {
     if (!this.selectedCustCode) return;
@@ -340,7 +344,7 @@ export class DocsPageComponent implements OnInit {
   downloadExcel() {
     if (!this.userCustCode) return;
 
-    this.loading.set(true);
+    this.loading = true;
 
     const filters: any = {
       custCode: this.userCustCode.trim(),
@@ -350,16 +354,19 @@ export class DocsPageComponent implements OnInit {
     if (this.filterDocNumber?.trim()) filters.docNumber = this.filterDocNumber.trim();
     if (this.filterDateFrom) filters.dateFrom = this.filterDateFrom;
     if (this.filterDateTo) filters.dateTo = this.filterDateTo;
-
+    console.log('excel download');
+    
     this.tickService.getAllForExcel(filters).subscribe({
       next: (data: any[]) => {
+        console.log('data', data);        
         const formatted = data;
         this.generateExcel(formatted);
-        this.loading.set(false);
+        this.loading = false;
       },
       error: err => {
+        console.log('error', err);
         console.error("Error exportando Excel:", err);
-        this.loading.set(false);
+        this.loading = false;
       }
     });
   }
@@ -694,7 +701,7 @@ export class DocsPageComponent implements OnInit {
 
     if (resetPage) this.page = 1;
 
-    this.loading.set(true); 
+    this.loading = true; 
     
     const params: any = {
       custCode: this.userCustCode.trim(),
@@ -720,7 +727,10 @@ export class DocsPageComponent implements OnInit {
     params.page = this.page.toString();
     params.limit = this.limit.toString();    
     this.tickService.searchTicks(params).subscribe({
-      next: res => {        
+      next: res => {     
+        console.log('RESPUESTA COMPLETA:', res);
+        console.log('TOTAL:', res.total);
+        console.log('TOTAL PAGES:', res.totalPages);   
         this.results = res.data.map((r: any) => {
           const prev = this.results.find(t => t.tktCode === r.tkt_code);
           return {
@@ -730,11 +740,11 @@ export class DocsPageComponent implements OnInit {
         });
         this.totalPages = res.totalPages;
         this.totalItems = res.total;
-        this.loading.set(false);
+        this.loading = false;
       },
       error: err => {
         console.error('ERROR SEARCH:', err);
-        this.loading.set(false);
+        this.loading = false;
       },
     });
   }
@@ -776,8 +786,7 @@ export class DocsPageComponent implements OnInit {
     });
   }
 
-  handleClearFilters() {
-    this.selectedProject = "";
+  handleClearFilters() {    
     this.filterDocType = "";
     this.filterDocNumber = "";
     this.filterDateFrom = null;

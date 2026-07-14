@@ -193,7 +193,6 @@ export class OrdrPageComponent implements OnInit {
         const code = p.projcode.trim();
         const name = p.projname.trim();
 
-        // Solo proyectos permitidos al usuario
         if (!allowedProjects.includes(code)) return;
 
         if (!map.has(code)) {
@@ -202,10 +201,6 @@ export class OrdrPageComponent implements OnInit {
       });
 
       this.projectOptions = Array.from(map.values());
-
-      // ==========================
-      // 🔥 RESTAURAR DESDE STORAGE
-      // ==========================
       const stored = localStorage.getItem('selectedSelection');
 
       if (!stored) return;
@@ -216,14 +211,12 @@ export class OrdrPageComponent implements OnInit {
         const storedCust = parsed.custCode;
         const storedProj = parsed.projCode;
 
-        // 🚨 Validar que el cliente coincida
         if (storedCust !== this.userCustCode) {
           localStorage.removeItem('selectedSelection');
           localStorage.removeItem('viewMode');
           return;
         }
 
-        // 🚨 Validar que el proyecto exista en este cliente
         const exists = this.projectOptions.find(
           p => p.proj_code === storedProj
         );
@@ -233,23 +226,10 @@ export class OrdrPageComponent implements OnInit {
           localStorage.removeItem('viewMode');
           return;
         }
-
-        // ✅ Todo válido
         this.selectedProject = storedProj;
-
-        const storedMode = localStorage.getItem('viewMode') as
-          | 'ACTUALES'
-          | 'FUTUROS'
-          | null;
-
-        this.viewMode = storedMode ?? 'ACTUALES';
-
-        if (this.viewMode === 'FUTUROS') {
-          this.loadOrdersFutures();
-        } else {
-          this.loadOrders();
-        }
-
+        this.viewMode = null;
+        this.orders = [];
+        this.loading = false;
       } catch (error) {
         console.error('Error parsing selectedSelection', error);
         localStorage.removeItem('selectedSelection');
@@ -260,74 +240,95 @@ export class OrdrPageComponent implements OnInit {
   }
 
   loadOrders() {
-        if (!this.userCustCode || !this.selectedProject) {
-          // this.orders = [];
+    if (!this.userCustCode || !this.selectedProject) {
+      this.loading = false;
+      return;
+    }
+
+    this.loading = true;
+
+    console.log('Consultando pedidos...');
+    console.log('Cliente:', this.userCustCode);
+    console.log('Proyecto:', this.selectedProject);
+
+    this.ordrService
+      .getPedidosPorProyecto(this.selectedProject, this.userCustCode)
+      .subscribe({
+        next: (pedidos: any[]) => {
+
+          console.log('Respuesta del backend:', pedidos);
+
+          // No existen pedidos
+          if (!pedidos || pedidos.length === 0) {
+            this.orders = [];
+            this.loading = false;
+            return;
+          }
+
+          const pedidosUnicos = new Map<string, any>();
+
+          pedidos.forEach(o => {
+            const code = o.order_code?.trim();
+            if (!code) return;
+
+            if (!pedidosUnicos.has(code)) {
+              pedidosUnicos.set(code, {
+                ...o,
+                order_code: code,
+                order_qty: Number(o.order_qty) || 0,
+                detalles: [],
+                ejecutado: 0,
+                porcentaje: 0,
+              });
+            }
+
+            pedidosUnicos.get(code).detalles.push(o);
+          });
+
+          const ordersArray = Array.from(pedidosUnicos.values());
+
+          // Seguridad adicional (aunque no debería ocurrir)
+          if (ordersArray.length === 0) {
+            this.orders = [];
+            this.loading = false;
+            return;
+          }
+
+          const avances$ = ordersArray.map(ord =>
+            this.ordrService
+              .getAvancePedido(ord.order_code, ord.order_Date)
+              .pipe(
+                map(av => ({
+                  ...ord,
+                  ejecutado: av.ejecutado || 0,
+                  porcentaje:
+                    ord.order_qty > 0
+                      ? Math.round((av.ejecutado / ord.order_qty) * 100)
+                      : 0,
+                  descargaConfirmada: (av.ejecutado || 0) > 0
+                }))
+              )
+          );
+
+          forkJoin(avances$).subscribe({
+            next: ordersConAvance => {
+              console.log('Pedidos con avance:', ordersConAvance);
+              this.orders = ordersConAvance;
+              this.loading = false;
+            },
+            error: err => {
+              console.error('Error obteniendo avance:', err);
+              this.orders = ordersArray;
+              this.loading = false;
+            }
+          });
+        },
+        error: err => {
+          console.error('Error obteniendo pedidos:', err);
+          this.orders = [];
           this.loading = false;
-          return;
         }
-
-        this.loading = true;
-
-        let pedidos$;
-
-          
-        pedidos$ = this.ordrService.getPedidosPorProyecto(this.selectedProject, this.userCustCode);
-        pedidos$.subscribe({
-          next: (pedidos: any[]) => { 
-            console.log(pedidos);            
-            const pedidosUnicos = new Map<string, any>();
-            pedidos.forEach(o => {
-              console.log(o);              
-              const code = o.order_code?.trim();
-              if (!code) return;                  
-          if (!pedidosUnicos.has(code)) {
-            pedidosUnicos.set(code, {
-              ...o,
-              order_code: code,
-              order_qty: Number(o.order_qty) || 0,
-              detalles: [],        
-              ejecutado: 0,
-              porcentaje: 0,
-            });
-          }
-
-          pedidosUnicos.get(code).detalles.push(o); 
-        });
-        const ordersArray = Array.from(pedidosUnicos.values());
-
-        const avances$ = ordersArray.map(ord =>
-          this.ordrService
-            .getAvancePedido(ord.order_code, ord.order_Date)
-            .pipe(
-              map(av => ({
-                ...ord,
-                ejecutado: av.ejecutado || 0,
-                porcentaje:
-                  ord.order_qty > 0
-                    ? Math.round((av.ejecutado / ord.order_qty) * 100)
-                    : 0,
-                descargaConfirmada: (av.ejecutado || 0) > 0
-              }))
-            )
-        );
-
-        forkJoin(avances$).subscribe({
-          next: ordersConAvance => {
-            this.orders = ordersConAvance;
-            this.loading = false;
-          },
-          error: err => {
-            console.error('Error obteniendo avance:', err);
-            this.orders = ordersArray;
-            this.loading = false;
-          }
-        });
-      },
-      error: () => {
-        this.orders = [];
-        this.loading = false;
-      }
-    });
+      });
   }
 
   loadOrdersFutures() {
@@ -345,6 +346,11 @@ export class OrdrPageComponent implements OnInit {
       .subscribe({
         next: (pedidos: any[]) => {
           const pedidosUnicos = new Map<string, any>();
+          if (!pedidos || pedidos.length === 0) {
+            this.orders = [];
+            this.loading = false;
+            return;
+          }
 
           pedidos.forEach(o => {
             const code = `${o.order_code.trim()}_${o.order_Date}`;
