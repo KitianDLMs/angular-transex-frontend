@@ -50,6 +50,18 @@ export class AuthService {
       );
   }
 
+  importUsers(file: File) {
+    const formData = new FormData();
+    formData.append(
+      'file',
+      file
+    );
+    return this.http.post(
+      `${baseUrl}/auth/import-users`,
+      formData
+    );
+  }
+
   checkStatus(): Observable<boolean> {
     const token = localStorage.getItem('token');
     if (!token) {

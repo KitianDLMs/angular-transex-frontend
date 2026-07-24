@@ -24,12 +24,41 @@ export class UserListPageComponent implements OnInit {
   totalUsers = 0;
   totalPages = 1;
   pages: number[] = [];
+  selectedFile: File | null = null;
 
   loading = true;
   error: string | null = null;
 
   ngOnInit(): void {
     this.loadUsers();
+  }
+
+  onFileSelected(event:any){
+      const file = event.target.files[0];
+      if(!file){
+        return;
+      }
+      this.selectedFile = file;
+  }
+
+  importUsers(){
+    if(!this.selectedFile){
+      return;
+    }
+    this.authService
+      .importUsers(this.selectedFile)
+      .subscribe({
+        next:(resp)=>{        
+          this.selectedFile = null;
+          this.loadUsers();
+        },
+        error:(err)=>{
+          console.error(
+            'Error importando usuarios',
+            err
+          );
+        }
+      });
   }
 
   loadUsers(page: number = 1) {

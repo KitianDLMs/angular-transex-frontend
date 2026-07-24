@@ -33,28 +33,27 @@ export class DocsPageComponent implements OnInit {
   totalPages = 0;
   totalItems = 0;
   loadingDownload = signal(false);
-
-  // loading = signal(false);
+  showDownloadFiltered = false;
+  hasSearched = false;
+  noResults = false;
   loading = false;
   results: any[] = [];
-  filterDateFrom: any;
-
+  filterDateFrom: any;  
+  selectedTickets = new Set<string>();
   projectOptions: { proj_code: string; proj_name: string }[] = [];
-
   currentUser: any = null;
   filterWork: string = '';
   filterDocType: string = '';
   filterDateTo: string = '';
-  
   userProjects: string[] = [];
   selectedProject: string = '';
   filterDocNumber: string | undefined;
-
   userCustCodes: string[] = []; 
   selectedCustCode: string | null = null;
   customersData: { [code: string]: { name: string, addr: string } } = {};
   selectedProjectName: string | null = null;
   customerAddress: string | null = null;
+
   get hasSelectedProject(): boolean {
     return !!this.selectedProject?.trim();
   }
@@ -73,7 +72,7 @@ export class DocsPageComponent implements OnInit {
     this.selectedProject = '';
     this.selectedProjectName = null;
     this.loadProjectsByCustomer();
-    this.onSearch(true);
+    // this.onSearch(true);
   }
 
   loadCustomerData(custCode: string) {
@@ -216,7 +215,7 @@ export class DocsPageComponent implements OnInit {
         this.customerName = cust.name ?? 'Sin nombre';
         this.customerAddress = cust.addr_line_1 ?? 'Sin dirección';
         this.loadProjectsByCustomer();
-        this.onSearch(true);
+        // this.onSearch(true);
       });
     } else {      
       forkJoin(this.userCustCodes.map(code => this.custService.getCustByCode(code)))
@@ -248,7 +247,7 @@ export class DocsPageComponent implements OnInit {
           this.customerName = data.name;
           this.customerAddress = data.addr;
           this.loadProjectsByCustomer();
-          this.onSearch(true);
+          // this.onSearch(true);
         });
     }
   }
@@ -298,33 +297,26 @@ export class DocsPageComponent implements OnInit {
           }
         });                
         this.projectOptions = Array.from(map.values());   
-        // 🔥 RESTAURAR PROYECTO DESDE STORAGE
         const stored = localStorage.getItem('selectedSelection');
 
           if (stored) {
             try {
               const parsed = JSON.parse(stored);
-
-              // Validar que el cliente coincida
               if (parsed.custCode !== this.userCustCode) {
                 localStorage.removeItem('selectedSelection');
                 this.selectedProject = '';
                 this.selectedProjectName = null;
                 return;
               }
-
-              // Validar que el proyecto exista
               const exists = this.projectOptions.find(
                 p => p.proj_code === parsed.projCode
               );
-
               if (!exists) {
                 localStorage.removeItem('selectedSelection');
                 this.selectedProject = '';
                 this.selectedProjectName = null;
                 return;
               }
-
               this.selectedProject = parsed.projCode;
               this.resolveSelectedProjectName();
             } catch {
@@ -343,28 +335,21 @@ export class DocsPageComponent implements OnInit {
 
   downloadExcel() {
     if (!this.userCustCode) return;
-
     this.loading = true;
-
     const filters: any = {
       custCode: this.userCustCode.trim(),
     };
-
     if (this.selectedProject?.trim()) filters.projCode = this.selectedProject.trim();
     if (this.filterDocNumber?.trim()) filters.docNumber = this.filterDocNumber.trim();
     if (this.filterDateFrom) filters.dateFrom = this.filterDateFrom;
-    if (this.filterDateTo) filters.dateTo = this.filterDateTo;
-    console.log('excel download');
-    
+    if (this.filterDateTo) filters.dateTo = this.filterDateTo;    
     this.tickService.getAllForExcel(filters).subscribe({
       next: (data: any[]) => {
-        console.log('data', data);        
         const formatted = data;
         this.generateExcel(formatted);
         this.loading = false;
       },
       error: err => {
-        console.log('error', err);
         console.error("Error exportando Excel:", err);
         this.loading = false;
       }
@@ -373,299 +358,183 @@ export class DocsPageComponent implements OnInit {
 
   private generateExcel(data: any[]) {
     if (!data.length) return;
-
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Documentos');
-
     const headerCells = Object.keys(data[0]).map((_, i) =>
       XLSX.utils.encode_cell({ r: 0, c: i })
     );
-
     headerCells.forEach(cell => {
       if (!worksheet[cell]) return;
-
       worksheet[cell].s = {
         font: { bold: true },
         alignment: { horizontal: 'center' },
       };
     });
-
     const excelBuffer = XLSX.write(workbook, {
       bookType: 'xlsx',
       type: 'array',
       cellStyles: true,
     });
-
     const blob = new Blob([excelBuffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
-
     saveAs(blob, `documentos_completos_${Date.now()}.xlsx`);
   }
 
-  // downloadSelected() {
-  //   const selectedCodes = this.results
-  //     .filter(t => t.selected)
-  //     .map(t => t.tktCode?.trim())
-  //     .filter(code => code);
-
-  //   if (selectedCodes.length === 0) {
-  //     alert('Debes seleccionar al menos un ticket');
-  //     return;
-  //   }
-
-  //   this.loadingDownload.set(true);
-
-  //   this.tickService.downloadZip(selectedCodes).subscribe({
-  //     next: (response: any) => {
-  //       const status = response.status;
-
-  //       // 📌 Si es ZIP → descargar
-  //       if (status === 200) {
-  //         const blob = response.body;
-  //         const url = window.URL.createObjectURL(blob);
-  //         const a = document.createElement('a');
-  //         a.href = url;
-  //         a.download = `Guias${Date.now()}.zip`;
-  //         a.click();
-  //         window.URL.revokeObjectURL(url);
-  //         this.loadingDownload.set(false);
-  //         return;
-  //       }
-
-  //       // 📌 Si el backend dice que faltan
-  //       if (status === 207) {
-  //         const text = response.body;
-  //         const reader = new FileReader();
-
-  //         reader.onload = () => {
-  //           const json = JSON.parse(reader.result as string);
-
-  //           const missingList = json.missing.join(', ');
-
-  //           const ok = confirm(
-  //             `Las siguientes guías NO están disponibles:\n\n${missingList}\n\n¿Deseas descargar solo las que sí existen?`
-  //           );
-
-  //           if (!ok) {
-  //             this.loadingDownload.set(false);
-  //             return;
-  //           }
-
-  //           // Segunda llamada solo con las existentes
-  //           this.tickService.downloadZip(json.existing).subscribe({
-  //             next: (resp: any) => {
-  //               const blob = resp.body;
-  //               const url = window.URL.createObjectURL(blob);
-  //               const a = document.createElement('a');
-  //               a.href = url;
-  //               a.download = `Guias${Date.now()}.zip`;
-  //               a.click();
-  //               window.URL.revokeObjectURL(url);
-  //               this.loadingDownload.set(false);
-  //             },
-  //             error: () => {
-  //               alert('Error al descargar las guías restantes.');
-  //               this.loadingDownload.set(false);
-  //             }
-  //           });
-  //         };
-
-  //         reader.readAsText(text);
-  //       }
-  //     },
-
-  //     error: (err) => {
-  //       this.loadingDownload.set(false);
-        
-  //       if (err.status === 404) {
-  //         const reader = new FileReader();
-  //         reader.onload = () => {
-  //           const json = JSON.parse(reader.result as string);
-  //           alert(`No se encontró ninguna guía.\nFaltantes: ${json.missing.join(', ')}`);
-  //         };
-  //         reader.readAsText(err.error);
-  //         return;
-  //       }
-
-  //       alert('Error al intentar descargar los documentos.');
-  //     }
-  //   });
-  // }
-
-  // Función para descargar solo los tickets seleccionados
-  downloadSelected() {
-    if (!this.userCustCode) return;
-
-    const selectedTicks = this.results
-      .filter(t => t.selected)
-      .map(t => t.tktCode?.trim())
-      .filter(code => code);
-
-    if (selectedTicks.length === 0) {
-      alert('Debes seleccionar al menos una guía para descargar.');
+  downloadAllFiltered() {
+    if (!this.userCustCode) {
       return;
     }
-
+    const filters: any = {
+      custCode: this.userCustCode.trim(),
+    };
+    if (this.selectedProject?.trim()) {
+      filters.projCode = this.selectedProject.trim();
+    }
+    if (this.filterDocNumber?.trim()) {
+      filters.docNumber = this.filterDocNumber.trim();
+    }
+    if (this.filterDateFrom) {
+      filters.dateFrom = this.filterDateFrom;
+    }
+    if (this.filterDateTo) {
+      filters.dateTo = this.filterDateTo;
+    }
     this.loadingDownload.set(true);
-
-    this.tickService.checkTktCodes({ tktCodes: selectedTicks }).subscribe({
-      next: (res: any) => {
-        const { existing, missing } = res;
-
-        if (missing.length > 0) {
-          const ok = confirm(
-            `⚠️ Las siguientes guías NO están en la carpeta:\n${missing.join(', ')}\n\n` +
-            `¿Deseas descargar solo las que sí existen?`
+    this.tickService
+      .downloadAllFiltered(filters)
+      .subscribe({
+        next: (res:any)=>{
+          this.descargarBlob(
+            res.body!,
+            `Guias_${Date.now()}.zip`
           );
-
-          if (!ok) {
-            this.loadingDownload.set(false);
+          this.loadingDownload.set(false);
+        },
+        error:(err)=>{
+          this.loadingDownload.set(false);
+          if (err.status === 404) {
+            alert(
+              '⚠️ No hay guías disponibles para descargar en la carpeta.'
+            );
             return;
           }
+          console.error(err);
+          alert(
+            'Ocurrió un error al intentar descargar los documentos.'
+          );
         }
-        
-        if (existing.length === 0) {
-          alert('No hay guías disponibles para descargar.');
-          this.loadingDownload.set(false);
-          return;
-        }
-        
-        this.tickService.downloadZipByCodes(existing).subscribe({
-          next: (response: any) => {
-            const blob = response.body;
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Guias_${Date.now()}.zip`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-
-            this.loadingDownload.set(false);
-          },
-          error: (err) => {
-            alert('Error descargando las guías.');
-            this.loadingDownload.set(false);
-          }
-        });
-      },
-      error: () => {
-        alert('Error al obtener información de las guías.');
-        this.loadingDownload.set(false);
-      }
-    });
+      });
   }
-
-  downloadAllFiltered() {    
-    const filtrosActivos = 
-        this.selectedProject?.trim() ||
-        this.filterDocNumber?.trim() ||
-        this.filterDocType?.trim() ||
-        this.filterDateFrom ||
-        this.filterDateTo;
-
-    if (filtrosActivos) {
-      alert("⚠️ Para descargar TODOS los documentos debes limpiar los filtros.");
+  
+  downloadSelected() {
+    const selectedCodes =
+      Array.from(this.selectedTickets);
+    if (!selectedCodes.length) {
+      alert(
+        'Debes seleccionar al menos una guía.'
+      );
       return;
     }
-    
-    if (!this.userCustCode) return;
-
     this.loadingDownload.set(true);
-
-    const filters: any = { custCode: this.userCustCode.trim() };
-    
-    if (this.userProjects?.length) {
-      console.log(this.userProjects);      
-      filters.projCodes = this.userProjects.map(p => p.trim());
-    }
-
-    this.tickService.getAllTickCodes(filters).subscribe({
-      next: (allTickCodes: string[]) => {
-        if (allTickCodes.length === 0) {
-          alert('No hay guías disponibles para descargar.');
+    this.tickService
+      .downloadZipByCodes(selectedCodes)
+      .subscribe({
+        next:(res:any)=>{
+          this.descargarBlob(
+            res.body!,
+            `Guias_${Date.now()}.zip`
+          );
           this.loadingDownload.set(false);
-          return;
-        }
-
-        this.tickService.checkTktCodes({ tktCodes: allTickCodes }).subscribe({
-          next: (res: any) => {
-            const { existing, missing } = res;
-
-            if (existing.length === 0) {
-              alert('No hay guías válidas para descargar.');
-              this.loadingDownload.set(false);
-              return;
-            }
-
-            if (missing.length > 0) {
-              const ok = confirm(
-                `⚠️ Las siguientes guias:\n${missing.join(', ')}\n\n no se encuentran disponibles ¿deseas continuar descargando las que sí existen?`
+        },
+        error:(err)=>{
+          this.loadingDownload.set(false);
+          if(err.status === 404){
+            const reader =
+              new FileReader();
+            reader.onload=()=>{
+              const data =
+                JSON.parse(
+                  reader.result as string
+                );
+              alert(
+                `No se encontraron PDFs.\nGuias faltantes: ${data.missing.join(', ')}`
               );
-              if (!ok) {
-                this.loadingDownload.set(false);
-                return;
-              }
-            }
-
-            this.downloadTicketsByCodes(existing);
-          },
-          error: () => {
-            alert('Error validando códigos de guías.');
-            this.loadingDownload.set(false);
+            };
+            reader.readAsText(err.error);
+            return;
           }
-        });
-      },
-      error: () => {
-        alert('Error obteniendo todos los códigos de guías.');
-        this.loadingDownload.set(false);
-      }
-    });
+          console.error(err);
+          alert(
+            'Error descargando guías'
+          );
+        }
+      });
   }
 
-
-  private downloadTicketsByCodes(codes: string[]) {
-    this.tickService.downloadZipByCodes(codes).subscribe({
-      next: (response: any) => {
-        const blob = response.body;
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Guias_${Date.now()}.zip`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-
-        const missingHeader = response.headers.get('X-Missing-Files');
-        if (missingHeader) {
-          const missingList = missingHeader.split(',').map((s: any) => s.trim());
-          alert(`⚠️ Algunas guías no se descargaron porque no existen:\n${missingList.join(', ')}`);
+  private descargarTxt(guias:string[]) {
+    const contenido =
+      [
+        'GUIAS NO ENCONTRADAS',
+        '====================',
+        '',
+        ...guias
+      ].join('\n');
+    const blob =
+      new Blob(
+        [contenido],
+        {
+          type:'text/plain;charset=utf-8'
         }
-
-        this.loadingDownload.set(false);
-      },
-      error: (err) => {
-        if (err.status === 404) {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const json = JSON.parse(reader.result as string);
-            alert(`⚠️ No se encontró ninguna guía.\nFaltantes: ${json.missing.join(', ')}`);
-          };
-          reader.readAsText(err.error);
-        } else {
-          alert('Error descargando las guías.');
-        }
-        this.loadingDownload.set(false);
-      }
-    });
+      );
+    const url =
+      window.URL.createObjectURL(blob);
+    const a =
+      document.createElement('a');
+    a.href=url;
+    a.download =
+      `guias_no_encontradas_${Date.now()}.txt`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+  
+  private descargarBlob(blob: Blob, nombreArchivo: string = 'documentos.zip') {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombreArchivo;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   }
 
   toggleAll() {
-    this.results.forEach(t => t.selected = this.selectAll);
+    this.results.forEach(ticket => {
+      ticket.selected = this.selectAll;
+      const code = String(ticket.tkt_code).trim();
+      if (!code) return;
+      if (this.selectAll) {
+        this.selectedTickets.add(code);
+      } else {
+        this.selectedTickets.delete(code);
+      }
+    });
   }
 
-  updateSelectAll() {
-    this.selectAll = this.results.every(t => t.selected);
+  updateTicketSelection(ticket: any) {
+    const code = String(ticket.tkt_code).trim();
+    if (!code) return;
+    if (ticket.selected) {
+      this.selectedTickets.add(code);
+    } else {
+      this.selectedTickets.delete(code);
+    }
+
+    this.selectAll =
+      this.results.length > 0 &&
+      this.results.every(t => t.selected);
   }
 
   clearFilter() {
@@ -684,31 +553,31 @@ export class DocsPageComponent implements OnInit {
   }
 
   onSelectProject() {
-
     if (this.selectedProject && this.userCustCode) {
       localStorage.setItem('selectedSelection', JSON.stringify({
         custCode: this.userCustCode,
         projCode: this.selectedProject
       }));
     }
-
     this.resolveSelectedProjectName();
-    this.onSearch(true);
+    // this.onSearch(true);
   }
 
   onSearch(resetPage: boolean = false) {
-    if (!this.userCustCode) return;
-
-    if (resetPage) this.page = 1;
-
-    this.loading = true; 
-    
+    this.hasSearched = true;
+    if (!this.userCustCode) {
+      return;
+    }
+    if (resetPage) {
+      this.page = 1;
+    }
+    this.loading = true;
     const params: any = {
       custCode: this.userCustCode.trim(),
       page: this.page,
       limit: this.limit,
     };
-    
+
     if (this.selectedProject?.trim()) {
       params.projCode = this.selectedProject.trim();
     }
@@ -723,29 +592,32 @@ export class DocsPageComponent implements OnInit {
     if (this.filterDateTo) {
       params.dateTo = this.filterDateTo;
     }
-
-    params.page = this.page.toString();
-    params.limit = this.limit.toString();    
+    
     this.tickService.searchTicks(params).subscribe({
-      next: res => {     
-        console.log('RESPUESTA COMPLETA:', res);
-        console.log('TOTAL:', res.total);
-        console.log('TOTAL PAGES:', res.totalPages);   
-        this.results = res.data.map((r: any) => {
-          const prev = this.results.find(t => t.tktCode === r.tkt_code);
-          return {
-            ...r,
-            selected: prev ? prev.selected : false,
-          };
-        });
-        this.totalPages = res.totalPages;
-        this.totalItems = res.total;
+    next: (res: any) => {                
+        this.results = (res.data ?? [])
+        .sort((a: any, b: any) => {
+          return new Date(b.order_date).getTime() - new Date(a.order_date).getTime();
+        })
+        .map((ticket: any) => ({
+          ...ticket,
+          selected: this.selectedTickets.has(String(ticket.tkt_code).trim())
+        }));
+        this.noResults = this.results.length === 0;
+        this.showDownloadFiltered = this.results.length > 0;
+        this.selectAll =
+          this.results.length > 0 &&
+          this.results.every(t => t.selected);
+        this.totalItems = res.total ?? 0;
+        this.totalPages = res.totalPages ?? 1;
         this.loading = false;
       },
-      error: err => {
-        console.error('ERROR SEARCH:', err);
+      error: (err) => {
+        console.error(err);
+        this.results = [];
+        this.noResults = true;
         this.loading = false;
-      },
+      }
     });
   }
 
@@ -756,28 +628,40 @@ export class DocsPageComponent implements OnInit {
     return proj?.proj_name || code;
   }
 
+  hasActiveFilters(): boolean {
+    return !!(
+      this.filterDocNumber?.trim() ||
+      this.filterDateFrom ||
+      this.filterDateTo ||
+      this.filterDocType
+    );
+  }
+
+  get canSearch(): boolean {
+    const hasDocNumber = !!this.filterDocNumber?.trim();
+    const hasBothDates =
+      !!this.filterDateFrom &&
+      !!this.filterDateTo;
+    return hasDocNumber || hasBothDates;
+  }
+
   downloadTicket(tkt_code: string) {
-    if (!tkt_code) return;
-
-    const cleanTktCode = tkt_code.trim();
-
+    if (!tkt_code) return;    
     this.loadingDownload.set(true);
-
-    this.tickService.downloadTickPDF(cleanTktCode).subscribe({
+    this.tickService.downloadTickPDF(tkt_code).subscribe({
       next: (blob: Blob) => {      
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `${cleanTktCode}.pdf`;
+        link.download = `${tkt_code}.pdf`;
         link.click();
         window.URL.revokeObjectURL(url);
-
         this.loadingDownload.set(false);
       },
       error: (err) => {
         this.loadingDownload.set(false);
         if (err.status === 404) {        
-          alert(`⚠️ La guía ${cleanTktCode} no se encuentra en la carpeta. No se puede descargar.`);
+          alert(`⚠️ La guía ${tkt_code} no se encuentra en la carpeta. No se puede descargar.`);
         } else {        
           console.error('Error descargando ticket:', err);
           alert('Ocurrió un error al intentar descargar la guía.');
@@ -792,7 +676,9 @@ export class DocsPageComponent implements OnInit {
     this.filterDateFrom = null;
     this.filterDateTo = "";
     this.results = [];
-    this.onSearch(true);
+    this.showDownloadFiltered = false;
+    this.noResults = false;
+    // this.onSearch(true);
   }
 
   prevPage() {

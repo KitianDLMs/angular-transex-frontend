@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { AdminDashboardLayoutComponent } from './layouts/admin-dashboard-layout/admin-dashboard-layout.component';
-import { TickAdminPageComponent } from './pages/tick-admin-page/tick-admin-page.component';
-import { TicksAdminPageComponent } from './pages/ticks-admin-page/ticks-admin-page.component';
+// import { TickAdminPageComponent } from './pages/tick-admin-page/tick-admin-page.component';
+// import { TicksAdminPageComponent } from './pages/ticks-admin-page/ticks-admin-page.component';
 import { IsAdminGuard } from '@auth/guards/is-admin.guard';
 import { CustsAdminPageComponent } from './pages/custs-admin-page/custs-admin-page.component';
 import { CustomerDetailsComponent } from './pages/cust-admin-page/cust-details/cust-details.component';
@@ -20,7 +20,7 @@ import { ImstEditPageComponent } from './pages/imst-edit-page/imst-edit-page.com
 import { ImstCreatePageComponent } from './pages/imst-create-page/imst-create-page.component';
 import { ProductsAdminPageComponent } from './pages/products-admin-page/products-admin-page.component';
 import { ProductAdminPageComponent } from './pages/product-admin-page/product-admin-page.component';
-import { TickCreatePageComponent } from './pages/tick-create-page/tick-create-page.component';
+// import { TickCreatePageComponent } from './pages/tick-create-page/tick-create-page.component';
 
 export const adminDashboardRoutes: Routes = [
   {
@@ -28,18 +28,18 @@ export const adminDashboardRoutes: Routes = [
     component: AdminDashboardLayoutComponent,
     canMatch: [IsAdminGuard],
     children: [
-      {
-        path: 'ticks',
-        component: TicksAdminPageComponent,
-      },
-      {
-        path: 'ticks/create',
-        component: TickCreatePageComponent,
-      },         
-      {
-        path: 'admin/ticks/:order_date/:order_code/:tkt_code',
-        component: TickAdminPageComponent,
-      },      
+      // {
+      //   path: 'ticks',
+      //   component: TicksAdminPageComponent,
+      // },
+      // {
+      //   path: 'ticks/create',
+      //   component: TickCreatePageComponent,
+      // },         
+      // {
+      //   path: 'admin/ticks/:order_date/:order_code/:tkt_code',
+      //   component: TickAdminPageComponent,
+      // },      
       {
         path: 'customer',
         component: CustsAdminPageComponent,

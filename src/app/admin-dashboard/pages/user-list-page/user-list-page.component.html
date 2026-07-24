@@ -9,25 +9,46 @@
 
 <div class="flex gap-2 items-center h-20">
   <div class="flex flex-1"></div>
-
-  <button class="btn btn-success" routerLink="/admin/users/create">
+  <input
+    type="file"
+    hidden
+    #excelInput
+    accept=".xlsx,.xls"
+    (change)="onFileSelected($event)"
+  />  
+  <button
+    class="btn btn-info"
+    (click)="excelInput.click()">
+    Importar Excel
+  </button>  
+  <button
+    *ngIf="selectedFile"
+    class="btn btn-primary"
+    (click)="importUsers()">
+    Subir {{ selectedFile.name }}
+  </button>  
+  <button
+    class="btn btn-success"
+    routerLink="/admin/users/create">
     Nuevo usuario
   </button>
 </div>
-
-<!-- Tabla -->
 <users-table [users]="users" />
-<div *ngIf="loading" class="text-center p-6 text-black animate-pulse">
-    <div class="flex flex-col items-center justify-center py-6 text-gray-500 gap-3">
-      <img 
-        src="assets/images/logoHORMIGONES.png"
-        alt="Cargando"
-        class="h-8 w-8 animate-pulse"
-      />
-      <span>Cargando usuarios...</span>
-    </div>
-  </div>
-<!-- Paginación -->
+<div 
+  *ngIf="loading"
+  class="flex flex-col items-center justify-center py-10 text-gray-500 gap-3 animate__animated animate__fadeIn">
+
+  <img 
+    src="assets/images/logoHORMIGONES.png"
+    alt="Cargando usuarios"
+    class="h-10 w-10 animate-pulse"
+  />
+
+  <span class="text-sm">
+    Cargando usuarios...
+  </span>
+
+</div>
 <div class="flex justify-center mt-6 mb-6" *ngIf="totalPages > 1">
   <div class="join">
 
@@ -38,7 +59,6 @@
     >
       «
     </button>
-
     <button
       class="join-item btn"
       *ngFor="let p of pages"
@@ -47,7 +67,6 @@
     >
       {{ p }}
     </button>
-
     <button
       class="join-item btn"
       [disabled]="page === totalPages"

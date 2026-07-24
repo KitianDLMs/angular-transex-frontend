@@ -253,6 +253,11 @@ export class HomePageComponent implements OnInit {
 
     this.prodReportService.getReport(filters).subscribe({
       next: resp => {
+        console.log('RESPUESTA PRODUCTOS:', resp);
+
+        (resp.data as ProductReport[]).forEach(p => {
+            console.log('PRODUCTO:', p);
+        });
         const map: Record<string, ProductReport> = {};
 
         (resp.data as ProductReport[]).forEach(p => {
@@ -269,21 +274,24 @@ export class HomePageComponent implements OnInit {
         }
 
         const ordenDetalle = {
-          ordencompra: p.ordencompra,
+          ordencompra: p.ordenes[0].ordencompra,
           respaldado: Number(p.respaldado),
           utilizado: Number(p.utilizado),
           saldo: Number(p.saldo),
         };
 
         const existing = map[p.codigo].ordenes.find(
-          x => x.ordencompra === ordenDetalle.ordencompra
+          x => x.ordencompra?.trim() === ordenDetalle.ordencompra?.trim()
         );
+        console.log(existing);
 
         if (existing) {
           existing.respaldado += ordenDetalle.respaldado;
           existing.utilizado += ordenDetalle.utilizado;
           existing.saldo = existing.respaldado - existing.utilizado;
+          existing.ordencompra = ordenDetalle.ordencompra;
         } else {
+          console.log('ORDEN A INSERTAR:', ordenDetalle);
           map[p.codigo].ordenes.push(ordenDetalle);
         }
 
