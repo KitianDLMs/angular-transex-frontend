@@ -9,71 +9,59 @@ export class TickService {
 
 private baseUrl = `${environment.baseUrl}/tick`;
 
-
 constructor(
  private http:HttpClient
 ){}
+  searchTicks(filters:any) {
+  let params = new HttpParams()
+  .set('custCode', filters.custCode)
+  .set('page', filters.page ?? 1)
+  .set('limit', filters.limit ?? 10);
+    if(filters.projCode)
+    params=params.set(
+      'projCode',
+      filters.projCode
+    );
 
 
-searchTicks(filters:any){
-
- let params = new HttpParams()
- .set('custCode', filters.custCode)
- .set('page', filters.page ?? 1)
- .set('limit', filters.limit ?? 10);
-
-
- if(filters.projCode)
-   params=params.set(
-    'projCode',
-    filters.projCode
-   );
+  if(filters.docNumber)
+    params=params.set(
+      'docNumber',
+      filters.docNumber
+    );
 
 
- if(filters.docNumber)
-   params=params.set(
-    'docNumber',
-    filters.docNumber
-   );
+  if(filters.dateFrom)
+    params=params.set(
+      'dateFrom',
+      filters.dateFrom
+    );
 
 
- if(filters.dateFrom)
-   params=params.set(
-    'dateFrom',
-    filters.dateFrom
-   );
+    if(filters.dateTo)
+      params=params.set(
+      'dateTo',
+      filters.dateTo
+    );
 
 
- if(filters.dateTo)
-   params=params.set(
-    'dateTo',
-    filters.dateTo
-   );
-
-
- return this.http.get<any>(
-    `${this.baseUrl}/search`,
-    {
-      params,
-      headers: {
-        'Cache-Control': 'no-cache'
+    return this.http.get<any>(
+      `${this.baseUrl}/search`,
+      {
+        params,
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
       }
-    }
-  );
-}
+    );
+  }
 
-
-
-getAllTickCodes(filters:any){
-
- return this.http.post<string[]>(
-   `${this.baseUrl}/all-codes`,
-   filters
- );
-
-}
-
-
+  getAllTickCodes(filters:any){
+    return this.http.post<string[]>(
+      `${this.baseUrl}/all-codes`,
+      filters
+    );
+  }
 
   downloadZipByCodes( codes:string[] ){
     return this.http.post(
