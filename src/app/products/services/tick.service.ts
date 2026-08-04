@@ -126,8 +126,6 @@ constructor(
   }
 
   downloadTickPDF(tkt_code: string) {
-    console.log('downloadTickPDF ', tkt_code); 
-    // http://localhost:3000/api/drive/download/691118   
     return this.http.get(`${this.baseUrl}/download/${tkt_code}`, {
       responseType: 'blob'
     });

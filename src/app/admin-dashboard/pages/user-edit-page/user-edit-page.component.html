@@ -202,15 +202,39 @@
 
 
   <!-- Proyectos -->
-  <div *ngIf="projects.length > 0" class="sm:col-span-2">
-    <mat-form-field appearance="fill" class="w-full mt-4">
+  <div class="sm:col-span-2">
+
+    <mat-form-field
+      *ngIf="projects.length > 0"
+      appearance="fill"
+      class="w-full mt-4"
+    >
+
       <mat-label>Proyectos</mat-label>
-      <mat-select formControlName="projects" multiple>
-        <mat-option *ngFor="let p of sortedProjects" [value]="p.code">
+
+      <mat-select
+        formControlName="projects"
+        multiple
+      >
+
+        <mat-option
+          *ngFor="let p of sortedProjects"
+          [value]="p.code"
+        >
           {{ p.code }} - {{ p.name }}
         </mat-option>
+
       </mat-select>
+
     </mat-form-field>
+
+    <div
+      *ngIf="projects.length === 0 && !loading"
+      class="text-sm text-gray-500 mt-3"
+    >
+      No hay proyectos disponibles para los clientes seleccionados.
+    </div>
+
   </div>
 
   <!-- Botones -->

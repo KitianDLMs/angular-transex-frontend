@@ -154,86 +154,169 @@ export class UserEditPageComponent implements OnInit {
         }
             
         if (user.cust_codes?.length) {
-          this.form.get('cust_codes')?.setValue(user.cust_codes);
+
+          this.form.get('cust_codes')?.setValue(
+            user.cust_codes,
+            { emitEvent: false }
+          );
 
           user.cust_codes.forEach((code: string) => {
-            this.custService.getCustByCode(code).subscribe(cust => {
-              if (cust) this.custCodeNames[code] = cust.name;
+
+            this.custService.getCustByCode(code.trim()).subscribe({
+
+              next: cust => {
+                if (cust) {
+                  this.custCodeNames[code] = cust.name;
+                }
+              },
+
+              error: err => {
+                console.error(
+                  `Error cargando cliente ${code}:`,
+                  err
+                );
+              }
+
             });
+
           });
         }
 
         const selectedProjects =
           user.projects?.map((p: any) =>
             typeof p === 'string' ? p : p.proj_code
-          ) || [];
+          ) || [];      
 
         if (role === 'user' && user.cust_code) {
           this.loadProjectsBySingleCust(user.cust_code, selectedProjects);
         }
 
-        if ((role === 'admin' || role === 'super-user') && user.cust_codes?.length) {
-          this.loadProjectsByCustCodes(user.cust_codes, selectedProjects);
+        if (
+          (role === 'admin' || role === 'super-user') &&
+          Array.isArray(user.cust_codes) &&
+          user.cust_codes.length > 0
+        ) {          
+          this.loadProjectsByCustCodes(
+            user.cust_codes,
+            selectedProjects
+          );
         }
       }
     });
   }  
 
   loadProjectsBySingleCust(custCode: string, selected: string[]) {
-    console.log('CUST CODE ENVIADO:', custCode);
-    this.projService.getByCust(custCode).subscribe({
-      next: projects => {
-        console.log('RESPUESTA DE PROYECTOS:', projects);
-        this.projects = projects.map(p => ({
-          code: p.projcode ?? p.proj_code,
-          name: (p.projname ?? p.proj_name)?.split('|').pop()?.trim()
-        }));
-        console.log('PROJECTS FINAL:', this.projects);
-        this.form.get('projects')?.setValue(selected);
+    const code = custCode?.trim();
+    if (!code) {
+      this.projects = [];
+      return;
+    }
+    this.projService.getByCust(code).subscribe({
+      next: (response: any) => {      
+        const projects = Array.isArray(response)
+          ? response
+          : response?.data ?? [];
+
+        this.projects = projects
+          .map((p: any) => ({
+            code: p.projcode ?? p.proj_code,
+            name: (
+              p.projname ??
+              p.proj_name ??
+              ''
+            ).split('|').pop()?.trim()
+          }))
+          .filter((p: any) => p.code);      
+        this.form.get('projects')?.setValue(selected || []);
       },
-      error: error => {
-        console.error('ERROR PROYECTOS:', error);
+      error: (error) => {
+        console.error('❌ ERROR PROYECTOS:', error);
+        this.projects = [];
+        this.form.get('projects')?.setValue([]);
       }
     });
   }
 
-  loadProjectsByCustCodes(codes: string[], selected: string[]) {
-    forkJoin(codes.map(code => this.projService.getByCust(code)))
-      .subscribe(results => {
+  loadProjectsByCustCodes(
+    codes: string[],
+    selected: string[]
+  ) {
+    const validCodes = (codes || [])
+      .map(code => code?.trim())
+      .filter(Boolean);
+    if (!validCodes.length) {
+      this.projects = [];
+      this.form.get('projects')?.setValue([]);
+      return;
+    }
+    forkJoin(
+      validCodes.map(code => {        
+        return this.projService.getByCust(code);
+      })
+    ).subscribe({
+      next: (results: any[]) => {        
+        const map = new Map<string, { code: string; name: string }>();
+        results.forEach((response: any, index: number) => {
+          const projects = Array.isArray(response)
+            ? response
+            : response?.data ?? [];
 
-        const map = new Map<string, any>();
+          projects.forEach((p: any) => {
 
-        results.flat().forEach(p => {
-          map.set(p.projcode, {
-            code: p.projcode,
-            name: p.projname.split('|').pop()?.trim()
+            const code =
+              p.projcode ??
+              p.proj_code;
+
+            const name = (
+              p.projname ??
+              p.proj_name ??
+              ''
+            )
+              .split('|')
+              .pop()
+              ?.trim();
+
+            if (code) {
+              map.set(code, {
+                code,
+                name: name || code
+              });
+            }
           });
         });
 
         this.projects = Array.from(map.values());
-        this.form.get('projects')?.setValue(selected);
-      });
+        this.form
+          .get('projects')
+          ?.setValue(selected || []);
+      },
+      error: error => {
+        console.error(
+          '❌ ERROR CARGANDO PROYECTOS:',
+          error
+        );
+        this.projects = [];
+        this.form.get('projects')?.setValue([]);
+      }
+    });
   }
 
   toggleCustCodesByRole(role: string) {
-  const one = this.form.get('cust_code');
-  const many = this.form.get('cust_codes');
-  const input = this.form.get('custCodeInput');
-
-  if (role === 'user') {
+    const one = this.form.get('cust_code');
+    const many = this.form.get('cust_codes');
+    const input = this.form.get('custCodeInput');
+    if (role === 'user') {
       one?.enable();
-
-      many?.disable(); many?.reset();
+      many?.disable();
+      input?.disable();
       input?.clearValidators();
-      input?.disable(); input?.reset();
+      input?.updateValueAndValidity();
     } else {
+      one?.disable();
       many?.enable();
-
       input?.enable();
       input?.clearValidators();
       input?.updateValueAndValidity();
-
-      one?.disable(); one?.reset();
     }
   }
 

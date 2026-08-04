@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { ProjService } from "@shared/services/proj.service";
+import { MatSelectModule } from "@angular/material/select";
+import { MatFormFieldModule } from "@angular/material/form-field";
 import {
   FormBuilder,
   FormGroup,
@@ -14,7 +17,7 @@ import { CustService } from '@dashboard/cust/services/cust.service';
 @Component({
   selector: 'app-user-create-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, MatSelectModule, MatFormFieldModule],
   templateUrl: './user-create-page.component.html',
   styleUrl: './user-create-page.component.css',
 })
@@ -33,7 +36,8 @@ export class UserCreatePageComponent implements OnInit {
     private fb: FormBuilder,
     private usersService: UserService,
     private router: Router,
-    private custService: CustService,
+    private custService: CustService,        
+    private projService: ProjService,        
   ) {}
 
   ngOnInit(): void {
@@ -69,6 +73,7 @@ export class UserCreatePageComponent implements OnInit {
         Validators.minLength(8),
         Validators.maxLength(12)
       ]],
+      projects: [[]]
     });
 
     this.form.get('roles')?.valueChanges.subscribe(role => {
@@ -109,10 +114,69 @@ export class UserCreatePageComponent implements OnInit {
 
     const current = this.form.get('cust_codes')?.value || [];
 
-    if (current.includes(code)) return;
+    if (current.includes(code)) {
+      return;
+    }
 
-    this.form.get('cust_codes')?.setValue([...current, code]);
+    // Agregar cliente
+    const updatedCodes = [...current, code];
+
+    this.form
+      .get('cust_codes')
+      ?.setValue(updatedCodes);
+
     control?.reset();
+
+    // 🔥 NUEVO: cargar proyectos de ese cliente
+    this.loadProjectsByCustomer(code);
+  }
+
+  loadProjectsByCustomer(custCode: string) {
+    const code = custCode.trim();    
+    this.projService.getByCust(code).subscribe({
+      next: (response: any) => {     
+        const projects = Array.isArray(response)
+          ? response
+          : response?.data ?? [];
+        const newProjects = projects
+          .map((p: any) => {
+            const projectCode =
+              p.projcode ??
+              p.proj_code;
+            const projectName = (
+              p.projname ??
+              p.proj_name ??
+              ''
+            )
+              .split('|')
+              .pop()
+              ?.trim();
+            return {
+              code: projectCode,
+              name: projectName || projectCode,
+              custCode: code
+            };
+          })
+          .filter((p: any) => p.code);
+        // Evitar proyectos duplicados
+        const existingCodes = new Set(
+          this.projects.map(p => p.code)
+        );
+        newProjects.forEach((project: any) => {
+          if (!existingCodes.has(project.code)) {
+            this.projects.push(project);
+          }
+        });
+        // 🔥 Importante para que Angular actualice el select
+        this.projects = [...this.projects];
+      },
+      error: error => {
+        console.error(
+          `❌ Error cargando proyectos del cliente ${code}:`,
+          error
+        );
+      }
+    });
   }
 
   checkCustCode() {
@@ -143,15 +207,40 @@ export class UserCreatePageComponent implements OnInit {
 
   removeCustCode(code: string) {
     const current = this.form.get('cust_codes')?.value || [];
-    const filtered = current.filter((c: string) => c !== code);
+    const filtered = current.filter(
+      (c: string) => c !== code
+    );
+
     this.form.get('cust_codes')?.setValue(filtered);
+
+    this.projects = this.projects.filter(
+      (project: any) => project.custCode !== code
+    );
+
+    const selectedProjects =
+      this.form.get('projects')?.value || [];
+
+    const validProjectCodes = new Set(
+      this.projects.map(
+        (project: any) => project.code
+      )
+    );
+
+    const filteredSelectedProjects =
+      selectedProjects.filter(
+        (projectCode: string) =>
+          validProjectCodes.has(projectCode)
+      );
+
+    this.form
+      .get('projects')
+      ?.setValue(filteredSelectedProjects);
   }
 
   onCustCodeInput(event: any) {
     const input = event.target;
-
     input.value = input.value
-      .replace(/[^0-9kK-]/g, '') // permite números, K y guión
+      .replace(/[^0-9kK-]/g, '')
       .toUpperCase()
       .slice(0, 13);
   }
@@ -177,6 +266,7 @@ export class UserCreatePageComponent implements OnInit {
       email: raw.email,
       password: raw.password,
       roles: [role],
+      projects: raw.projects
     };
 
     if (role === 'user') {

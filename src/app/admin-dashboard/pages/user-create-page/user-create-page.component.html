@@ -223,7 +223,37 @@
         </button>
       </span>
     </div>
+    <!-- PROYECTOS -->
+    <div
+      class="field-group sm:col-span-2"
+      *ngIf="projects.length > 0"
+    >
+      <mat-form-field
+        appearance="fill"
+        class="w-full mt-4"
+      >
 
+        <mat-label>Proyectos</mat-label>
+
+        <mat-select
+          formControlName="projects"
+          multiple
+        >
+
+          <mat-option
+            *ngFor="let project of projects"
+            [value]="project.code"
+          >
+
+            {{ project.code }} - {{ project.name }}
+
+          </mat-option>
+
+        </mat-select>
+
+      </mat-form-field>
+
+    </div>
   </div>
 
   <!-- BOTONES ABAJO DEL FORMULARIO -->

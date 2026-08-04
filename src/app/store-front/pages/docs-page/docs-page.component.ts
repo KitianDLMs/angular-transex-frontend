@@ -347,9 +347,6 @@ export class DocsPageComponent implements OnInit {
 
   onSearch(resetPage: boolean = false): void {
     if (!this.selectedProject?.trim()) {
-      console.log(
-        '❌ No se puede buscar: no hay proyecto seleccionado'
-      );
       this.hasSearched = false;
       this.results = [];
       this.noResults = false;
@@ -386,10 +383,6 @@ export class DocsPageComponent implements OnInit {
       params.dateTo =
         this.filterDateTo;
     }
-    console.log(
-      'BUSCANDO DOCUMENTOS CON:',
-      params
-    );
     this.tickService
       .searchTicks(params)
       .subscribe({
@@ -973,50 +966,35 @@ export class DocsPageComponent implements OnInit {
     this.tickService
       .downloadTickPDF(tkt_code)
       .subscribe({
-
         next: (blob: Blob) => {
-
           const url =
             window.URL.createObjectURL(
               blob
             );
-
           const link =
             document.createElement(
               'a'
             );
-
           link.href = url;
-
           link.download =
             `${tkt_code}.pdf`;
-
           link.click();
-
           window.URL.revokeObjectURL(
             url
           );
-
           this.loadingDownload.set(false);
         },
-
         error: err => {
-
           this.loadingDownload.set(false);
-
           if (err.status === 404) {
-
             alert(
               `⚠️ La guía ${tkt_code} no se encuentra en la carpeta. No se puede descargar.`
             );
-
           } else {
-
             console.error(
               'Error descargando ticket:',
               err
             );
-
             alert(
               'Ocurrió un error al intentar descargar la guía.'
             );
