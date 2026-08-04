@@ -280,22 +280,11 @@ export class OrdrPageComponent implements OnInit {
             // PROYECTO ENCONTRADO
             // =================================================
 
-            console.log(
-              '✅ PROYECTO RESTAURADO:',
-              project
-            );
-
             this.selectedProject =
               project.proj_code;
 
             this.storedProject =
               project.proj_code;
-
-            console.log(
-              '✅ selectedProject =',
-              this.selectedProject
-            );
-
             // No cargamos pedidos automáticamente
             // hasta que se determine el modo.
             this.orders = [];
@@ -536,17 +525,6 @@ export class OrdrPageComponent implements OnInit {
   }
 
   onSelectProject(): void {
-    console.log(
-      '================================'
-    );
-    console.log(
-      'PROYECTO SELECCIONADO:',
-      this.selectedProject
-    );
-    console.log(
-      'CLIENTE:',
-      this.userCustCode
-    );
     if (
       !this.userCustCode ||
       !this.selectedProject
@@ -562,12 +540,6 @@ export class OrdrPageComponent implements OnInit {
         custCode: this.userCustCode,
         projCode: this.selectedProject
       })
-    );
-    console.log(
-      'STORAGE GUARDADO:',
-      localStorage.getItem(
-        'selectedSelection'
-      )
     );
     this.storedProject =
       this.selectedProject;
