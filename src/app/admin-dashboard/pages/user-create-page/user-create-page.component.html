@@ -6,8 +6,11 @@
   class="grid grid-cols-1 sm:grid-cols-2 gap-4"
 >
 
-  <!-- Campo: Nombre Completo -->
+  <!-- ========================================= -->
+  <!-- NOMBRE COMPLETO -->
+  <!-- ========================================= -->
   <div class="field-group">
+
     <input
       formControlName="fullName"
       class="input text-black input-bordered w-full"
@@ -18,14 +21,20 @@
     />
 
     <div class="error-box">
-      <span *ngIf="form.get('fullName')?.touched && form.get('fullName')?.invalid">
+
+      <span
+        *ngIf="
+          form.get('fullName')?.touched &&
+          form.get('fullName')?.invalid
+        "
+      >
 
         <span *ngIf="form.get('fullName')?.errors?.['required']">
           El nombre es obligatorio.
         </span>
 
         <span *ngIf="form.get('fullName')?.errors?.['minlength']">
-          Debe tener al menos 15 caracteres.
+          Debe tener al menos 3 caracteres.
         </span>
 
         <span *ngIf="form.get('fullName')?.errors?.['maxlength']">
@@ -33,21 +42,33 @@
         </span>
 
       </span>
+
     </div>
+
   </div>
 
-  <!-- Campo: RUT -->
-<div class="field-group">
-  <input
-    formControlName="rut"
-    type="text"
-    class="input text-black input-bordered w-full"
-    placeholder="12345678-9"
-    (input)="onRutInput($event)"
-  />
 
-  <div class="error-box">
-      <span *ngIf="form.get('rut')?.touched && form.get('rut')?.invalid">
+  <!-- ========================================= -->
+  <!-- RUT -->
+  <!-- ========================================= -->
+  <div class="field-group">
+
+    <input
+      formControlName="rut"
+      type="text"
+      class="input text-black input-bordered w-full"
+      placeholder="12345678-9"
+      (input)="onRutInput($event)"
+    />
+
+    <div class="error-box">
+
+      <span
+        *ngIf="
+          form.get('rut')?.touched &&
+          form.get('rut')?.invalid
+        "
+      >
 
         <span *ngIf="form.get('rut')?.errors?.['required']">
           El RUT es obligatorio.
@@ -58,12 +79,17 @@
         </span>
 
       </span>
+
     </div>
+
   </div>
 
 
-  <!-- Campo: Email -->
+  <!-- ========================================= -->
+  <!-- EMAIL -->
+  <!-- ========================================= -->
   <div class="field-group">
+
     <input
       formControlName="email"
       type="email"
@@ -74,22 +100,38 @@
     />
 
     <div class="error-box">
-      <span *ngIf="form.get('email')?.touched && form.get('email')?.invalid">
+
+      <span
+        *ngIf="
+          form.get('email')?.touched &&
+          form.get('email')?.invalid
+        "
+      >
+
         <span *ngIf="form.get('email')?.errors?.['required']">
           El email es obligatorio.
         </span>
+
         <span *ngIf="form.get('email')?.errors?.['email']">
           Debe ingresar un correo válido.
         </span>
+
         <span *ngIf="form.get('email')?.errors?.['maxlength']">
           Máximo 50 caracteres permitidos.
         </span>
+
       </span>
+
     </div>
+
   </div>
 
-  <!-- Campo: Password -->
+
+  <!-- ========================================= -->
+  <!-- PASSWORD -->
+  <!-- ========================================= -->
   <div class="field-group">
+
     <input
       formControlName="password"
       type="password"
@@ -100,41 +142,84 @@
     />
 
     <div class="error-box">
-      <span *ngIf="form.get('password')?.touched && form.get('password')?.invalid">
+
+      <span
+        *ngIf="
+          form.get('password')?.touched &&
+          form.get('password')?.invalid
+        "
+      >
+
         <span *ngIf="form.get('password')?.errors?.['required']">
           La contraseña es obligatoria.
         </span>
+
         <span *ngIf="form.get('password')?.errors?.['minlength']">
           Debe tener al menos 6 caracteres.
         </span>
+
         <span *ngIf="form.get('password')?.errors?.['maxlength']">
           Máximo 30 caracteres permitidos.
         </span>
+
         <span *ngIf="form.get('password')?.errors?.['pattern']">
           Debe incluir una mayúscula, una minúscula y un número.
         </span>
+
       </span>
+
     </div>
+
   </div>
 
-  <!-- Campo: Roles -->
+
+  <!-- ========================================= -->
+  <!-- ROL -->
+  <!-- ========================================= -->
   <div class="field-group">
+
     <select
       class="select select-bordered text-black w-full"
       formControlName="roles"
     >
-      <option value="" disabled selected>Seleccione un tipo de usuario</option>
-      <option value="user">Usuario</option>
-      <option value="admin">Administrador</option>
-      <option value="super-user">Super Usuario</option>
+
+      <option
+        value=""
+        disabled
+        selected
+      >
+        Seleccione un tipo de usuario
+      </option>
+
+      <option value="user">
+        Usuario
+      </option>
+
+      <option value="admin">
+        Administrador
+      </option>
+
+      <option value="super-user">
+        Super Usuario
+      </option>
+
     </select>
 
     <div class="error-box"></div>
+
   </div>
 
-  <!-- Campo: cust_code (solo usuarios normales & admin) -->
-  <div class="field-group" *ngIf="form.get('cust_code')?.enabled">
-      <input
+
+  <!-- ========================================= -->
+  <!-- CLIENTE ÚNICO -->
+  <!-- USER + ADMIN -->
+  <!-- ========================================= -->
+  <div
+    class="field-group"
+    *ngIf="form.get('cust_code')?.enabled"
+  >
+
+    <input
       formControlName="cust_code"
       type="text"
       class="input text-black input-bordered w-full"
@@ -145,34 +230,61 @@
       (blur)="checkCustCode()"
     />
 
+
     <!-- Nombre del cliente -->
-    <span class="ml-2 text-gray-700 font-medium" *ngIf="customerName">
+    <span
+      class="ml-2 text-gray-700 font-medium"
+      *ngIf="customerName"
+    >
       {{ customerName }}
     </span>
 
+
+    <!-- Errores -->
     <div class="error-box">
-      <span *ngIf="form.get('cust_code')?.touched && form.get('cust_code')?.invalid">
-        <span *ngIf="form.get('cust_code')?.errors?.['required']">
+
+      <span
+        *ngIf="
+          form.get('cust_code')?.touched &&
+          form.get('cust_code')?.invalid
+        "
+      >
+
+        <span
+          *ngIf="form.get('cust_code')?.errors?.['required']"
+        >
           El código de cliente es obligatorio.
         </span>
-        <span *ngIf="form.get('cust_code')?.errors?.['maxlength']">
+
+        <span
+          *ngIf="form.get('cust_code')?.errors?.['maxlength']"
+        >
           Máximo 13 caracteres permitidos.
         </span>
-         <span *ngIf="form.get('cust_code')?.errors?.['notFound']">
-          Cliente no existe
+
+        <span
+          *ngIf="form.get('cust_code')?.errors?.['notFound']"
+        >
+          Cliente no existe.
         </span>
+
       </span>
+
     </div>
+
   </div>
-
-  <!-- Campo: cust_codes (solo super-user) -->
-  <div class="field-group" *ngIf="form.get('cust_codes')?.enabled">
-
-    <label class="font-semibold mb-1 block">Agregar Clientes</label>
+  <!-- Campo: cust_codes (admin y super-user) -->
+  <div
+    class="field-group sm:col-span-2"
+    *ngIf="form.get('cust_codes')?.enabled"
+  >
+    <label class="font-semibold mb-1 block">
+      Agregar Clientes
+    </label>
 
     <div class="flex gap-2 items-start">
 
-      <!-- Input -->
+      <!-- Input cliente -->
       <input
         formControlName="custCodeInput"
         type="text"
@@ -180,22 +292,8 @@
         placeholder="Código de cliente"
         minlength="9"
         maxlength="12"
+        (input)="onCustCodeInput($event)"
       />
-
-      <!-- Error box -->
-      <div class="error-box w-full">
-        <span *ngIf="form.get('custCodeInput')?.touched && form.get('custCodeInput')?.invalid">
-
-          <span *ngIf="form.get('custCodeInput')?.errors?.['minlength']">
-            Debe tener al menos 8 caracteres.
-          </span>
-
-          <span *ngIf="form.get('custCodeInput')?.errors?.['maxlength']">
-            Máximo 12 caracteres permitidos.
-          </span>
-
-        </span>
-      </div>
 
       <!-- Botón agregar -->
       <button
@@ -205,15 +303,43 @@
       >
         Agregar
       </button>
+
     </div>
 
-    <!-- Chips -->
+    <!-- Errores -->
+    <div class="error-box">
+      <span
+        *ngIf="
+          form.get('custCodeInput')?.touched &&
+          form.get('custCodeInput')?.invalid
+        "
+      >
+
+        <span
+          *ngIf="form.get('custCodeInput')?.errors?.['minlength']"
+        >
+          Debe tener al menos 9 caracteres.
+        </span>
+
+        <span
+          *ngIf="form.get('custCodeInput')?.errors?.['maxlength']"
+        >
+          Máximo 12 caracteres permitidos.
+        </span>
+
+      </span>
+    </div>
+
+    <!-- Clientes agregados -->
     <div class="flex flex-wrap gap-2 mt-3">
+
       <span
         *ngFor="let code of form.get('cust_codes')?.value"
         class="bg-blue-600 text-white px-3 py-1 rounded-full flex items-center gap-2"
       >
+
         {{ code }}
+
         <button
           type="button"
           class="text-white font-bold hover:text-red-300"
@@ -221,19 +347,25 @@
         >
           ✕
         </button>
+
       </span>
+
     </div>
+
     <!-- PROYECTOS -->
     <div
       class="field-group sm:col-span-2"
       *ngIf="projects.length > 0"
     >
+
       <mat-form-field
         appearance="fill"
         class="w-full mt-4"
       >
 
-        <mat-label>Proyectos</mat-label>
+        <mat-label>
+          Proyectos
+        </mat-label>
 
         <mat-select
           formControlName="projects"
@@ -254,16 +386,70 @@
       </mat-form-field>
 
     </div>
+
   </div>
 
-  <!-- BOTONES ABAJO DEL FORMULARIO -->
-  <div class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-4 mt-6">
+  <!-- ========================================= -->
+  <!-- PROYECTOS -->
+  <!-- USER + ADMIN + SUPER-USER -->
+  <!-- ========================================= -->
+  <div
+    class="field-group sm:col-span-2"
+    *ngIf="projects.length > 0"
+  >
+
+    <mat-form-field
+      appearance="fill"
+      class="w-full mt-4"
+    >
+
+      <mat-label>
+        Proyectos
+      </mat-label>
+
+      <mat-select
+        formControlName="projects"
+        multiple
+      >
+
+        <mat-option
+          *ngFor="let project of projects"
+          [value]="project.code"
+        >
+
+          {{ project.code }} - {{ project.name }}
+
+        </mat-option>
+
+      </mat-select>
+
+    </mat-form-field>
+
+  </div>
+
+
+  <!-- ========================================= -->
+  <!-- BOTONES -->
+  <!-- ========================================= -->
+  <div
+    class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-4 mt-6"
+  >
 
     <!-- CREAR -->
-    <button type="submit" class="btn btn-success flex-1">
+    <button
+      type="submit"
+      class="btn btn-success flex-1"
+    >
+
       Crear Usuario
-      <span class="loading loading-spinner loading-sm" *ngIf="loading"></span>
+
+      <span
+        class="loading loading-spinner loading-sm"
+        *ngIf="loading"
+      ></span>
+
     </button>
+
 
     <!-- CANCELAR -->
     <a

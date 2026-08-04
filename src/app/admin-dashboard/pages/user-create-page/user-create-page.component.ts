@@ -77,54 +77,61 @@ export class UserCreatePageComponent implements OnInit {
     });
 
     this.form.get('roles')?.valueChanges.subscribe(role => {
-      const one = this.form.get('cust_code');
-      const many = this.form.get('cust_codes');
+    const one = this.form.get('cust_code');
+    const many = this.form.get('cust_codes');
+    // USER y ADMIN → un cliente
+    if (role === 'user') {
+      // Usuario normal:
+      // un solo cliente
+      one?.enable();
+      // no usa múltiples clientes
+      many?.disable();
+      many?.reset();
+      // limpiar proyectos
+      this.projects = [];
+      this.form.get('projects')?.setValue([]);
+    }
+    else if (role === 'admin' || role === 'super-user') {
+      // Admin y Super Usuario:
+      // múltiples clientes
+      many?.enable();
+      // no usan cliente único
+      one?.disable();
+      one?.reset();
 
-      if (role === 'user') {
-        one?.enable();
-        many?.disable();
-        many?.reset();
-      }
-
-      else if (role === 'super-user') {
-        many?.enable();
-        one?.disable();
-        one?.reset();
-      }
-
-      else {
-        one?.disable(); one?.reset();
-        many?.disable(); many?.reset();
-      }
-    });
-
+      // limpiar proyectos
+      this.projects = [];
+      this.form.get('projects')?.setValue([]);
+    }
+    else {
+      one?.disable();
+      one?.reset();
+      many?.disable();
+      many?.reset();
+      this.projects = [];
+      this.form.get('projects')?.setValue([]);
+    }
+  });
     this.loadCustomers();
   }
 
   addCustCode() {
     const control = this.form.get('custCodeInput');
     const code: string = control?.value?.trim();
-
     if (!code) return;
-
     if (code.length < 9) {
       control?.setErrors({ minlength: true });
       return;
     }
-
     const current = this.form.get('cust_codes')?.value || [];
-
     if (current.includes(code)) {
       return;
     }
-
     // Agregar cliente
     const updatedCodes = [...current, code];
-
     this.form
       .get('cust_codes')
       ?.setValue(updatedCodes);
-
     control?.reset();
 
     // 🔥 NUEVO: cargar proyectos de ese cliente
@@ -190,9 +197,13 @@ export class UserCreatePageComponent implements OnInit {
     }
     this.custService.getCustByCode(code).subscribe({
       next: (cust) => {
-        if (cust) {
-          this.customerName = cust.name;          
+       if (cust) {
+          this.customerName = cust.name;
           control?.setErrors(null);
+          // Cargar proyectos del cliente
+          this.projects = [];
+          this.form.get('projects')?.reset([]);
+          this.loadProjectsByCustomer(code);
         } else {
           this.customerName = 'Cliente no encontrado';          
           control?.setErrors({ notFound: true });
