@@ -138,6 +138,20 @@ export class UserEditPageComponent implements OnInit {
         
         this.customerName = user.cust?.name ?? '';
         this.toggleCustCodesByRole(role);
+
+        if (role === 'user' && user.cust_code) {
+          this.custService.getCustByCode(user.cust_code.trim()).subscribe({
+            next: (cust) => {
+              if (cust) {
+                this.customerName = cust.name;
+              }
+            },
+            error: (err) => {
+              console.error('Error cargando cliente:', err);
+              this.customerName = '';
+            }
+          });
+        }
             
         if (user.cust_codes?.length) {
           this.form.get('cust_codes')?.setValue(user.cust_codes);
@@ -166,12 +180,20 @@ export class UserEditPageComponent implements OnInit {
   }  
 
   loadProjectsBySingleCust(custCode: string, selected: string[]) {
-    this.projService.getByCust(custCode).subscribe(projects => {
-      this.projects = projects.map(p => ({
-        code: p.projcode,
-        name: p.projname.split('|').pop()?.trim()
-      }));
-      this.form.get('projects')?.setValue(selected);
+    console.log('CUST CODE ENVIADO:', custCode);
+    this.projService.getByCust(custCode).subscribe({
+      next: projects => {
+        console.log('RESPUESTA DE PROYECTOS:', projects);
+        this.projects = projects.map(p => ({
+          code: p.projcode ?? p.proj_code,
+          name: (p.projname ?? p.proj_name)?.split('|').pop()?.trim()
+        }));
+        console.log('PROJECTS FINAL:', this.projects);
+        this.form.get('projects')?.setValue(selected);
+      },
+      error: error => {
+        console.error('ERROR PROYECTOS:', error);
+      }
     });
   }
 

@@ -178,65 +178,155 @@ export class OrdrPageComponent implements OnInit {
     });
   }
 
-  loadProjects() {
-    if (!this.userCustCode) return;
+  loadProjects(): void {
+    if (!this.userCustCode) {
+      console.warn('⚠️ No hay cliente para cargar proyectos');
+      return;
+    }
+    this.projService
+      .getByCust(this.userCustCode)
+      .subscribe({
+        next: (projects: any[]) => {
+          const map = new Map<
+            string,
+            { proj_code: string; proj_name: string }
+          >();
+          projects.forEach((p: any) => {
+            // IMPORTANTE:
+            // La API devuelve proj_code / proj_name
+            if (!p?.proj_code || !p?.proj_name) {
+              console.warn('Proyecto con estructura inválida:', p);
+              return;
+            }
+            const code = String(p.proj_code).trim();
+            const name = String(p.proj_name).trim();
+            if (!map.has(code)) {
+              map.set(code, {
+                proj_code: code,
+                proj_name: name
+              });
+            }
+          });
+          this.projectOptions = Array.from(map.values());
+          // =================================================
+          // RECUPERAR SELECCIÓN DEL STORAGE
+          // =================================================
+          const stored = localStorage.getItem(
+            'selectedSelection'
+          );
+          if (!stored) {
+            this.selectedProject = '';
+            this.viewMode = null;
+            this.orders = [];
+            return;
+          }
+          try {
+            const parsed = JSON.parse(stored);
+            const storedCust = String(
+              parsed.custCode ?? ''
+            ).trim();
+            const storedProj = String(
+              parsed.projCode ?? ''
+            ).trim();
+            // =================================================
+            // VALIDAR CLIENTE
+            // =================================================
+            if (
+              storedCust !==
+              String(this.userCustCode).trim()
+            ) {
 
-    const allowedProjects = this.currentUser?.projects ?? [];
+              console.warn(
+                '⚠️ El cliente del storage no coincide'
+              );
 
-    this.projService.getByCust(this.userCustCode).subscribe(projects => {
+              this.selectedProject = '';
+              this.viewMode = null;
+              this.orders = [];
 
-      const map = new Map<string, { proj_code: string; proj_name: string }>();
+              return;
+            }
 
-      projects.forEach(p => {
-        if (!p.projcode || !p.projname) return;
+            // =================================================
+            // VALIDAR PROYECTO
+            // =================================================
 
-        const code = p.projcode.trim();
-        const name = p.projname.trim();
+            const project = this.projectOptions.find(
+              p =>
+                String(p.proj_code).trim() ===
+                storedProj
+            );
 
-        if (!allowedProjects.includes(code)) return;
+            if (!project) {
 
-        if (!map.has(code)) {
-          map.set(code, { proj_code: code, proj_name: name });
+              console.warn(
+                '⚠️ El proyecto no fue encontrado en la API:',
+                storedProj
+              );
+
+              console.log(
+                'Proyectos disponibles:',
+                this.projectOptions
+              );
+
+              this.selectedProject = '';
+              this.viewMode = null;
+              this.orders = [];
+
+              return;
+            }
+
+            // =================================================
+            // PROYECTO ENCONTRADO
+            // =================================================
+
+            console.log(
+              '✅ PROYECTO RESTAURADO:',
+              project
+            );
+
+            this.selectedProject =
+              project.proj_code;
+
+            this.storedProject =
+              project.proj_code;
+
+            console.log(
+              '✅ selectedProject =',
+              this.selectedProject
+            );
+
+            // No cargamos pedidos automáticamente
+            // hasta que se determine el modo.
+            this.orders = [];
+            this.loading = false;
+
+          } catch (error) {
+
+            console.error(
+              '❌ Error leyendo selectedSelection:',
+              error
+            );
+
+            this.selectedProject = '';
+            this.viewMode = null;
+            this.orders = [];
+          }
+        },
+
+        error: error => {
+
+          console.error(
+            '❌ ERROR CARGANDO PROYECTOS:',
+            error
+          );
+
+          this.projectOptions = [];
+          this.selectedProject = '';
+          this.orders = [];
+          this.loading = false;
         }
       });
-
-      this.projectOptions = Array.from(map.values());
-      const stored = localStorage.getItem('selectedSelection');
-
-      if (!stored) return;
-
-      try {
-        const parsed = JSON.parse(stored);
-
-        const storedCust = parsed.custCode;
-        const storedProj = parsed.projCode;
-
-        if (storedCust !== this.userCustCode) {
-          localStorage.removeItem('selectedSelection');
-          localStorage.removeItem('viewMode');
-          return;
-        }
-
-        const exists = this.projectOptions.find(
-          p => p.proj_code === storedProj
-        );
-
-        if (!exists) {
-          localStorage.removeItem('selectedSelection');
-          localStorage.removeItem('viewMode');
-          return;
-        }
-        this.selectedProject = storedProj;
-        this.viewMode = null;
-        this.orders = [];
-        this.loading = false;
-      } catch (error) {
-        console.error('Error parsing selectedSelection', error);
-        localStorage.removeItem('selectedSelection');
-        localStorage.removeItem('viewMode');
-      }
-
-    });
   }
 
   loadOrders() {
@@ -445,8 +535,27 @@ export class OrdrPageComponent implements OnInit {
     return orderDate >= today && orderDate <= maxDate;
   }
 
-  onSelectProject() {
-    this.page = 1;
+  onSelectProject(): void {
+    console.log(
+      '================================'
+    );
+    console.log(
+      'PROYECTO SELECCIONADO:',
+      this.selectedProject
+    );
+    console.log(
+      'CLIENTE:',
+      this.userCustCode
+    );
+    if (
+      !this.userCustCode ||
+      !this.selectedProject
+    ) {
+      console.warn(
+        '⚠️ Falta cliente o proyecto'
+      );
+      return;
+    }
     localStorage.setItem(
       'selectedSelection',
       JSON.stringify({
@@ -454,13 +563,23 @@ export class OrdrPageComponent implements OnInit {
         projCode: this.selectedProject
       })
     );
+    console.log(
+      'STORAGE GUARDADO:',
+      localStorage.getItem(
+        'selectedSelection'
+      )
+    );
+    this.storedProject =
+      this.selectedProject;
+    this.page = 1;
+    const storedMode =
+      localStorage.getItem('viewMode') as
+        | 'ACTUALES'
+        | 'FUTUROS'
+        | null;
 
-    const storedMode = localStorage.getItem('viewMode') as
-      | 'ACTUALES'
-      | 'FUTUROS'
-      | null;
-
-    this.viewMode = storedMode ?? 'ACTUALES';
+    this.viewMode =
+      storedMode ?? 'ACTUALES';
 
     if (this.viewMode === 'FUTUROS') {
       this.loadOrdersFutures();
@@ -505,14 +624,25 @@ export class OrdrPageComponent implements OnInit {
     return new Date(year, month, day, hh, mm, 0, 0);
   }
 
-  clearFilter() {
+  clearFilter(): void {
+
     this.selectedProject = '';
+    this.storedProject = null;
     this.activeProject = null;
 
     this.viewMode = null;
-    this.orders = [];    
+    this.orders = [];
+
     this.page = 1;
     this.loading = false;
+
+    localStorage.removeItem(
+      'selectedSelection'
+    );
+
+    localStorage.removeItem(
+      'viewMode'
+    );
   }
 
   goToSeguimiento(ord: any, event: Event) {

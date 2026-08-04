@@ -137,35 +137,24 @@ export class CustomerProjectPageComponent implements OnInit {
 
   loadProjects() {
     if (!this.selectedCustCode) return;
-
     const allowedProjects = this.currentUser?.projects ?? [];
-
-    this.projService.getByCust(this.selectedCustCode).subscribe(projects => {
-
-      const map = new Map<string, { proj_code: string; proj_name: string }>();
-
-      projects.forEach(p => {
-        if (!p.projcode || !p.projname) return;
-
-        const code = p.projcode.trim();
-        const name = p.projname.trim();
-
-        if (!allowedProjects.includes(code)) return;
-
-        if (!map.has(code)) {
-          map.set(code, { proj_code: code, proj_name: name });
-        }
-      });
-
-      this.projectOptions = [...map.values()];
-
-      // 🔥 VALIDAMOS SI EL PROYECTO GUARDADO EXISTE EN ESTE CLIENTE
-      if (
-        this.selectedProject &&
-        !this.projectOptions.find(p => p.proj_code === this.selectedProject)
-      ) {
-        this.selectedProject = '';
-        localStorage.removeItem('selectedSelection');
+    this.projService.getByCust(this.selectedCustCode).subscribe({
+      next: projects => {        
+        this.projectOptions = projects
+          .filter((p: any) => {
+            const code = String(p.proj_code).trim();
+            const allowed = allowedProjects.some(
+              (x: any) => String(x).trim() === code
+            );  
+            return allowed;
+          })
+          .map((p: any) => ({
+            proj_code: String(p.proj_code).trim(),
+            proj_name: String(p.proj_name).trim()
+          }));
+      },
+      error: err => {
+        console.error('ERROR PROYECTOS:', err);
       }
     });
   }

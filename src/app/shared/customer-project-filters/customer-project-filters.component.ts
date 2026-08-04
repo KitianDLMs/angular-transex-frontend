@@ -115,25 +115,82 @@ export class CustomerProjectFiltersComponent implements OnInit {
      CARGA DE PROYECTOS
   ====================================================== */
   private loadProjects(custCode: string) {
-    const allowedProjects = this.currentUser?.projects || [];
-
-    this.projService.getByCust(custCode).subscribe(projects => {
-      const map = new Map<string, { proj_code: string; proj_name: string }>();
-
-      projects.forEach(p => {
-        if (!p?.projcode || !p?.projname) return;
-
-        const code = p.projcode.trim();
-        const name = p.projname.trim();
-
-        if (!allowedProjects.includes(code)) return;
-
-        if (!map.has(code)) {
-          map.set(code, { proj_code: code, proj_name: name });
+    const allowedProjects = (this.currentUser?.projects || [])
+      .map((p: any) => String(p).trim());    
+    this.projService.getByCust(custCode).subscribe({
+      next: (projects) => {    
+        const map = new Map<
+          string,
+          { proj_code: string; proj_name: string }
+        >();
+        projects.forEach((p: any) => {
+          if (!p?.proj_code || !p?.proj_name) {
+            return;
+          }
+          const code = String(p.proj_code).trim();
+          const name = String(p.proj_name).trim();
+          if (!allowedProjects.includes(code)) {
+            return;
+          }
+          if (!map.has(code)) {
+            map.set(code, {
+              proj_code: code,
+              proj_name: name
+            });
+          }
+        });
+        this.projectOptions = Array.from(map.values());   
+        // =====================================
+        // RECUPERAR SELECCIÓN DEL STORAGE
+        // =====================================
+        const stored =
+          localStorage.getItem('selectedSelection');
+        if (!stored) {       
+          return;
         }
-      });
+        const selection = JSON.parse(stored);
+        const storedCustCode =
+          String(selection.custCode || '').trim();
+        const storedProjCode =
+          String(selection.projCode || '').trim();     
+        // =====================================
+        // VALIDAR CLIENTE
+        // =====================================
+        if (
+          storedCustCode !==
+          String(custCode).trim()
+        ) {
+          return;
+        }
+        // =====================================
+        // VALIDAR PROYECTO
+        // =====================================
+        const selectedExists =
+          this.projectOptions.some(
+            p =>
+              p.proj_code === storedProjCode
+          );
+        if (selectedExists) {
+          this.selectedProject =
+            storedProjCode;  
+        } else {
+          this.selectedProject = null;
+        }
+        this.emitFilters();
+      },
 
-      this.projectOptions = Array.from(map.values());
+      error: (error) => {
+
+        console.error(
+          '❌ ERROR CARGANDO PROYECTOS:',
+          error
+        );
+
+        this.projectOptions = [];
+        this.selectedProject = null;
+
+        this.emitFilters();
+      }
     });
   }
 
@@ -149,6 +206,18 @@ export class CustomerProjectFiltersComponent implements OnInit {
   }
 
   onProjectChange() {
+    console.log('PROYECTO SELECCIONADO:', this.selectedProject);
+    if (this.selectedCustCode && this.selectedProject) {
+      localStorage.setItem(
+        'selectedSelection',
+        JSON.stringify({
+          custCode: this.selectedCustCode,
+          projCode: this.selectedProject
+        })
+      );
+    } else {
+      localStorage.removeItem('selectedSelection');
+    }
     this.emitFilters();
   }
 
