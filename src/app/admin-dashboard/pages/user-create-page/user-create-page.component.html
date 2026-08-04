@@ -212,7 +212,7 @@
 
   <!-- ========================================= -->
   <!-- CLIENTE ÚNICO -->
-  <!-- USER + ADMIN -->
+  <!-- SOLO USER -->
   <!-- ========================================= -->
   <div
     class="field-group"
@@ -226,6 +226,7 @@
       placeholder="Código de cliente"
       maxlength="13"
       required
+      inputmode="text"
       (input)="onCustCodeInput($event)"
       (blur)="checkCustCode()"
     />
@@ -273,41 +274,65 @@
     </div>
 
   </div>
-  <!-- Campo: cust_codes (admin y super-user) -->
+
+
+  <!-- ========================================= -->
+  <!-- CLIENTES MÚLTIPLES -->
+  <!-- ADMIN + SUPER-USER -->
+  <!-- ========================================= -->
   <div
     class="field-group sm:col-span-2"
     *ngIf="form.get('cust_codes')?.enabled"
   >
+
     <label class="font-semibold mb-1 block">
       Agregar Clientes
     </label>
 
+
+    <!-- INPUT + BOTÓN -->
     <div class="flex gap-2 items-start">
 
-      <!-- Input cliente -->
       <input
         formControlName="custCodeInput"
         type="text"
         class="input input-bordered text-black flex-1"
         placeholder="Código de cliente"
-        minlength="9"
-        maxlength="12"
+        maxlength="13"
+        inputmode="text"
         (input)="onCustCodeInput($event)"
+        (blur)="checkCustCodeMultiple()"
       />
 
-      <!-- Botón agregar -->
+
       <button
         type="button"
         class="btn btn-outline"
         (click)="addCustCode()"
+        [disabled]="form.get('custCodeInput')?.invalid"
       >
         Agregar
       </button>
 
     </div>
 
-    <!-- Errores -->
+
+    <!-- ========================================= -->
+    <!-- NOMBRE DEL CLIENTE QUE SE ESTÁ BUSCANDO -->
+    <!-- ========================================= -->
+    <span
+      class="ml-2 text-gray-700 font-medium"
+      *ngIf="custCodeInputName"
+    >
+      {{ custCodeInputName }}
+    </span>
+
+
+    <!-- ========================================= -->
+    <!-- ERRORES -->
+    <!-- ========================================= -->
     <div class="error-box">
+
       <span
         *ngIf="
           form.get('custCodeInput')?.touched &&
@@ -324,13 +349,29 @@
         <span
           *ngIf="form.get('custCodeInput')?.errors?.['maxlength']"
         >
-          Máximo 12 caracteres permitidos.
+          Máximo 13 caracteres permitidos.
+        </span>
+
+        <span
+          *ngIf="form.get('custCodeInput')?.errors?.['notFound']"
+        >
+          Cliente no existe.
+        </span>
+
+        <span
+          *ngIf="form.get('custCodeInput')?.errors?.['duplicate']"
+        >
+          El cliente ya fue agregado.
         </span>
 
       </span>
+
     </div>
 
-    <!-- Clientes agregados -->
+
+    <!-- ========================================= -->
+    <!-- CLIENTES AGREGADOS -->
+    <!-- ========================================= -->
     <div class="flex flex-wrap gap-2 mt-3">
 
       <span
@@ -338,7 +379,7 @@
         class="bg-blue-600 text-white px-3 py-1 rounded-full flex items-center gap-2"
       >
 
-        {{ code }}
+        {{ code }} – {{ custCodeNames[code] }}
 
         <button
           type="button"
@@ -352,42 +393,8 @@
 
     </div>
 
-    <!-- PROYECTOS -->
-    <div
-      class="field-group sm:col-span-2"
-      *ngIf="projects.length > 0"
-    >
-
-      <mat-form-field
-        appearance="fill"
-        class="w-full mt-4"
-      >
-
-        <mat-label>
-          Proyectos
-        </mat-label>
-
-        <mat-select
-          formControlName="projects"
-          multiple
-        >
-
-          <mat-option
-            *ngFor="let project of projects"
-            [value]="project.code"
-          >
-
-            {{ project.code }} - {{ project.name }}
-
-          </mat-option>
-
-        </mat-select>
-
-      </mat-form-field>
-
-    </div>
-
   </div>
+
 
   <!-- ========================================= -->
   <!-- PROYECTOS -->
@@ -425,6 +432,24 @@
 
     </mat-form-field>
 
+  </div>
+
+
+  <!-- ========================================= -->
+  <!-- SIN PROYECTOS -->
+  <!-- ========================================= -->
+  <div
+    *ngIf="
+      projects.length === 0 &&
+      form.get('roles')?.value &&
+      (
+        form.get('cust_code')?.value ||
+        (form.get('cust_codes')?.value?.length > 0)
+      )
+    "
+    class="sm:col-span-2 text-sm text-gray-500 mt-1"
+  >
+    No hay proyectos disponibles para los clientes seleccionados.
   </div>
 
 
