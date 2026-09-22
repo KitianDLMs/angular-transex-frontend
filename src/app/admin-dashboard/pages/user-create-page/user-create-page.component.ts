@@ -532,31 +532,21 @@ export class UserCreatePageComponent implements OnInit {
       );
   }
 
-  onCustCodeInput(
-    event: Event
-  ): void {
+  onCustCodeInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
 
-    const input =
-      event.target as HTMLInputElement;
+    const value = input.value
+      .replace(/[^0-9kK-]/g, '')
+      .toUpperCase()
+      .slice(0, 13);
 
-    let value =
-      input.value
-        .replace(
-          /[^0-9kK-]/g,
-          ''
-        )
-        .toUpperCase()
-        .slice(0, 13);
-    input.value =
-      value;
+    input.value = value;
+
     this.form
-      .get('custCodeInput')
-      ?.setValue(
-        value,
-        {
-          emitEvent: false
-        }
-      );
+      .get('cust_code')
+      ?.setValue(value, {
+        emitEvent: false
+      });
   }
 
   loadCustomers(): void {

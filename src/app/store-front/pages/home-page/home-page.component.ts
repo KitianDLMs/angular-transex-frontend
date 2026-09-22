@@ -69,17 +69,9 @@ export class HomePageComponent implements OnInit {
     proj_name: string;
   }[] = [];
 
-  // =========================================================
-  // PRODUCTOS
-  // =========================================================
-
   products: ProductReport[] = [];
 
   expandedGroup: string | null = null;
-
-  // =========================================================
-  // PAGINACIÓN
-  // =========================================================
 
   page = 1;
   limit = 10;
@@ -87,22 +79,13 @@ export class HomePageComponent implements OnInit {
 
   loading = false;
 
-  // =========================================================
-  // FECHAS
-  // =========================================================
-
   today = new Date();
   currentYear = new Date().getFullYear();
-
-  // =========================================================
-  // INIT
-  // =========================================================
 
   ngOnInit(): void {
     this.currentUser = this.authService.user();
 
     if (!this.currentUser) {
-      console.log('❌ No existe usuario');
       return;
     }
     const stored = localStorage.getItem('selectedSelection');
@@ -293,11 +276,6 @@ export class HomePageComponent implements OnInit {
     this.selectedProjectName =
       found?.proj_name ||
       this.selectedProject;
-
-    console.log(
-      'NOMBRE PROYECTO:',
-      this.selectedProjectName
-    );
   }
 
   // =========================================================
@@ -309,12 +287,6 @@ export class HomePageComponent implements OnInit {
     if (!this.selectedCustCode) {
       return;
     }
-
-    console.log(
-      'CAMBIO DE CLIENTE:',
-      this.selectedCustCode
-    );
-
     this.userCustCode =
       this.selectedCustCode;
 
@@ -379,10 +351,7 @@ export class HomePageComponent implements OnInit {
 
   loadProjects(): void {
 
-    if (!this.userCustCode) {
-      console.log(
-        '❌ No existe userCustCode'
-      );
+    if (!this.userCustCode) {  
       return;
     }
 
@@ -499,17 +468,10 @@ export class HomePageComponent implements OnInit {
             // SIN PROYECTO
             // ---------------------------------------------
 
-            if (!storedProj) {
-
-              console.log(
-                '⚠️ STORAGE NO TIENE PROYECTO'
-              );
-
+            if (!storedProj) {      
               this.selectedProject = '';
               this.selectedProjectName = null;
-
               this.loadProducts();
-
               return;
             }
 
@@ -524,33 +486,12 @@ export class HomePageComponent implements OnInit {
                   storedProj
               );
 
-            // ---------------------------------------------
-            // PROYECTO NO ENCONTRADO
-            // ---------------------------------------------
-
-            if (!exists) {
-
-              console.log(
-                '❌ PROYECTO NO ENCONTRADO:',
-                storedProj
-              );
-
-              console.log(
-                'PROYECTOS DISPONIBLES:',
-                this.projectOptions
-              );
-
+            if (!exists) {      
               this.selectedProject = '';
               this.selectedProjectName = null;
-
               this.loadProducts();
-
               return;
             }
-
-            // =================================================
-            // 🔥 PROYECTO RESTAURADO
-            // =================================================
 
             this.selectedProject =
               String(
@@ -558,63 +499,28 @@ export class HomePageComponent implements OnInit {
               ).trim();
 
             this.selectedProjectName =
-              exists.proj_name;
-
-            console.log(
-              '========================================'
-            );
-
-            console.log(
-              '✅ PROYECTO RESTAURADO EN PRODUCTOS'
-            );
-
-            console.log(
-              'CÓDIGO:',
-              this.selectedProject
-            );
-
-            console.log(
-              'NOMBRE:',
-              this.selectedProjectName
-            );
-
-            console.log(
-              '========================================'
-            );
-
-            // 🔥 AHORA CARGAR PRODUCTOS
+              exists.proj_name;           
             this.loadProducts();
-
           } catch (error) {
-
             console.error(
               '❌ ERROR LEYENDO STORAGE:',
               error
             );
-
             this.selectedProject = '';
             this.selectedProjectName = null;
-
             this.loadProducts();
-
           }
-
         },
 
         error: error => {
-
           console.error(
             '❌ ERROR CARGANDO PROYECTOS:',
             error
           );
-
           this.projectOptions = [];
-
           this.selectedProject = '';
           this.selectedProjectName = null;
-
           this.loadProducts();
-
         }
 
       });
@@ -628,28 +534,6 @@ export class HomePageComponent implements OnInit {
 
     this.loading = true;
     this.expandedGroup = null;
-
-    console.log(
-      '========================================'
-    );
-
-    console.log(
-      'CARGANDO PRODUCTOS'
-    );
-
-    console.log(
-      'CLIENTE:',
-      this.userCustCode
-    );
-
-    console.log(
-      'PROYECTO:',
-      this.selectedProject
-    );
-
-    console.log(
-      '========================================'
-    );
 
     const filters: any = {
 
@@ -670,23 +554,10 @@ export class HomePageComponent implements OnInit {
         this.selectedProject;
 
     }
-
-    console.log(
-      'FILTROS PRODUCTOS:',
-      filters
-    );
-
     this.prodReportService
       .getReport(filters)
       .subscribe({
-
         next: resp => {
-
-          console.log(
-            'RESPUESTA PRODUCTOS:',
-            resp
-          );
-
           const data =
             resp.data as ProductReport[];
 
